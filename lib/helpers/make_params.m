@@ -1,6 +1,10 @@
 function resolved = make_params(class_name, param_values)
     
-    desc = eval([class_name, '.param_description']);
+
+    if ~exist('param_values', 'var')
+        param_values = struct;
+    end
+    desc = eval(strcat(class_name, '.param_description'));
 
     resolved = struct;
     for i=1:length(desc.params)
@@ -12,15 +16,13 @@ function resolved = make_params(class_name, param_values)
             continue
         end
 
-        if ~exists && ~p.Required 
+        if ~exists
             if isa(p.DefaultValue, 'function_handle')
                 resolved.(p.Name) = p.DefaultValue(resolved);
             else
                 resolved.(p.Name) =  p.DefaultValue;
             end
-            continue
         end
-        error(['Parameter "', convertStringsToChars(p.Name), '" is not set.']);
     end
 
 end

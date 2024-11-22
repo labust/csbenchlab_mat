@@ -3,8 +3,6 @@ classdef DeePC < Controller
     
     properties (Constant)
         param_description = DeePCHelpers.get_deepc_param_set();
-
-        registry_info = RegistryInfo("DeePC", true);
        
         log_description = { 
             LogEntry('x_op_u'), ... 

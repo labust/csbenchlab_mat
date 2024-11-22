@@ -4,18 +4,11 @@ classdef IOArgument
     
     properties
         Name
-        Type
         Dim
     end
     
     methods
-        function this = IOArgument(type, name, varargin)
-
-            if ~strcmp(type, 'input') && ~strcmp(type, 'output')
-                error(strcat('Cannot create IO argument. Unsuported type "', name, '"'));
-            end
-
-            this.Type = type;
+        function this = IOArgument(name, varargin)
             this.Name = name;
             this.Dim = varargin{1};
         end

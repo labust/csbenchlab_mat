@@ -4,13 +4,8 @@ classdef ATDeePC < Controller
     properties (Constant)
         param_description = DeePCHelpers.get_deepc_param_set( ...
         { 
-            ParamDescriptor("dataset_bank_size", true)...,
-            ParamDescriptor("D_u", false, 0), ...
-            ParamDescriptor("D_y", false, 0), ...
-            ParamDescriptor("end_point", false, 0)
+            ParamDescriptor("dataset_bank_size", 1)...,
         });
-
-        registry_info = RegistryInfo("ATDeePC", true);
        
         log_description = { 
             LogEntry('x_op_u'), ... 
@@ -18,8 +13,8 @@ classdef ATDeePC < Controller
             LogEntry('x_op_g')
         };
 
-        io_description = {
-            IOArgument('input', "trajectory", @ATDeePC.trajectory_arg_struct)
+        input_description = {
+            IOArgument("trajectory", @ATDeePC.trajectory_arg_struct)
         };
     end
 

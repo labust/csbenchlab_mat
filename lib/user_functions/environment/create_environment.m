@@ -75,6 +75,7 @@ function path_ret = create_environment(name, varargin)
     path_ret = path;
     mkdir(path);
     mkdir(pa(path, 'autogen'));
+    mkdir(pa(path, 'params'));
     fclose(fopen(fullfile(path, strcat(name, '.cse')), "w"));
     new_system(name);
     save_system(name, pa(path, name));
@@ -88,18 +89,16 @@ function path_ret = create_environment(name, varargin)
 
     mkdir(pa(path, 'saves'));
 
-    s = split(options.SystemPath, '/');
-    SystemName = s{end};
-
     
     system_config_file = pa('autogen', strcat(name, '_system.mat'));
     cfg.Name = name;
     cfg.Version = '0.1';
     cfg.Ts = options.Ts;
-    cfg.System.Name = SystemName;
+    cfg.System.Name = options.SystemName;
     cfg.System.Config = system_config_file;
     cfg.System.Params = options.SystemParams;
-    cfg.System.Path = options.SystemPath;
+    cfg.System.Type = options.SystemType;
+    cfg.System.Lib = options.SystemLib;
 
     try
         dims = evalin('caller', strcat(options.SystemParams, ".dims"));
@@ -108,6 +107,8 @@ function path_ret = create_environment(name, varargin)
         dims.outout = -1;
     end
     cfg.System.Dims = dims;
+
+    cfg.Controllers = [];
 
 
 
@@ -160,7 +161,6 @@ function path_ret = create_environment(name, varargin)
     if ~isempty(options.Plots)
         Plots = options.Plots;
         validate_plots(Plots);
-
     else
         Plots = struct;
     end

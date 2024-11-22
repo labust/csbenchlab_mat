@@ -1,0 +1,74 @@
+{
+    "Name": "env1",
+    "Version": "0.1",
+    "Ts": 0.0,
+    "System": {
+        "Name": "",
+        "Config": "autogen/env1_system.mat",
+        "Params": "",
+        "Type": "MatlabFunctionSys",
+        "Lib": "csbenchlab",
+        "Dims": {
+            "input": -1.0,
+            "outout": -1.0
+        }
+    },
+    "Controllers": [
+        {
+            "Name": "New controller",
+            "IsComposable": 0.0,
+            "Components": [],
+            "Params": "",
+            "Type": "DeePC",
+            "Lib": "csbenchlab",
+            "Mux": {
+                "Inputs": [],
+                "Outputs": []
+            },
+            "RefHorizon": 1.0,
+            "RegenerateEnv": 1.0
+        },
+        {
+            "Name": "Skroz seksi",
+            "IsComposable": 0.0,
+            "Components": [],
+            "Params": "",
+            "Type": "DeePC",
+            "Lib": "csbenchlab",
+            "Mux": {
+                "Inputs": [],
+                "Outputs": []
+            },
+            "RefHorizon": 1.0,
+            "RegenerateEnv": 1.0
+        },
+        {
+            "Name": "New eq32r",
+            "IsComposable": 0.0,
+            "Components": [],
+            "Params": "",
+            "Type": "DeePC",
+            "Lib": "csbenchlab",
+            "Mux": {
+                "Inputs": [],
+                "Outputs": []
+            },
+            "RefHorizon": 1.0,
+            "RegenerateEnv": 0.0
+        },
+        {
+            "Name": "New 2",
+            "IsComposable": 0.0,
+            "Components": [],
+            "Params": "",
+            "Type": "DeePC",
+            "Lib": "csbenchlab",
+            "Mux": {
+                "Inputs": [],
+                "Outputs": []
+            },
+            "RefHorizon": 1.0,
+            "RegenerateEnv": 1.0
+        }
+    ]
+}

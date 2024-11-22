@@ -3,11 +3,16 @@ classdef ControllerOptions
     %   Detailed explanation goes here
     
     properties
+        Id
         Name
         IsComposable
         Components
+        Estimator
+        Disturbance
         Params
-        Path
+        ParamsStructName
+        Type
+        Lib
         Mux
         RefHorizon
         RegenerateEnv
@@ -21,14 +26,19 @@ classdef ControllerOptions
                 obj = varargin{1};
                 begin_idx = 2;
             else
+                obj.Id = string(java.util.UUID.randomUUID.toString);
                 obj.Name = '';
                 obj.IsComposable = 0;
                 obj.Components = {};
-                obj.Params = '';
-                obj.Path = {};
+                obj.Estimator = [];
+                obj.Disturbance = [];
+                obj.Params = [];
+                obj.ParamsStructName = '';
+                obj.Type = '';
+                obj.Lib = '';
                 obj.Mux.Inputs = [];
                 obj.Mux.Outputs = [];
-                obj.RegenerateEnv = 1;
+                obj.RegenerateEnv = 0;
                 obj.RefHorizon = 1;
             end
 
@@ -68,10 +78,18 @@ classdef ControllerOptions
             switch name
                 case 'Name' 
                     obj.Name = value;
-                case 'Path'
-                    obj.Path = value;  
+                case 'Type'
+                    obj.Type = value;  
+                case 'Lib'
+                    obj.Lib = value;      
                 case 'Params'
-                    obj.Params = value;  
+                    obj.Params = value;
+                case 'Estimator'
+                    obj.Estimator = value;
+                case 'DisturbanceGenerator'
+                    obj.Disturbance = value;
+                case 'ParamsStructName'
+                    obj.ParamsStructName = value;
                 case 'Mux'
                     obj.Mux = value;
                 case 'RefHorizon'

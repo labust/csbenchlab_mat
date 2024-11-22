@@ -40,10 +40,14 @@ function handle = generate_control_environment(env_info, folder_path)
 %                   class
 %        refgen_info: struct
 %            reference: timeseries, or matrix
-
-    pa = @BlockHelpers.path_append;
    
     % create path if given as optional argument
+
+    [t, msg] = validate_env_cfg(env_info);
+    if t > 0
+        error(msg);
+    end
+
     try
         model_path = strcat(folder_path, '/', env_info.Name, '.slx');
         exists = exist(model_path, 'file');
@@ -60,10 +64,8 @@ function handle = generate_control_environment(env_info, folder_path)
 
         % Add blocks to model
         GeneratorHelpers.add_time_handler(env_info.Name);
-        % blocks.ic = GeneratorHelpers.add_ic_handler(env_info.Name, env_info.System);
         blocks.refgen = GeneratorHelpers.add_reference_generator(env_info.Name, ...
             strcat(env_info.Name, '_refs.mat'));
-        % blocks.refgen = GeneratorHelpers.add_signal_editor(env_info.Name, folder_path);
         blocks.systems = GeneratorHelpers.generate_systems(env_info.Name, ...
             env_info.System, length(env_info.Controllers));
     

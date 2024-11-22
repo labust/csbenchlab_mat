@@ -3,13 +3,11 @@ classdef ATDeePC_tune < Controller
     
     properties (Constant)
         param_description = ATDeePC.param_description;
-
-        registry_info = RegistryInfo("ATDeePC_tune", true);
        
         log_description = ATDeePC.log_description;
 
-        io_description = [
-            ATDeePC.io_description(:)', ...
+        input_description = [
+            ATDeePC.input_description(:)', ...
             {IOArgument('input', "tune_params", @ATDeePC_tune.tune_params_arg_struct)}
         ];
     end

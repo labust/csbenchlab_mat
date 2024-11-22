@@ -22,16 +22,16 @@ end
 
 
 function r = is_valid_m_component(name, typ)
-    [t, ~] = get_plugin_type(name);
-    if t == 0 
+    p = get_plugin_info(name);
+    if p.T == 0 
         r = 0;
         return
     end
     if strcmp(typ, '')
-        r = t > 0;
+        r = p.T > 0;
         return
     end
-    r = t == parse_comp_type(typ);
+    r = p.T == parse_comp_type(typ);
 end
 
 function t = is_valid_sim_component()

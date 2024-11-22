@@ -4,6 +4,7 @@ classdef GeneratorHelpers
 
     properties (Constant)
         lib_name = 'sim_lib';
+        common_lib_name = 'csbenchlab_common';
         controllers_path = [GeneratorHelpers.lib_name, '/Controllers'];
         systems_path = [GeneratorHelpers.lib_name, '/Systems'];
         master_offset_value = 100;
@@ -28,7 +29,6 @@ classdef GeneratorHelpers
             % position of controller component in 'n1/Subsystem'
             comp_position = [330, 130, 430, 180];
 
-            ref_extractors = struct;
             for i=1:length(info)
                 io_handles = struct;
 
@@ -100,14 +100,11 @@ classdef GeneratorHelpers
                 for j=1:length(components)
                      
                     comp = components(j);
-                    if ~is_valid_field(comp, 'Path')
-                        error(['Cannot create controller. "Path" is not set ' ...
-                            'for controller with index ', num2str(i)]);
-                    end
-
-                    sp = split(comp.Path, '/');
+                    
+                    path = get_component_simulink_path(comp, 'ctl');
+                    sp = split(path, '/');
                     c_block = pa(model_name, cs_name, gn(comp, sp{end}));
-                    [c_h, name] = BlockHelpers.add_block_at(comp.Path, c_block, comp_position);
+                    [c_h, name] = BlockHelpers.add_block_at(path, c_block, comp_position);
                     gen_c(j).Name = name;
                     gen_c(j).Handle = c_h;
                     gen_c(j).Path = pa(cs_path, name);
@@ -116,7 +113,7 @@ classdef GeneratorHelpers
                     
                     % if block is not m_controller, set its params
                     if ~isempty(get_param(c_h, 'MaskValues'))
-                        set_mask_values(c_h, 'params', comp.Params);
+                        set_mask_values(c_h, 'params', comp.ParamsStructName);
                     end
 
                     for k=1:length(ctrls)
@@ -153,16 +150,24 @@ classdef GeneratorHelpers
                     in_mux = io_handles.adapters(j).in_mux.h;
                     in_mux_ref = io_handles.adapters(j).in_mux_ref.h;
                     out_demux = io_handles.adapters(j).out_demux.h;
-                    if is_valid_field(comp, 'Mux')             
-                        set_param(in_mux, 'Inputs', num2str(length(comp.Mux.Input)));
-                        set_param(in_mux_ref, 'Inputs', num2str(length(comp.Mux.Input)));
-                        set_param(out_demux, 'Outputs', num2str(length(comp.Mux.Output)));
-                        io_handles.adapters(j).Mux = comp.Mux;
+                    if ~isempty(comp.Mux.Inputs)             
+                        set_param(in_mux, 'Inputs', num2str(length(comp.Mux.Inputs)));
+                        set_param(in_mux_ref, 'Inputs', num2str(length(comp.Mux.Inputs)));
+                        io_handles.adapters(j).Mux.Inputs = comp.Mux.Inputs;
                     else
                         set_param(in_mux, 'Inputs', num2str(system_dims.output));
                         set_param(in_mux_ref, 'Inputs', num2str(system_dims.output));
-                        set_param(out_demux, 'Outputs', num2str(system_dims.input));
+                        io_handles.adapters(j).Mux.Inputs = 1:system_dims.output;
                     end
+                    
+                    if ~isempty(comp.Mux.Outputs)    
+                        set_param(out_demux, 'Outputs', num2str(length(comp.Mux.Outputs)));
+                        io_handles.adapters(j).Mux.Outputs = comp.Mux.Outputs;
+                    else
+                        set_param(out_demux, 'Outputs', num2str(system_dims.input));
+                        io_handles.adapters(j).Mux.Outputs = 1:system_dims.input;
+                    end
+
                     % refresh port handles after dimension setting
                     io_handles.adapters(j).in_mux.p = ...
                         get_param(io_handles.adapters(j).in_mux.h, 'PortHandles');
@@ -217,16 +222,13 @@ classdef GeneratorHelpers
             gn = @BlockHelpers.get_name_or_empty;
 
             position = [730, 130, 830, 180];
-
-            if ~is_valid_field(info, 'Path')
-                error('Cannot create system. System must have "Path" field defined');
-            end
-
+            
+            path = get_component_simulink_path(info, 'sys');
             for i=1:replicate_num
                 gen_s = struct;
-                sp = split(info.Path, '/');
+                sp = split(path, '/');
                 s_block = pa(model_name, gn(info, sp{end}));
-                [s_h, name] = BlockHelpers.add_block_at(info.Path, s_block, position);
+                [s_h, name] = BlockHelpers.add_block_at(path, s_block, position);
                 
                 if ~isempty(get_param(s_h, 'MaskValues'))
                     if is_valid_field(info, 'Params')
@@ -253,7 +255,7 @@ classdef GeneratorHelpers
             position = [430, 0, 630, 50];
             c_block = pa(model_name, 'TH');
             [th_h, name] = BlockHelpers.add_block_at( ...
-                pa(GeneratorHelpers.lib_name, 'TimeHandler'), c_block, position);
+                pa(GeneratorHelpers.common_lib_name, 'TimeHandler'), c_block, position);
             th.Handle = th_h;
             th.Name = name;
             th.Path = pa(model_name, th.Name);
@@ -291,7 +293,7 @@ classdef GeneratorHelpers
             pa = @BlockHelpers.path_append;    
             position = [30, 60, 130, 120];
             c_block = pa(model_name, 'RefGenerator');
-            [refgen_h, name] = BlockHelpers.add_block_at(pa(GeneratorHelpers.lib_name, 'ReferenceGenerator'), c_block, position);
+            [refgen_h, name] = BlockHelpers.add_block_at(pa(GeneratorHelpers.common_lib_name, 'ReferenceGenerator'), c_block, position);
             
             refgen.Handle = refgen_h;
             refgen.Name = name;
@@ -307,7 +309,7 @@ classdef GeneratorHelpers
              pa = @BlockHelpers.path_append;
              move = @BlockHelpers.move_block;
              [extractor.h, extractor.name] = BlockHelpers.add_block_at( ...
-                    'sim_lib/ReferenceExtractor', ...
+                    pa(GeneratorHelpers.common_lib_name, 'ReferenceExtractor'), ...
                     pa(cs_path, ['ref_extractor_', num2str(j)]));
              
              move(extractor.h, comp_position, [-150, -40])
@@ -372,24 +374,25 @@ classdef GeneratorHelpers
                     add_line(c.Path, cont_p.Outport(1), h.scopes.u.p.Inport, "autorouting", 'smart');
 
                     if is_valid_field(h, 'Mux')
-                        for k=1:length(h.Mux.Input)
-                            add_line(c.Path, io_h.in_demux.p.Outport(h.Mux.Input(k)), ...
+                        for k=1:length(h.Mux.Inputs)
+                            add_line(c.Path, io_h.in_demux.p.Outport(h.Mux.Inputs(k)), ...
                                 h.in_mux.p.Inport(k), "autorouting", 'smart');
-                            add_line(c.Path, io_h.in_demux_ref.p.Outport(h.Mux.Input(k)), ...
+                            add_line(c.Path, io_h.in_demux_ref.p.Outport(h.Mux.Inputs(k)), ...
                                 h.in_mux_ref.p.Inport(k), "autorouting", 'smart');
                         end
-                        for k=1:length(h.Mux.Output)
+                        for k=1:length(h.Mux.Outputs)
                             add_line(c.Path, h.out_demux.p.Outport(k), ...
-                                io_h.out_mux.p.Inport(h.Mux.Output(k)), "autorouting", 'smart');          
+                                io_h.out_mux.p.Inport(h.Mux.Outputs(k)), "autorouting", 'smart');          
                         end
                     else
-                        for k=1:systems.dims.output
-                            add_line(c.Path, io_h.in_demux.p.Outport(k), h.in_mux.p.Inport(k), "autorouting", 'smart');
-                            add_line(c.Path, io_h.in_demux_ref.p.Outport(k), h.in_mux_ref.p.Inport(k), "autorouting", 'smart');
-                        end
-                        for k=1:systems.dims.input
-                            add_line(c.Path, h.out_demux.p.Outport(k), io_h.out_mux.p.Inport(k), "autorouting", 'smart');
-                        end
+                        % not important any more (maybe)
+                        % for k=1:systems.dims.output
+                        %     add_line(c.Path, io_h.in_demux.p.Outport(k), h.in_mux.p.Inport(k), "autorouting", 'smart');
+                        %     add_line(c.Path, io_h.in_demux_ref.p.Outport(k), h.in_mux_ref.p.Inport(k), "autorouting", 'smart');
+                        % end
+                        % for k=1:systems.dims.input
+                        %     add_line(c.Path, h.out_demux.p.Outport(k), io_h.out_mux.p.Inport(k), "autorouting", 'smart');
+                        % end
                     end
                 end
             end

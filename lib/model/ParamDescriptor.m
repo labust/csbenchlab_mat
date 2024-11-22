@@ -5,32 +5,19 @@ classdef ParamDescriptor
     properties
         Name
         DefaultValue
-        Required
+        IsValid
     end
     
     methods
-        function this = ParamDescriptor(name, required, varargin)
-
-            if (~required)
-                if nargin < 1
-                    error('Optional parameter must have default value');
-                end
-            end
+        function this = ParamDescriptor(name, default_value, varargin)
             
             this.Name = name;
-            this.Required = required;
+            this.DefaultValue = default_value;
 
-            if ~required
-                this.DefaultValue = varargin{1};
-            else
-                this.DefaultValue = 0;
+            if ~isempty(varargin)
+                this.IsValid  = varargin{1};
             end
         end
-
-        function ok = is_ok(this, param_value)
-            ok = 1;
-        end
-
 
     end
 end

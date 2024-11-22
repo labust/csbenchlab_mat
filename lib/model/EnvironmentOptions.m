@@ -3,10 +3,14 @@ classdef EnvironmentOptions
     %   Detailed explanation goes here
     
     properties
+        Id
         Path
         Ts
         SystemParams
-        SystemPath
+        SystemParamsStructName
+        SystemName
+        SystemType
+        SystemLib
         Controllers
         Scenarios
         References
@@ -22,10 +26,14 @@ classdef EnvironmentOptions
                 obj = varargin{1};
                 begin_idx = 2;
             else
+                obj.Id = java.util.UUID.randomUUID.toString;
                 obj.Path = '';
                 obj.Ts = 0;
-                obj.SystemParams = '';
-                obj.SystemPath = '';
+                obj.SystemParams = [];
+                obj.SystemParamsStructName = '';
+                obj.SystemName = '';
+                obj.SystemType = '';
+                obj.SystemLib = '';
                 obj.Controllers = [];
                 obj.Scenarios = [];
                 obj.Plots = [];
@@ -47,8 +55,14 @@ classdef EnvironmentOptions
                         obj.Path = value;
                     case 'SystemParams'
                         obj.SystemParams = value;
-                    case 'SystemPath'
-                        obj.SystemPath = value;
+                    case 'SystemParamsStructName'
+                        obj.SystemParamsStructName = value;
+                    case 'SystemType'
+                        obj.SystemType = value;
+                    case 'SystemName'
+                        obj.SystemName = value;
+                    case 'SystemLib'
+                        obj.SystemLib = value;
                     case 'Controllers'
                         obj.Controllers = value;
                     case 'Scenarios'

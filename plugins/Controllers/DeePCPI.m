@@ -6,8 +6,6 @@ classdef DeePCPI < Controller
         { 
            
         });
-
-        registry_info = RegistryInfo("DeePCPI", true);
        
         log_description = { 
             LogEntry('x_op_u'), ... 
