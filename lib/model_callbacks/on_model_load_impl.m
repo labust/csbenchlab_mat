@@ -1,16 +1,21 @@
 function on_model_load_impl()
     pa = @BlockHelpers.path_append;
     curr_model = gcs;
-    setup_simulink_with_controllers(curr_model);
 
-    % setup reference extractors
 
     folder_path = fileparts(which(curr_model));
-   
     loaded = load(pa(folder_path, 'autogen', strcat(curr_model, '.mat')));
+
     info = loaded.env_info;
     blocks = loaded.blocks;
 
+    scenarios_path = pa(folder_path, 'autogen', strcat(curr_model, '_refs.mat'));
+    sig_editor_h = getSimulinkBlockHandle(pa(blocks.refgen.Path, 'Reference'));
+    set_param(sig_editor_h, 'FileName', scenarios_path);
+
+    setup_simulink_with_controllers(curr_model);
+
+    % setup reference extractors
     for i=1:length(info.Controllers)
         c_info = info.Controllers(i);
         b = blocks.controllers(i);

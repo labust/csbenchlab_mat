@@ -109,7 +109,7 @@ classdef GeneratorHelpers
                     gen_c(j).Handle = c_h;
                     gen_c(j).Path = pa(cs_path, name);
 
-                    ctrls = get_model_blocks_with_tag(c_h, 'm_controllers');
+                    ctrls = get_model_blocks_with_tag(c_h, '__cs_m_ctl');
                     
                     % if block is not m_controller, set its params
                     if ~isempty(get_param(c_h, 'MaskValues'))
@@ -287,7 +287,7 @@ classdef GeneratorHelpers
             ich.To.Path = pa(model_name, name);
         end
 
-        function refgen = add_reference_generator(model_name, scenarios_path)
+        function refgen = add_reference_generator(model_name)
             % Add and configure reference generator to the simulink model
 
             pa = @BlockHelpers.path_append;    
@@ -299,10 +299,7 @@ classdef GeneratorHelpers
             refgen.Name = name;
             refgen.Path = pa(model_name, refgen.Name);
 
-            sig_editor_h = getSimulinkBlockHandle(pa(refgen.Path, 'Reference'));
             set_param(refgen_h, 'LinkStatus', 'none');
-            
-            set_param(sig_editor_h, 'FileName', scenarios_path);
         end
 
         function extractor = generate_reference_extractor(cs_path, comp_position, j)

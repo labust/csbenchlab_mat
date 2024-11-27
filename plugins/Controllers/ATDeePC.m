@@ -122,8 +122,8 @@ classdef ATDeePC < Controller
                 T = params.T;
             end
                 
-            input_sz = length(mux.Input);
-            output_sz = length(mux.Output);
+            input_sz = length(mux.Inputs);
+            output_sz = length(mux.Outputs);
             if params.pos_control == 1
                 assert(mod(input_sz, 2) == 0, ...
                     'Pos control must have even number of states');

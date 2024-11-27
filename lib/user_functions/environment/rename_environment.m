@@ -11,10 +11,7 @@ function new_path = rename_environment(env_name, new_name)
     cfg.Name = new_name;
     save_env_cfg(folder, cfg);
 
-    rename_env_file(fullfile(folder, 'autogen'), strcat(env_name, '_plots.mat'), strcat(new_name, '_plots.mat'));
     rename_env_file(fullfile(folder, 'autogen'), strcat(env_name, '_refs.mat'), strcat(new_name, '_refs.mat'));
-    rename_env_file(fullfile(folder, 'autogen'), strcat(env_name, '_scenarios.mat'), strcat(new_name, '_scenarios.mat'));
-    rename_env_file(fullfile(folder, 'autogen'), strcat(env_name, '_system.mat'), strcat(new_name, '_system.mat'));
     rename_env_file(folder, strcat(env_name, '.cse'), strcat(new_name, '.cse'));
     rename_env_file(folder, strcat(env_name, '_controllers.slx'), strcat(new_name, '_controllers.slx'));
     rename_env_file(folder, strcat(env_name, '.slx'), strcat(new_name, '.slx'));

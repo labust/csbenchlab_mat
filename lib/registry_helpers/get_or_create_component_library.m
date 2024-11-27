@@ -13,7 +13,7 @@ function handle = get_or_create_component_library(path, name)
     handle.name = name;
 
     % only one check is enough for all 
-    if ~exist(fullfile(path, name, [syspath '.slx']), 'file')
+    if ~exist(fullfile(path, name, 'manifest.mat'), 'file')
         handle.sh = new_system(syspath, 'Library');
         save_system(handle.sh, fullfile(path, name, syspath));
         handle.ch = new_system(contpath, 'Library');
@@ -22,6 +22,8 @@ function handle = get_or_create_component_library(path, name)
         save_system(handle.eh, fullfile(path, name, estpath));
         handle.dh = new_system(distpath, 'Library');
         save_system(handle.dh, fullfile(path, name, distpath));
+        make_component_dirs(fullfile(path, name, 'src', 'm'));
+        make_component_dirs(fullfile(path, name, 'src', 'py'));
         registry.sys = {};
         registry.ctl = {};
         registry.est = {};
@@ -29,7 +31,6 @@ function handle = get_or_create_component_library(path, name)
         version = 0.1;
         library = name;
         save(fullfile(handle.path, 'manifest.mat'), 'registry', 'version', 'library');
-
     else
         handle.sh = load_system(fullfile(path, name, syspath));
         handle.ch = load_system(fullfile(path, name, contpath));
@@ -41,8 +42,12 @@ function handle = get_or_create_component_library(path, name)
     set_param(handle.ch, 'Lock', 'off');
     set_param(handle.eh, 'Lock', 'off');
     set_param(handle.dh, 'Lock', 'off');
-    
+end
 
-  
-   
+
+function make_component_dirs(path)
+    mkdir(fullfile(path, 'sys'));
+    mkdir(fullfile(path, 'ctl'));
+    mkdir(fullfile(path, 'est'));
+    mkdir(fullfile(path, 'dist'));
 end

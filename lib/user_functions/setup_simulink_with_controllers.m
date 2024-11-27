@@ -20,7 +20,7 @@ function setup_simulink_with_controllers(model_name)
     dictObj = Simulink.data.dictionary.create(sldd_f);
     type_dict = dictObj.getSection("Design Data");
 
-    controllers = get_model_blocks_with_tag(model_name, 'controller');
+    controllers = get_model_blocks_with_tag(model_name, '__cs_ctl');
 
     for i=1:length(controllers)
         c = controllers(i);
@@ -33,13 +33,13 @@ function setup_simulink_with_controllers(model_name)
 
 
         
-        if ~model_has_tag(c, 'm_controller')
+        if ~model_has_tag(c, '__cs_m_ctl')
             continue
         end
 
         l_info = libinfo(c);
 
-        class_name = get_m_controller_class_name(l_info.ReferenceBlock);    
+        class_name = get_m_component_class_name(l_info.ReferenceBlock);    
             
         try
             mux = get_controller_mux_struct(c_path);
@@ -56,7 +56,7 @@ function setup_simulink_with_controllers(model_name)
             rethrow(ME);
         end
 
-        io_args = get_m_controller_inputs(class_name);
+        io_args = get_m_component_inputs(class_name);
         
         data_f_name = strcat(folder_path, '/autogen/data_bus_.m');
         if exist(data_f_name, 'file')

@@ -1,16 +1,16 @@
 function on_reference_generator_open()
-    pa = @BlockHelpers.path_append;
     handle = gcbh;
 
     fn = getfullname(handle);
     splits = split(fn, '/');
     env_name = splits{1};
 
+    env_path = fileparts(which(env_name));
+
     % if no config, this is not an environment
-    if exist(pa(env_name, 'config.json'), 'file')
+    if exist(fullfile(env_path, 'parts', 'scenarios.json'), 'file')
         mo = get_param(handle, 'MaskObject');
-        scenarios = load(pa(env_name, 'autogen', strcat(env_name, '_scenarios')));
-        scenarios = scenarios.Scenarios;
+        scenarios = load_env_scenarios(env_path);
 
         names = {};
         for i=1:length(scenarios)

@@ -11,6 +11,7 @@ classdef EnvironmentOptions
         SystemName
         SystemType
         SystemLib
+        SystemLibVersion
         Controllers
         Scenarios
         References
@@ -34,6 +35,7 @@ classdef EnvironmentOptions
                 obj.SystemName = '';
                 obj.SystemType = '';
                 obj.SystemLib = '';
+                obj.SystemLibVersion = '';
                 obj.Controllers = [];
                 obj.Scenarios = [];
                 obj.Plots = [];
@@ -63,6 +65,8 @@ classdef EnvironmentOptions
                         obj.SystemName = value;
                     case 'SystemLib'
                         obj.SystemLib = value;
+                    case 'SystemLibVersion'
+                        obj.SystemLibVersion = value;
                     case 'Controllers'
                         obj.Controllers = value;
                     case 'Scenarios'

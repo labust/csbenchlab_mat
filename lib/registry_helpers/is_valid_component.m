@@ -6,23 +6,23 @@ function t = is_valid_component(path, varargin)
         typ = varargin{1};
     end
 
-    [filepath, name, ext] = fileparts(path);
+    s = split(path, ':');
+    s = s{1};
 
-    if strcmp(ext, '.m')
-        t = is_valid_m_component(name, typ);
-    elseif strcmp(ext, '.slx')
-        t = is_valid_sim_component(name, typ);
-    elseif strcmp(ext, '.py')
-        t = is_valid_py_component(name, typ);
+    if endsWith(s, '.m')
+        t = is_valid_m_component(path, typ);
+    elseif endsWith(s, '.slx')
+        t = is_valid_sim_component(path, typ);
+    elseif endsWith(s, '.py')
+        t = is_valid_py_component(path, typ);
     else
         t = 0;
-        return
     end
 end
 
 
-function r = is_valid_m_component(name, typ)
-    p = get_plugin_info(name);
+function r = is_valid_m_component(path, typ)
+    p = get_plugin_info(path);
     if p.T == 0 
         r = 0;
         return
@@ -34,12 +34,12 @@ function r = is_valid_m_component(name, typ)
     r = p.T == parse_comp_type(typ);
 end
 
-function t = is_valid_sim_component()
+function t = is_valid_sim_component(name, rel_path, typ)
     %TODO
     t = 1;
 end
 
-function t = is_valid_py_component()
+function t = is_valid_py_component(name, typ)
     %TODO
     t = 1;
 end

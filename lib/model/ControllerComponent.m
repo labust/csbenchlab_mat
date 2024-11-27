@@ -9,6 +9,7 @@ classdef ControllerComponent
         ParamsStructName
         Type
         Lib
+        LibVersion
         Mux
         RefHorizon
         RegenerateEnv
@@ -28,6 +29,7 @@ classdef ControllerComponent
                 obj.ParamsStructName = '';
                 obj.Type = '';
                 obj.Lib = '';
+                obj.LibVersion = '';
                 obj.Mux.Inputs = [];
                 obj.Mux.Outputs = [];
                 obj.RegenerateEnv = 0;
@@ -69,6 +71,8 @@ classdef ControllerComponent
                     obj.RefHorizon = value;
                 case 'RegenerateEnv'
                     obj.RegenerateEnv = value;
+                case 'LibVersion'
+                    obj.LibVersion = value;
                 otherwise
                     warning(['Unexpected parameter name "', name, '"']);
             end

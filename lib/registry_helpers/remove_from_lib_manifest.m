@@ -19,6 +19,6 @@ end
 
 function cell = remove_from_struct(cell, name)
     a = 5;
-    indices = cellfun(@(x) ~strcmp(name, x.info.Name), cell);
+    indices = cellfun(@(x) ~strcmp(name, x.Name), cell);
     cell = cell(indices);
 end

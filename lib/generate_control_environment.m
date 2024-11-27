@@ -47,43 +47,50 @@ function handle = generate_control_environment(env_info, folder_path)
     if t > 0
         error(msg);
     end
-
+    
+    name = env_info.Metadata.Name;
     try
-        model_path = strcat(folder_path, '/', env_info.Name, '.slx');
+        model_path = strcat(folder_path, '/', name, '.slx');
         exists = exist(model_path, 'file');
         if ~isempty(exists)
-            close_system(env_info.Name, 0);
+            close_system(name, 0);
             delete(model_path);
         end
     catch
     end
-    handle = new_system(env_info.Name);
-    % handle = gcbh;
 
-    if is_valid_field(env_info, 'Controllers')
-
-        % Add blocks to model
-        GeneratorHelpers.add_time_handler(env_info.Name);
-        blocks.refgen = GeneratorHelpers.add_reference_generator(env_info.Name, ...
-            strcat(env_info.Name, '_refs.mat'));
-        blocks.systems = GeneratorHelpers.generate_systems(env_info.Name, ...
-            env_info.System, length(env_info.Controllers));
+    handle = new_system(name);
+    try
+        if is_valid_field(env_info, 'Controllers')
     
-        blocks.controllers = GeneratorHelpers.generate_controllers(env_info.Name, env_info.Controllers, blocks.systems.dims);
-        GeneratorHelpers.bus_connect(env_info.Name, blocks);
+            % Add blocks to model
+            GeneratorHelpers.add_time_handler(name);
+            blocks.refgen = GeneratorHelpers.add_reference_generator(name);
+            blocks.systems = GeneratorHelpers.generate_systems(name, ...
+                env_info.System, length(env_info.Controllers));
         
-        % configure model
-        save(strcat(folder_path, '/autogen/', env_info.Name, '.mat'), 'env_info', 'blocks');
-        set_param(handle, 'PostLoadFcn', 'on_model_load');
-        set_param(handle, 'PostSaveFcn', 'on_model_save');
-        set_param(handle, 'StopFcn', 'on_simulation_done');
+            blocks.controllers = GeneratorHelpers.generate_controllers(name, env_info.Controllers, blocks.systems.dims);
+            GeneratorHelpers.bus_connect(name, blocks);
+            
+            % configure model
+            save(strcat(folder_path, '/autogen/', name, '.mat'), 'env_info', 'blocks');
+            set_param(handle, 'PostLoadFcn', 'on_model_load');
+            set_param(handle, 'PostSaveFcn', 'on_model_save');
+            set_param(handle, 'StopFcn', 'on_simulation_done');
+        end
+    
+        set_param(handle, 'FixedStep', num2str(env_info.Metadata.Ts), ...
+            'SolverType', 'Fixed-step');
+    
+        save_system(name, strcat(folder_path, '/', name)); 
+        close_system(name, 0);
+        open_system(name);
+    catch e
+        close_system(name, 0);
+        new_system(name);
+        save_system(name, strcat(folder_path, '/', name)); 
+        close_system(name, 0);
+        rethrow(e);
     end
-
-    set_param(handle, 'FixedStep', num2str(env_info.Ts), ...
-        'SolverType', 'Fixed-step');
-
-    save_system(env_info.Name, strcat(folder_path, '/', env_info.Name)); 
-    close_system(env_info.Name, 0);
-    open_system(env_info.Name);
 end
 

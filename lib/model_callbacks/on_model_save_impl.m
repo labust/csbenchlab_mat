@@ -39,7 +39,7 @@ function on_model_save_impl()
                 b_c = b_comp.MControllers(k);
                 b_h = getSimulinkBlockHandle(b_c.Path);
     
-                class_name = get_m_controller_class_name(b_c.ReferenceBlock);
+                class_name = get_m_component_class_name(b_c.ReferenceBlock);
                
                 
                 % generate bus data types for controller data
@@ -47,8 +47,8 @@ function on_model_save_impl()
                 log_bus_name = strcat(name, '_LB');
                 set_mask_values(b_h, 'LogEntryType', log_bus_name);
                    
-                io_args = get_m_controller_inputs(class_name);
-                params = eval_controller_params(comp, b_comp, b_c);
+                io_args = get_m_component_inputs(class_name);
+                params = eval_controller_params(b_comp.Path);
 
                 % generate bus data types for inputs
                 for l=1:length(io_args)

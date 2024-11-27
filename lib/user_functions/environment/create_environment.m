@@ -1,6 +1,6 @@
 function path_ret = create_environment(name, varargin)
     
-    pa = @BlockHelpers.path_append;
+    fullfile = @BlockHelpers.path_append;
     if nargin == 2
         options = varargin{1};
     elseif nargin > 2
@@ -25,9 +25,9 @@ function path_ret = create_environment(name, varargin)
         path = pwd;
     end
 
-    path = pa(path, name);
+    path = fullfile(path, name);
     controllers_lib_name = strcat(name, '_controllers');
-    controllers_lib_path = pa(path, strcat(controllers_lib_name, '.slx'));
+    controllers_lib_path = fullfile(path, strcat(controllers_lib_name, '.slx'));
     save_controllers = 0;
     save_controllers_temp_file = "temp_controllers_lib.slx";
 
@@ -59,7 +59,7 @@ function path_ret = create_environment(name, varargin)
             
             % suppres warnings on path removal
             warning('off', 'MATLAB:rmpath:DirNotFound'); 
-            rmpath(pa(path, 'autogen'));
+            rmpath(fullfile(path, 'autogen'));
             rmpath(path);
             warning('on', 'MATLAB:rmpath:DirNotFound'); 
             rmdir(path, 's');
@@ -74,11 +74,12 @@ function path_ret = create_environment(name, varargin)
     
     path_ret = path;
     mkdir(path);
-    mkdir(pa(path, 'autogen'));
-    mkdir(pa(path, 'params'));
+    mkdir(fullfile(path, 'autogen', 'metrics', 'private'));
+    mkdir(fullfile(path, 'params'));
+    mkdir(fullfile(path, 'components'));
     fclose(fopen(fullfile(path, strcat(name, '.cse')), "w"));
     new_system(name);
-    save_system(name, pa(path, name));
+    save_system(name, fullfile(path, name));
     close_system(name, 0);
     
     if save_controllers ~= 1
@@ -87,10 +88,8 @@ function path_ret = create_environment(name, varargin)
         close_system(controllers_lib_name);
     end
 
-    mkdir(pa(path, 'saves'));
+    mkdir(fullfile(path, 'saves'));
 
-    
-    system_config_file = pa('autogen', strcat(name, '_system.mat'));
     cfg.Name = name;
     cfg.Version = '0.1';
     cfg.Ts = options.Ts;
@@ -99,6 +98,8 @@ function path_ret = create_environment(name, varargin)
     cfg.System.Params = options.SystemParams;
     cfg.System.Type = options.SystemType;
     cfg.System.Lib = options.SystemLib;
+    cfg.Scenarios = [];
+    cfg.Metrics = [];
 
     try
         dims = evalin('caller', strcat(options.SystemParams, ".dims"));
@@ -112,7 +113,7 @@ function path_ret = create_environment(name, varargin)
 
 
 
-    refs_path = pa(path, 'autogen', strcat(name, '_refs.mat'));
+    refs_path = fullfile(path, 'autogen', strcat(name, '_refs.mat'));
     if ~isempty(options.References)
         if isa(options.References, 'Simulink.SimulationData.Dataset')
             refs = options.References;
@@ -147,35 +148,15 @@ function path_ret = create_environment(name, varargin)
     save(refs_path, names{:});
 
 
-    scenarios_path = pa(path, 'autogen', strcat(name, '_scenarios.mat'));
-    if ~isempty(options.Scenarios)
-        Scenarios = options.Scenarios;
-        validate_scenarios(Scenarios);
-    else
-        Scenarios = struct;
-    end
-    save(scenarios_path, 'Scenarios')
-
-
-    plots_path = pa(path, 'autogen', strcat(name, '_plots.mat'));
-    if ~isempty(options.Plots)
-        Plots = options.Plots;
-        validate_plots(Plots);
-    else
-        Plots = struct;
-    end
-    save(plots_path, 'Plots')
-
-
-    cfgName = pa(path, 'config.json');
+    cfgName = fullfile(path, 'config.json');
     params = paramsStruct;
-    save(pa(path, system_config_file), 'params');
+    save(fullfile(path, system_config_file), 'params');
     clear('data');
 
     writestruct(cfg, cfgName, 'FileType','json');
     
     addpath(path);
-    addpath(pa(path, 'autogen'));
+    addpath(fullfile(path, 'autogen'));
     if save_controllers == 1    
         movefile(save_controllers_temp_file, controllers_lib_path);
     end

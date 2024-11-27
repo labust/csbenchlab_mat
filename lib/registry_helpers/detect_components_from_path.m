@@ -1,5 +1,12 @@
 
 function registry = detect_components_from_path(path, registry)
+
+    if exist('registry', 'var')
+        registry.ctl = {};
+        registry.sys = {};
+        registry.est = {};
+        registry.dist = {};
+    end
     
     [~, atrs] = fileattrib(path);
     filelist = dir(fullfile(atrs.Name, '*.m')); 

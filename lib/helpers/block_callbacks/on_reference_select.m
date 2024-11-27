@@ -6,7 +6,7 @@ function on_reference_select
    
 
     % if no config, this is not an environment
-    if ~exist(pa(env_name, 'config.json'), 'file')
+    if ~is_env(env_name)
         return
     end
 
@@ -18,8 +18,7 @@ function on_reference_select
     selector_name = pa(env_name, name, 'Reference');
 
 
-    scenarios = load(pa(env_name, 'autogen', strcat(env_name, '_scenarios')));
-    scenarios = scenarios.Scenarios;
+    scenarios = load_env_scenarios(env_name);
 
     scenario_name = mo.Parameters(1).Value;
     active_scenario_idx = 0;

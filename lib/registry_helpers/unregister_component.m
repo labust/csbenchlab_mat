@@ -9,6 +9,5 @@ function unregister_component(info, t, lib_name)
    elseif t == 4
        unregister_disturbance_generator(info, lib_name);
    end
-    
 end
 

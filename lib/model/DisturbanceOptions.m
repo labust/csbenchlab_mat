@@ -9,6 +9,7 @@ classdef DisturbanceOptions
         ParamsStructName
         Type
         Lib
+        LibVersion
     end
     
     methods
@@ -25,6 +26,7 @@ classdef DisturbanceOptions
                 obj.ParamsStructName = '';
                 obj.Type = '';
                 obj.Lib = '';
+                obj.LibVersion = '';
             end
 
                % Loop through the parameter names and not the values.
@@ -53,6 +55,8 @@ classdef DisturbanceOptions
                     obj.Params = value;
                 case 'ParamsStructName'
                     obj.ParamsStructName = value;
+                case 'LibVersion'
+                    obj.LibVersion = value;
                 otherwise
                     warning(['Unexpected parameter name "', name, '"']);
             end

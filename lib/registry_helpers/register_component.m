@@ -1,5 +1,4 @@
 function register_component(info, t, lib_name)
-   
 
    if strcmp(info.Type, 'm')
        if t == 1
@@ -11,7 +10,16 @@ function register_component(info, t, lib_name)
        elseif t == 4
            register_m_disturbance_generator(info, lib_name);
        end
-   end
-    
+   elseif strcmp(info.Type, 'slx')
+       if t == 1
+           register_slx_system(info, lib_name);
+       elseif t == 2
+           register_slx_controller(info, lib_name);
+       elseif t == 3
+           register_slx_estimator(info, lib_name);
+       elseif t == 4
+           register_slx_disturbance_generator(info, lib_name);
+       end
+   end    
 end
 
