@@ -16,12 +16,12 @@ function p = get_plugin_info(component_path)
                 addpath(folder);
                 rm = 1;
             end
-            addpath(folder);
             p = get_m_plugin_info(name);
             p.Type = "m";
-        catch
+        catch e
             if rm > 0
                 rmpath(folder);
+                rethrow(e);
             end
         end
     elseif strcmp(ext, '.slx')
@@ -34,10 +34,11 @@ function p = get_plugin_info(component_path)
             end
             p = get_slx_plugin_info(name, rel_path);
             p.Type = "slx";
-        catch
+        catch e
             if rm > 0
                 rmpath(folder);
             end
+            rethrow(e);
         end
     else
         p = struct;

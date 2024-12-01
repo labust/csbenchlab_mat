@@ -17,9 +17,8 @@ function on_reference_select
     
     selector_name = pa(env_name, name, 'Reference');
 
-
-    scenarios = load_env_scenarios(env_name);
-
+    scenarios = hws.getVariable('Scenarios');
+    
     scenario_name = mo.Parameters(1).Value;
     active_scenario_idx = 0;
     for i=1:length(scenarios)
@@ -34,9 +33,11 @@ function on_reference_select
     active_scenario = scenarios(active_scenario_idx);
 
     set_param(selector_name, 'ActiveScenario', active_scenario.Reference);
+    ic_name = pa(env_name, name, 'IC');
 
     
-    
+
+
     start_time = 0;
     if is_valid_field(active_scenario, 'StartTime')
         start_time = active_scenario.StartTime;

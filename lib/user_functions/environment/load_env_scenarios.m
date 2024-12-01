@@ -8,4 +8,13 @@ function s = load_env_scenarios(env_path)
     else
         s = [];
     end
+
+    if isempty(s)
+        return
+    end
+
+    for i=1:length(s)
+        s = load_component_params(s(i), env_path);
+    end
+
 end

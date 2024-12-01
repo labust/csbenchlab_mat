@@ -8,4 +8,12 @@ function m = load_env_metrics(env_path)
     else
         m = [];
     end
+
+    if isempty(m)
+        return
+    end
+
+    for i=1:length(m)
+        m(i) = load_component_params(m(i), env_path);
+    end
 end

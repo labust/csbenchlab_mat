@@ -1,7 +1,9 @@
 function path_ret = create_environment(name, varargin)
     
     fullfile = @BlockHelpers.path_append;
-    if nargin == 2
+    if nargin == 1
+        options = EnvironmentOptions();
+    elseif nargin == 2
         options = varargin{1};
     elseif nargin > 2
         options = EnvironmentOptions(varargin{:});
@@ -74,9 +76,9 @@ function path_ret = create_environment(name, varargin)
     
     path_ret = path;
     mkdir(path);
-    mkdir(fullfile(path, 'autogen', 'metrics', 'private'));
+    setup_metrics(name, path);
     mkdir(fullfile(path, 'params'));
-    mkdir(fullfile(path, 'components'));
+    mkdir(fullfile(path, 'parts', 'controllers'));
     fclose(fopen(fullfile(path, strcat(name, '.cse')), "w"));
     new_system(name);
     save_system(name, fullfile(path, name));
@@ -89,17 +91,18 @@ function path_ret = create_environment(name, varargin)
     end
 
     mkdir(fullfile(path, 'saves'));
-
+    
+    cfg.Id = string(java.util.UUID.randomUUID.toString);
     cfg.Name = name;
     cfg.Version = '0.1';
     cfg.Ts = options.Ts;
-    cfg.System.Name = options.SystemName;
-    cfg.System.Config = system_config_file;
-    cfg.System.Params = options.SystemParams;
-    cfg.System.Type = options.SystemType;
-    cfg.System.Lib = options.SystemLib;
-    cfg.Scenarios = [];
-    cfg.Metrics = [];
+
+    System.Id = string(java.util.UUID.randomUUID.toString);
+    System.Name = options.SystemName;
+    System.Params = options.SystemParams;
+    System.Type = options.SystemType;
+    System.Lib = options.SystemLib;
+  
 
     try
         dims = evalin('caller', strcat(options.SystemParams, ".dims"));
@@ -107,11 +110,7 @@ function path_ret = create_environment(name, varargin)
         dims.input = -1;
         dims.outout = -1;
     end
-    cfg.System.Dims = dims;
-
-    cfg.Controllers = [];
-
-
+    System.Dims = dims;
 
     refs_path = fullfile(path, 'autogen', strcat(name, '_refs.mat'));
     if ~isempty(options.References)
@@ -149,15 +148,29 @@ function path_ret = create_environment(name, varargin)
 
 
     cfgName = fullfile(path, 'config.json');
-    params = paramsStruct;
-    save(fullfile(path, system_config_file), 'params');
-    clear('data');
-
+    sysName = fullfile(path, 'parts', 'system.json');
     writestruct(cfg, cfgName, 'FileType','json');
+    writestruct(System, sysName, 'FileType','json');
+
     
     addpath(path);
     addpath(fullfile(path, 'autogen'));
     if save_controllers == 1    
         movefile(save_controllers_temp_file, controllers_lib_path);
     end
+end
+
+
+function setup_metrics(env_name, path)
+    mkdir(fullfile(path, 'autogen', 'metrics', 'private'));
+    addpath(fullfile(path, 'autogen', 'metrics'));
+    f = which('eval_metrics_template');
+    t = fileread(f);
+    f_name = strcat(env_name, '_eval_metrics');
+    content = replace(t, '{{function_name}}', f_name);
+    
+    new_file_path = fullfile(path, 'autogen', 'metrics', strcat(f_name, '.m'));
+    h = fopen(new_file_path, 'w');
+    fprintf(h, content);
+    fclose(h);
 end

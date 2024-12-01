@@ -1,7 +1,7 @@
 function mux = get_controller_mux_struct(path)
     pa = @BlockHelpers.path_append;
-    mux.Input = [];
-    mux.Output = [];
+    mux.Inputs = [];
+    mux.Outputs = [];
 
     parent_path = get_parent_controller(path);
     
@@ -22,7 +22,7 @@ function mux = get_controller_mux_struct(path)
         if srcport == -1
             continue
         end
-        mux.Input = [mux.Input, i];
+        mux.Inputs = [mux.Inputs, i];
     end
         
     for i=1:length(mux_port.Inport)
@@ -34,7 +34,7 @@ function mux = get_controller_mux_struct(path)
         if srcport == -1
             continue
         end
-        mux.Output = [mux.Output, i];
+        mux.Outputs = [mux.Outputs, i];
     end
 end
 

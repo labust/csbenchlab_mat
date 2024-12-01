@@ -5,7 +5,7 @@ function save_env_scenario(env_path, scenario)
         save_env_scenarios(env_path, scenarios);
         return
     end
-    idx = strcmp(scenarios.Name, scenario.Name);
+    idx = strcmp([scenarios.Id], scenario.Id);
     if any(idx)
         scenarios(idx) = scenario;
     else

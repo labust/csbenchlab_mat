@@ -82,7 +82,7 @@ classdef ATDeePC < Controller
                     this.data.lb, this.data.ub, ...
                     this.data.x_op);
             end
-            u = zeros(2, 1);
+            u = zeros(1, 1);
             if optim_exit_flag >= 0 
                 this.data.x_op = x_op_new; 
                 u(:) = this.data.x_op(idx.u.b:idx.u.b+idx.m-1);

@@ -1,5 +1,8 @@
 function libs = list_component_libraries(ignore_csbenchlab)
     
+    if ~exist('ignore_csbenchlab', 'var')
+        ignore_csbenchlab = 0;
+    end
     reg = get_app_registry_path();
     fs = dir(reg);
     libs = strings(0, 1);

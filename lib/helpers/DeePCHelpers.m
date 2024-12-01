@@ -58,9 +58,9 @@ classdef DeePCHelpers
 
 
             if params.pos_control == 1
-                data.vel_stop_idx = length(mux.Input) / 2;
+                data.vel_stop_idx = length(mux.Inputs) / 2;
             else
-                data.vel_stop_idx = length(mux.Input);
+                data.vel_stop_idx = length(mux.Inputs);
             end
 
             data.idx = DeePCHelpers.set_param_indices_and_dims(params, data.T, data.m, data.p);

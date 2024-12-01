@@ -35,7 +35,7 @@ function t = is_sys(inputs, outputs)
     end
     t = strcmp(inputs{1}, 'u') && strcmp(inputs{2}, 't') ...
         && strcmp(inputs{3}, 'dt') && strcmp(inputs{4}, 'ic') ...
-        && strcmp(outputs{1}, 'y');
+        && strcmp(outputs, 'y');
 end
 
 

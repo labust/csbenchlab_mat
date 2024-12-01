@@ -87,10 +87,10 @@ classdef GeneratorHelpers
                 % if controller is composable, that means that it has
                 % various controller types for different system DOF-s
                 c_info = info(i);
-                if is_valid_field(c_info, 'Components')
+                if c_info.IsComposable
                     components = c_info.Components;
                 else
-                    components = [c_info];
+                    components = c_info;
                 end
 
 
@@ -232,7 +232,7 @@ classdef GeneratorHelpers
                 
                 if ~isempty(get_param(s_h, 'MaskValues'))
                     if is_valid_field(info, 'Params')
-                        set_mask_values(s_h, 'params', 'active_scenario.SystemParams');
+                        set_mask_values(s_h, 'params', 'active_scenario.Params');
                     end
                 end                    
                 gen_s.Name = name;

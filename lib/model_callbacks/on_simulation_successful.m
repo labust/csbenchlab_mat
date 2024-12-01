@@ -1,16 +1,14 @@
 function on_simulation_successful(env_name, run_id, plot_data)
 
-
-    pa = @BlockHelpers.path_append;
     handle = get_param(env_name, 'Handle');
     
     folder = fileparts(which(env_name));
-    if ~exist(pa(folder, 'config.json'), 'file')
+    if ~exist(fullfile(folder, strcat(env_name, '.cse')), 'file')
         return
     end
 
     Ts = get_param(handle, 'FixedStep');
-    loaded = load(pa(folder, 'autogen', strcat(env_name, '.mat')));
+    loaded = load(fullfile(folder, 'autogen', strcat(env_name, '.mat')));
 
     ref = getSignalsByName(run_id, 'Reference').Values;
     out.ref = ref;
@@ -36,44 +34,41 @@ function on_simulation_successful(env_name, run_id, plot_data)
     
     out.metrics = calculate_result_metrics(out);
     
-    save(pa(folder, 'results.mat'), 'out');
+    save(fullfile(folder, 'results.mat'), 'out');
     assignin('base', 'sim_result', out);
-
-    if plot_data
-        plots = load(pa(folder, 'autogen', strcat(env_name, '_plots.mat')));
-        plots = plots.Plots;
     
+    eval_fun = strcat(env_name, '_eval_metrics');
+    if plot_data
+        metrics = load_env_metrics(env_name);    
         close all;
-        for i=1:length(plots)
+        for i=1:length(metrics)
             
-            if ~is_valid_field(plots(i), 'Type') && ~is_valid_field(plots(i), 'Callback')
-                error(['Cannot create plot. Plot object should have "Type" or "Callback"' ...
+            if ~is_valid_field(metrics(i), 'Type') && ~is_valid_field(metrics(i), 'Callback')
+                error(['Cannot create metric. Metric object should have "Type" or "Callback"' ...
                     'field specified.']);
             end
 
             f = figure;
 
-            if is_valid_field(plots(i), 'Type')
-                path = which(plots(i).Type);
+            if is_valid_field(metrics(i), 'Type')
+                path = which(metrics(i).Type);
         
                 if ~exist(path, 'file')
-                    error(strcat('Cannot create plot. Function with name "', ...
-                        plots(i).Type, '" does not exist'));
+                    error(strcat('Cannot create metric. Function with name "', ...
+                        metrics(i).Type, '" does not exist'));
                 end
     
-                eval(strcat(plots(i).Type, '(out, plots(i), f)'));
+                eval(strcat(eval_fun, '(', metrics(i).Type, ', out, metrics(i), f)'));
             end
 
             try
-                if is_valid_field(plots(i), 'Callback')
-                    eval(strcat(plots(i).Callback, '(out, plots(i), f)'));
+                if is_valid_field(metrics(i), 'Callback')
+                    eval(strcat(eval_fun, '("', metrics(i).Callback, '", out, metrics(i), f)'));
                 end
             catch e
-                disp("Error in ploting data.");
+                disp(strcat("Error in computing metric '", metrics(i).Name, "'."));
                 disp(e);
             end
-            
-            
         end
     end
 end

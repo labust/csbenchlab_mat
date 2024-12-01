@@ -16,11 +16,11 @@ function register_m_controller(info, lib_name)
     output_args_desc(2).DataType = 'LogEntryType';
 
     % set io types types
-    for j=length(default_inputs):length(default_inputs)+length(input_args)-1
+    for j=length(default_inputs)+1:length(default_inputs)+length(input_args)
         input_args_desc(j).DataType = ...
             strcat(input_args_desc(j).Name, "_T");
     end
-    for j=length(default_outputs):length(default_outputs)+length(output_args)-1
+    for j=length(default_outputs)+1:length(default_outputs)+length(output_args)
         output_args_desc(j).DataType = ...
             strcat(output_args_desc(j), "_T");
     end

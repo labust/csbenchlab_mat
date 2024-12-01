@@ -58,6 +58,9 @@ function handle = generate_control_environment(env_info, folder_path)
         end
     catch
     end
+    if env_info.Metadata.Ts <= 0
+        error('Environment step size should be positive');
+    end
 
     handle = new_system(name);
     try
@@ -78,18 +81,19 @@ function handle = generate_control_environment(env_info, folder_path)
             set_param(handle, 'PostSaveFcn', 'on_model_save');
             set_param(handle, 'StopFcn', 'on_simulation_done');
         end
-    
+
         set_param(handle, 'FixedStep', num2str(env_info.Metadata.Ts), ...
             'SolverType', 'Fixed-step');
     
         save_system(name, strcat(folder_path, '/', name)); 
-        close_system(name, 0);
+        close_system(name);
         open_system(name);
     catch e
+        save_system(name, strcat(folder_path, '/', name));
         close_system(name, 0);
-        new_system(name);
-        save_system(name, strcat(folder_path, '/', name)); 
-        close_system(name, 0);
+        % new_system(name);
+        % save_system(name, strcat(folder_path, '/', name)); 
+        % close_system(name, 0);
         rethrow(e);
     end
 end

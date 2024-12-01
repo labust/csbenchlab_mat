@@ -23,7 +23,7 @@ classdef EnvironmentOptions
         function obj = EnvironmentOptions(varargin)
             
             begin_idx = 1;
-            if isa(varargin{1}, 'EnvironmentOptions')
+            if nargin > 0 && isa(varargin{1}, 'EnvironmentOptions')
                 obj = varargin{1};
                 begin_idx = 2;
             else

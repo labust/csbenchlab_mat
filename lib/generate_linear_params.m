@@ -10,7 +10,7 @@ function params = generate_linear_params(sys)
     params.B = as_ss.B;
     params.C = as_ss.C;
     params.D = as_ss.D;
-    params = make_params('LinearSystem', params);
+    params = make_m_component_params('LinearSystem', params);
 
 end
 

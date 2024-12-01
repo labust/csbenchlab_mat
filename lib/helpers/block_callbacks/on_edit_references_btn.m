@@ -5,24 +5,27 @@ function on_edit_references_btn()
     ref_name = getfullname(handle);
 
     env_name = gcs;
+    env_path = fileparts(which(env_name));
+
 
     % if no config, this is not an environment
-    if ~exist(pa(env_name, 'config.json'), 'file')
+    if ~exist(pa(env_path, 'config.json'), 'file')
         return
     end
-    env_h = get_param(env_name, 'Handle');
+    edit_references(env_path);
 
-    r_h = getSimulinkBlockHandle(pa(ref_name, 'Reference'));
-    mo = get_param(r_h, 'MaskObject');
+    % env_h = get_param(env_name, 'Handle');
+    % 
+    % r_h = getSimulinkBlockHandle(pa(ref_name, 'Reference'));
+    % mo = get_param(r_h, 'MaskObject');
+    % 
+    % path = '';
+    % for i=1:length(mo.Parameters)
+    %     if strcmp(mo.Parameters(i).Name, 'FileName')
+    %         path = mo.Parameters(i).Value;
+    %         break;
+    %     end
+    % end
 
-    path = '';
-    for i=1:length(mo.Parameters)
-        if strcmp(mo.Parameters(i).Name, 'FileName')
-            path = mo.Parameters(i).Value;
-            break;
-        end
-    end
-
-    edit_references(env_name, path);
 
 end

@@ -59,6 +59,12 @@ function block_path = create_m_component_simulink(info, lib_name, comp_type, tag
         end
     end
 
+    for i=length(outputs):-1:1
+        if ~isempty(outputs(i).DataType)
+            fun_block.Outputs(i).DataType = outputs(i).DataType;
+        end
+    end
+
     fun_p = get_param(fun_handle, 'PortHandles');
     fun_pos = get_param(fun_handle, 'Position');
 

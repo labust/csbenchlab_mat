@@ -4,10 +4,6 @@ function setup_simulink_with_controllers(model_name)
     folder_path = fileparts(which(model_name));
     
     bus_types_name = strcat(model_name, '_bus_types.sldd');
-    
-    if ~exist(pa(folder_path, 'autogen'), "dir")
-        mkdir(pa(folder_path, 'autogen'));
-    end
 
 
     sldd_f = pa(folder_path, 'autogen', bus_types_name);
@@ -30,9 +26,6 @@ function setup_simulink_with_controllers(model_name)
 
         eval(strcat("evaluate_mask_parameters_on_load(", ...
             "params, c_path);"));
-
-
-        
         if ~model_has_tag(c, '__cs_m_ctl')
             continue
         end
@@ -67,8 +60,6 @@ function setup_simulink_with_controllers(model_name)
         name =  make_class_name(c_path);
         busses = {};
         busses = generate_bus_types(name, '_DB', data, busses);
-        data_type_name = strcat(name, '_DB');
-        set_mask_values(c, 'DataType', data_type_name);
 
 
         % generate bus data types for controller params
@@ -76,12 +67,10 @@ function setup_simulink_with_controllers(model_name)
         for l=1:length(busses)
             type_dict.addEntry(busses{l}.Name, busses{l}.Bus);
         end
-        params_type_name = strcat(name, '_PB');
-        set_mask_values(c, 'ParamsType', params_type_name);
 
 
         % generate bus data types for logs
-        log_desc = get_m_controller_log_description(class_name);
+        log_desc = get_m_component_log_description(class_name);
         new_log_bus = Simulink.Bus;
         for l=1:length(log_desc)
             d = log_desc{l};
@@ -100,8 +89,6 @@ function setup_simulink_with_controllers(model_name)
         end
         log_bus_name = strcat(name, '_LB');
         type_dict.addEntry(log_bus_name, new_log_bus);
-        set_mask_values(c, 'LogEntryType', log_bus_name);
-
            
         % generate bus data types for inputs
         for l=1:length(io_args)
@@ -124,16 +111,14 @@ function setup_simulink_with_controllers(model_name)
             else
                 type_name = 'double';
             end
-            set_mask_values(c, strcat(a.Name, '_T'), type_name);
+            % set_mask_values(c, strcat(a.Name, '_T'), type_name);
         end
 
         data_name = strcat(name, '_data');
         no_indexers_data = replace_indexers(data);
         mws = get_param(model_name, 'modelworkspace');
         mws.assignin(data_name, no_indexers_data);
-        set_mask_values(c, 'data', data_name);
     end
-
     set_param(model_name, 'DataDictionary', bus_types_name);
     saveChanges(dictObj)
 

@@ -11,9 +11,11 @@ function params = make_plugin_parameters(plugin_type, plugin_name, lib)
         comp = find_component(manifest.registry.dist, plugin_name);
     end
     
-    if comp.Type == "m"
-        params = make_params(plugin_name);
-    else
+    params = [];
+    if strcmp(comp.Type, "m")
+        params = make_m_component_params(comp.Name);
+    elseif strcmp(comp.Type, 'slx')
+        params = make_slx_component_params(comp.Name, comp.T, lib);
     end
 
 end

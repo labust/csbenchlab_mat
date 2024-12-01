@@ -1,4 +1,6 @@
-function remove_from_lib_manifest(name, t, lib_path)
+function remove_from_lib_manifest(name, t, lib_name)
+
+    lib_path = fullfile(get_app_registry_path(), lib_name);
     
     load(fullfile(lib_path, 'manifest.mat'), 'registry', 'version', 'library');
     
@@ -18,7 +20,6 @@ end
 
 
 function cell = remove_from_struct(cell, name)
-    a = 5;
     indices = cellfun(@(x) ~strcmp(name, x.Name), cell);
     cell = cell(indices);
 end

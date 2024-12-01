@@ -1,5 +1,5 @@
 function unregister_component(info, t, lib_name)
-
+   
    if t == 1
        unregister_system(info, lib_name);
    elseif t == 2

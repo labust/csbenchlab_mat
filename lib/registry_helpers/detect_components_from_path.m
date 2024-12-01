@@ -1,7 +1,7 @@
 
 function registry = detect_components_from_path(path, registry)
 
-    if exist('registry', 'var')
+    if ~exist('registry', 'var')
         registry.ctl = {};
         registry.sys = {};
         registry.est = {};

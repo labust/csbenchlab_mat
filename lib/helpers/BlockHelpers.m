@@ -27,9 +27,13 @@ classdef BlockHelpers
         function systems = get_system_io_port_dims(systems, sys_info)
             % get port dimensions of systems if they are present in the
             % simulink in/out ports        
-            inport_h = getfullname(Simulink.findBlocksOfType(systems.systems(1).Path, 'Inport'));
-            outport_h = getfullname(Simulink.findBlocksOfType(systems.systems(1).Path, 'Outport'));
-            
+            try
+                inport_h = getfullname(Simulink.findBlocksOfType(systems.systems(1).Path, 'Inport'));
+                outport_h = getfullname(Simulink.findBlocksOfType(systems.systems(1).Path, 'Outport'));
+            catch e
+                disp(e.message);
+                error("Cannot find system Inport. Make sure that the system's slx is on path...");
+            end
             if ~iscell(outport_h) % if only 1 output, h is not a cell
                 outport_h = {outport_h};
             end

@@ -9,7 +9,7 @@ function out_with_ref(out, plot_cfg, f_handle)
 
     hold on; 
 
-    if is_valid_field(plot_cfg, 'Grid')
+    if is_valid_field(plot_cfg.Params, 'Grid')
         grid on;
     end
 
@@ -18,20 +18,20 @@ function out_with_ref(out, plot_cfg, f_handle)
     end
 
     lw = 1;
-    if is_valid_field(plot_cfg, 'LineWidth')
-        lw = plot_cfg.LineWidth;
+    if is_valid_field(plot_cfg.Params, 'LineWidth')
+        lw = plot_cfg.Params.LineWidth;
     end
     
     
-    if is_valid_field(plot_cfg, 'RefDimensions')
-        ref_dims = plot_cfg.RefDimensions;
+    if is_valid_field(plot_cfg.Params, 'RefDimensions')
+        ref_dims = plot_cfg.Params.RefDimensions;
     else
         ref_dim = size(out.ref.Data, 2);
         ref_dims = linspace(1, ref_dim, ref_dim);
     end
 
-    if is_valid_field(plot_cfg, 'OutDimensions')
-        out_dims = plot_cfg.OutDimensions;
+    if is_valid_field(plot_cfg.Params, 'OutDimensions')
+        out_dims = plot_cfg.Params.OutDimensions;
     else
         out_dim = size(out.y.Data, 2);
         out_dims = linspace(1, out_dim, out_dim);
@@ -53,24 +53,24 @@ function out_with_ref(out, plot_cfg, f_handle)
         end
     end
 
-    if is_valid_field(plot_cfg, 'Axis')
-        axis(plot_cfg.Axis);
+    if is_valid_field(plot_cfg.Params, 'Axis')
+        axis(plot_cfg.Params.Axis);
     end 
 
-    if is_valid_field(plot_cfg, 'Position')
-        set(gcf, 'Position',  plot_cfg.Position);
+    if is_valid_field(plot_cfg.Params, 'Position')
+        set(gcf, 'Position',  plot_cfg.Params.Position);
     end 
 
-    if is_valid_field(plot_cfg, 'XLabel')
-        xlabel(plot_cfg.XLabel);
+    if is_valid_field(plot_cfg.Params, 'XLabel')
+        xlabel(plot_cfg.Params.XLabel);
     end
 
-    if is_valid_field(plot_cfg, 'YLabel')
-        ylabel(plot_cfg.YLabel);
+    if is_valid_field(plot_cfg.Params, 'YLabel')
+        ylabel(plot_cfg.Params.YLabel);
     end
 
-    if is_valid_field(plot_cfg, 'Legend')
-        legend(plot_cfg.Legend{:});
+    if is_valid_field(plot_cfg.Params, 'Legend')
+        legend(plot_cfg.Params.Legend{:});
     end
 
 end
