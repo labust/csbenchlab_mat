@@ -8,7 +8,7 @@ end
 
 function init_app(path)
     init_f_name = fullfile(path, 'registry', 'init_f');
-    % if ~exist(init_f_name, 'file')
+    if ~exist(init_f_name, 'file')
         mkdir(fullfile(path, 'autogen'));
         mkdir(fullfile(path, 'code_autogen'));
         mkdir(fullfile(path, 'registry'));
@@ -16,7 +16,7 @@ function init_app(path)
         addpath(fullfile(path, 'code_autogen'));
         fclose(fopen(init_f_name, 'w'));
         register_common_components(path);
-    % end
+    end
 end
 
 function register_common_components(path)

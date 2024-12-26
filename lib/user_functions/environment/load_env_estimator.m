@@ -1,14 +1,16 @@
-function m = load_env_metadata(env_path, check_path)
+function e = load_env_estimator(env_path, check_path)
     if ~exist('check_path', 'var')
         check_path = 1;
     end
     if check_path && ~is_env_path(env_path)
         [env_path, ~, ~] = fileparts(which(env_path));
     end
-    f = fullfile(env_path, 'config.json');
+    f = fullfile(env_path, 'parts', 'estimator.json');
     if exist(f, "file")
-        m = readstruct(f);
+        e = readstruct(f);
     else
-        m = struct;
+        e = struct;
+        return
     end
+    e = load_component_params(e, env_path);
 end

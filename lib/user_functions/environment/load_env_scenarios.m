@@ -1,5 +1,8 @@
-function s = load_env_scenarios(env_path)
-    if ~is_env_path(env_path)
+    function s = load_env_scenarios(env_path, check_path)
+    if ~exist('check_path', 'var')
+        check_path = 1;
+    end
+    if check_path && ~is_env_path(env_path)
         [env_path, ~, ~] = fileparts(which(env_path));
     end
     f = fullfile(env_path, 'parts', 'scenarios.json');

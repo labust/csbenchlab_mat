@@ -164,7 +164,9 @@ end
 function setup_metrics(env_name, path)
     mkdir(fullfile(path, 'autogen', 'metrics', 'private'));
     addpath(fullfile(path, 'autogen', 'metrics'));
-    f = which('eval_metrics_template');
+
+    f = fullfile(get_app_root_path, 'lib', 'helpers', 'templates', 'eval_metrics_template.mt');
+
     t = fileread(f);
     f_name = strcat(env_name, '_eval_metrics');
     content = replace(t, '{{function_name}}', f_name);

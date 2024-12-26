@@ -1,5 +1,5 @@
-function s = load_env_scenario(env_path, name)
-    s = load_env_scenarios(env_path);
+function s = load_env_scenario(env_path, name, varargin)
+    s = load_env_scenarios(env_path, varargin{:});
     if isempty(s)
         return
     end

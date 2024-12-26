@@ -1,4 +1,14 @@
-function save_env_scenario(env_path, scenario)
+function save_env_scenario(env_path, scenario, env_save)
+    
+    if ~exist('env_save', 'var')
+        env_save = 1;
+    end
+
+    if ~env_save
+        save_env_scenarios(env_path, scenario, 0);
+        return
+    end
+    
     scenarios = load_env_scenarios(env_path);
     if isempty(scenarios)
         scenarios = scenario;

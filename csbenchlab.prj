@@ -1,5 +1,5 @@
 <deployment-project plugin="plugin.apptool" plugin-version="1.0">
-  <configuration build-checksum="2421471977" file="/home/luka/matlab/csbenchlab/csbenchlab.prj" location="/home/luka/matlab/csbenchlab" name="csbenchlab" target="target.mlapps" target-name="Package App">
+  <configuration build-checksum="1907239945" file="/home/luka/matlab/csbenchlab/csbenchlab.prj" location="/home/luka/matlab/csbenchlab" name="csbenchlab" target="target.mlapps" target-name="Package App">
     <param.appname>csbenchlab</param.appname>
     <param.authnamewatermark>Luka Mandic</param.authnamewatermark>
     <param.email>luka.mandic@fer.hr</param.email>
@@ -42,9 +42,7 @@
       <file>${PROJECT_ROOT}/doc</file>
       <file>${PROJECT_ROOT}/lib</file>
       <file>${PROJECT_ROOT}/manifest.mat</file>
-      <file>${PROJECT_ROOT}/otter_vel</file>
       <file>${PROJECT_ROOT}/plugins</file>
-      <file>${PROJECT_ROOT}/registry</file>
       <file>${PROJECT_ROOT}/simulink</file>
       <file>${PROJECT_ROOT}/src</file>
       <file>${PROJECT_ROOT}/ui</file>
