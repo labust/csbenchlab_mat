@@ -20,7 +20,7 @@ function n = get_m_component_class_name(lib_path)
                 error(strcat('Function block ', fun_block_name, ' does not exist.'));
             end
             n = get_script_parameter(fun_block.Script, '__classname');
-
+            
         end
     end
 end

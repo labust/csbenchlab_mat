@@ -3,7 +3,7 @@ function metrics = calculate_result_metrics(out)
     ns = fieldnames(out.y);
     metrics = struct;
     for i=1:length(ns)
-        y = out.y.(ns{i}).Data;
+        y = squeeze(out.y.(ns{i}).Data);
         u = out.u.(ns{i}).Data;
         
 
@@ -20,6 +20,18 @@ function metrics = calculate_result_metrics(out)
   
 
         y_ref = out.ref.Data;
+
+        if ~isequal(size(y_ref), size(y))
+            
+            if isequal(size(y_ref), flip(size(y)))
+                y = y';
+            else
+                error(strcat('Cannot calculate metrics. size(y_ref) = ', ...
+                    mat2str(size(y_ref))), ...
+                    ', size(y) = ', mat2str(size(y)));
+            end
+        end
+
         abs_diff = abs(y_ref - y);
     
         ret.mse = sum((y_ref - y).^2) / length(y);

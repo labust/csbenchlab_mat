@@ -51,18 +51,17 @@ classdef BlockHelpers
             o_p = str2num(o_p);
 
             if i_p < 0 || o_p < 0
-                if ~isfield(sys_info.Params, 'dims') ...
-                        || ~isfield(sys_info.Params.dims, 'input') ...
-                        || ~isfield(sys_info.Params.dims, 'output') ...
-                        || sys_info.Params.dims.input < 0 ...
-                        || sys_info.Params.dims.output < 0
-                    error(['Cannot infer system input/output dimensions. ' ...
-                        'If system is a Simulink block, try setting dimensions to ' ...
-                        'input/output ports. If System is a Matlab Class, try specifying ' ...
-                        'a dims struct as a system parameter']);
+                if model_has_tag(systems.systems(1).Path, '__cs_m_sys')
+                    info = libinfo(systems.systems(1).Path);
+                    class_name = get_m_component_class_name(info.ReferenceBlock);
+                    dims = eval(strcat(class_name, '.get_dims_from_params(sys_info.Params)'));
                 end
-                i_p = sys_info.Params.dims.input;
-                o_p = sys_info.Params.dims.output;
+
+                if model_has_tag(systems.systems(1).Path, '__cs_py_sys')
+                    error('TODOO');
+                end
+                i_p = dims.input;
+                o_p = dims.output;
             end
             systems.dims.input = i_p;
             systems.dims.output = o_p;

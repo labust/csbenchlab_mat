@@ -222,6 +222,7 @@ classdef GeneratorHelpers
             gn = @BlockHelpers.get_name_or_empty;
 
             position = [730, 130, 830, 180];
+
             
             path = get_component_simulink_path(info, 'sys');
             for i=1:replicate_num
@@ -232,8 +233,9 @@ classdef GeneratorHelpers
                 
                 if ~isempty(get_param(s_h, 'MaskValues'))
                     if is_valid_field(info, 'Params')
-                        set_mask_values(s_h, 'params', 'active_scenario.Params');
+                        set_mask_values(s_h, 'params', info.ParamsStructName);
                     end
+                    set_mask_values(s_h, 'params_merged', 'ActiveScenario.Params');
                 end                    
                 gen_s.Name = name;
                 gen_s.Handle = s_h;

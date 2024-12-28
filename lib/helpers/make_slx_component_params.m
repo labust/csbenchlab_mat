@@ -24,11 +24,14 @@ function resolved = make_slx_component_params(comp_name, comp_type, lib)
     
     mo = get_param(h, 'MaskObject');
     
+        
     resolved = struct;
-    for i=1:length(mo.Parameters)
-        p = mo.Parameters(i);
-        if strcmp(p.Visible, 'on')
-            resolved.(p.Name) = p.Value;
+    if ~isempty(mo)    
+        for i=1:length(mo.Parameters)
+            p = mo.Parameters(i);
+            if strcmp(p.Visible, 'on')
+                resolved.(p.Name) = p.Value;
+            end
         end
     end
     close_system(slx_path);

@@ -33,9 +33,18 @@ function on_reference_select
     active_scenario = scenarios(active_scenario_idx);
 
     set_param(selector_name, 'ActiveScenario', active_scenario.Reference);
-    ic_name = pa(env_name, name, 'IC');
 
-    
+    blocks = hws.getVariable('gen_blocks');
+    sys_params = eval_component_params(blocks.systems.systems(1).Path);
+
+    % override system parameters with scenario params
+    f_names = fieldnames(active_scenario.Params);
+    if ~isempty(f_names)
+        for i=1:length(f_names)
+            sys_params.(f_names(i)) = active_scenario.Params.(f_names(i));
+        end
+    end
+    active_scenario.Params = sys_params;
 
 
     start_time = 0;
@@ -49,7 +58,7 @@ function on_reference_select
     if is_valid_field(active_scenario, 'EndTime')
         end_time = active_scenario.EndTime;
     else
-        end_time = selected_reference.Time(end) * 1.02;
+        end_time = selected_reference.Values.Time(end) * 1.02;
     end
 
   
@@ -58,8 +67,8 @@ function on_reference_select
 
 
     try
-        hws.assignin('active_scenario', active_scenario);
-        hws.assignin('GlobalReference', selected_reference.Data);
+        hws.assignin('ActiveScenario', active_scenario);
+        hws.assignin('GlobalReference', selected_reference.Values.Data);
     catch e
     end
 

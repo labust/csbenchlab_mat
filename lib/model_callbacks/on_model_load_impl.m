@@ -13,7 +13,7 @@ function on_model_load_impl()
     sig_editor_h = getSimulinkBlockHandle(pa(blocks.refgen.Path, 'Reference'));
     set_param(sig_editor_h, 'FileName', scenarios_path);
 
-    setup_simulink_with_controllers(curr_model);
+    setup_simulink_components(curr_model, blocks);
     setup_simulink_with_scenarios(curr_model, blocks);
     setup_scenario_const_horizon_reference(curr_model, info.Controllers, blocks);
 

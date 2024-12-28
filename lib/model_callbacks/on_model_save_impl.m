@@ -6,5 +6,4 @@ function on_model_save_impl()
     end
     
     setup_simulink_autogen_types(curr_model);
-    a = 5;
 end

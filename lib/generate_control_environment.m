@@ -74,6 +74,9 @@ function handle = generate_control_environment(env_info, folder_path)
         
             blocks.controllers = GeneratorHelpers.generate_controllers(name, env_info.Controllers, blocks.systems.dims);
             GeneratorHelpers.bus_connect(name, blocks);
+
+            blocks.cs_blocks = getfullname(get_model_blocks_with_tag(name, '__cs'));
+
             
             % configure model
             save(strcat(folder_path, '/autogen/', name, '.mat'), 'env_info', 'blocks');

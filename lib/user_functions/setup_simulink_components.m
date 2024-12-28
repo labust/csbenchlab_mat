@@ -1,9 +1,12 @@
-function setup_simulink_with_controllers(model_name)
+function setup_simulink_components(model_name, blocks)
     pa = @BlockHelpers.path_append;
 
     folder_path = fileparts(which(model_name));
     
     bus_types_name = strcat(model_name, '_bus_types.sldd');
+    mws = get_param(model_name, 'modelworkspace');
+
+    mws.assignin('gen_blocks', blocks);
 
 
     sldd_f = pa(folder_path, 'autogen', bus_types_name);
@@ -16,108 +19,21 @@ function setup_simulink_with_controllers(model_name)
     dictObj = Simulink.data.dictionary.create(sldd_f);
     type_dict = dictObj.getSection("Design Data");
 
-    controllers = get_model_blocks_with_tag(model_name, '__cs_ctl');
 
-    for i=1:length(controllers)
-        c = controllers(i);
-        c_path = getfullname(c);
-        params = eval_component_params(c_path);
-
-
-        eval(strcat("evaluate_mask_parameters_on_load(", ...
-            "params, c_path);"));
-        if ~model_has_tag(c, '__cs_m_ctl')
-            continue
+    for i=1:length(blocks.controllers)
+        for j=1:length(blocks.controllers(i).Components)
+            setup_component_mask_parameters(blocks.controllers(i).Components(j));
         end
+    end
 
-        l_info = libinfo(c);
+    cs_comps = blocks.cs_blocks;
 
-        class_name = get_m_component_class_name(l_info.ReferenceBlock);    
-            
-        try
-            mux = get_controller_mux_struct(c_path);
-        catch
-            mux = evalin('base', 'mux;');
+    for i=1:length(cs_comps)
+        if model_has_tag(cs_comps{i}, '__cs_m')
+            type_dict = setup_simulink_m_component(cs_comps{i}, model_name, folder_path, type_dict);
+        elseif model_has_tag(cs_comps{i}, '__cs_slx')
+        elseif model_has_tag(cs_comps{i}, '__cs_py')
         end
-        try
-            data = eval(strcat(class_name, '.create_data_model(params, mux)'));
-        catch ME
-            if strcmp(ME.identifier,  'MATLAB:subscripting:classHasNoPropertyOrMethod')
-                error(['Class ', class_name, ' must implement static method create_data_model']);
-            end
-            warning(strcat('Error calling "', class_name, '.create_data_model(params, mux)'));
-            rethrow(ME);
-        end
-
-        io_args = get_m_component_inputs(class_name);
-        
-        data_f_name = strcat(folder_path, '/autogen/data_bus_.m');
-        if exist(data_f_name, 'file')
-            delete(data_f_name);
-        end
-        
-        % generate bus data types for controller data
-        name =  make_class_name(c_path);
-        busses = {};
-        busses = generate_bus_types(name, '_DB', data, busses);
-
-
-        % generate bus data types for controller params
-        busses = generate_bus_types(name, '_PB', params, busses);
-        for l=1:length(busses)
-            type_dict.addEntry(busses{l}.Name, busses{l}.Bus);
-        end
-
-
-        % generate bus data types for logs
-        log_desc = get_m_component_log_description(class_name);
-        new_log_bus = Simulink.Bus;
-        for l=1:length(log_desc)
-            d = log_desc{l};
-            
-            try 
-                value = data.(d.Name);
-            catch
-                error(['Log entry "', d.Name, '" does not exist in the data model']);
-            end
-    
-            el = Simulink.BusElement;
-            el.Name = d.Name;
-            el.DimensionsMode = "Fixed";
-            el.Dimensions = size(value);
-            new_log_bus.Elements(end+1) = el; 
-        end
-        log_bus_name = strcat(name, '_LB');
-        type_dict.addEntry(log_bus_name, new_log_bus);
-           
-        % generate bus data types for inputs
-        for l=1:length(io_args)
-            a = io_args{l};
-            
-            if isa(a.Dim, 'function_handle')
-                dim = a.Dim(params, mux);
-            else
-                dim = a.Dim;
-            end
-
-            if isa(dim, 'struct')
-                busses = {};
-                type_name = get_argument_type_name(c_path, io_args{l}.Name);
-                busses = generate_input_bus(type_name, dim, busses);
-                for o=1:length(busses)
-                   type_dict.addEntry(busses{o}.Name, busses{o}.Bus);
-                end
-                % set_function_input_type(b_h, 3+l, type_name);
-            else
-                type_name = 'double';
-            end
-            % set_mask_values(c, strcat(a.Name, '_T'), type_name);
-        end
-
-        data_name = strcat(name, '_data');
-        no_indexers_data = replace_indexers(data);
-        mws = get_param(model_name, 'modelworkspace');
-        mws.assignin(data_name, no_indexers_data);
     end
     set_param(model_name, 'DataDictionary', bus_types_name);
     saveChanges(dictObj)
@@ -191,6 +107,12 @@ function busses = generate_input_bus(block_name, data, busses)
 end
 
 function replaced = replace_indexers(data)
+    
+    if isnumeric(data)
+        replaced = data;
+        return
+    end
+
     fields = fieldnames(data);
     replaced = struct;
     for j=1:length(fields)
@@ -213,6 +135,10 @@ function replaced = replace_indexers(data)
 end
 
 function busses = generate_bus_types(block_name, name_sufix, data, busses)
+
+    if isnumeric(data)
+        return
+    end
     
     fields = fieldnames(data);
     new_data_bus = Simulink.Bus;
@@ -269,4 +195,111 @@ function indexer_bus_s = create_indexer(block_name, indexer)
     indexer_bus.Elements(4) = rel; 
     indexer_bus_s.Name = strcat(block_name, '_I'); 
     indexer_bus_s.Bus = indexer_bus;
+end
+
+
+function setup_component_mask_parameters(c)
+    params = eval_component_params(c.Path);
+    evaluate_mask_parameters_on_load(params, c.Path);
+end
+
+
+function type_dict = setup_simulink_m_component(c, model_name, folder_path, type_dict)
+    c_path = getfullname(c);
+    params = eval_component_params(c_path);
+    is_m_controller = model_has_tag(c_path, '__cs_m_ctl');
+    l_info = libinfo(c);
+
+    class_name = get_m_component_class_name(l_info.ReferenceBlock);    
+    
+    add_mux_arg_str = '';
+    if is_m_controller
+        try
+            mux = get_controller_mux_struct(c_path);
+        catch
+            mux = evalin('base', 'mux');
+        end
+        add_mux_arg_str = ', mux';
+    end
+    try
+        data = eval(strcat(class_name, '.create_data_model(params', add_mux_arg_str, ')'));
+    catch ME
+        if strcmp(ME.identifier,  'MATLAB:subscripting:classHasNoPropertyOrMethod')
+            data = 0;
+            % error(['Class ', class_name, ' must implement static method create_data_model']);
+        else
+            warning(strcat('Error calling "', class_name, '.create_data_model(params', add_mux_arg_str, ')'));
+            rethrow(ME);
+        end
+    end
+
+    io_args = get_m_component_inputs(class_name);
+    
+    data_f_name = strcat(folder_path, '/autogen/data_bus_.m');
+    if exist(data_f_name, 'file')
+        delete(data_f_name);
+    end
+    
+    % generate bus data types for controller data
+    name =  make_class_name(c_path);
+    busses = {};
+    busses = generate_bus_types(name, '_DT', data, busses);
+
+    % generate bus data types for controller params
+    busses = generate_bus_types(name, '_PT', params, busses);
+    for l=1:length(busses)
+        type_dict.addEntry(busses{l}.Name, busses{l}.Bus);
+    end
+
+
+    % generate bus data types for logs
+    log_desc = get_m_component_log_description(class_name);
+    new_log_bus = Simulink.Bus;
+    for l=1:length(log_desc)
+        d = log_desc{l};
+        
+        try 
+            value = data.(d.Name);
+        catch
+            error(['Log entry "', d.Name, '" does not exist in the data model']);
+        end
+
+        el = Simulink.BusElement;
+        el.Name = d.Name;
+        el.DimensionsMode = "Fixed";
+        el.Dimensions = size(value);
+        new_log_bus.Elements(end+1) = el; 
+    end
+    log_bus_name = strcat(name, '_LT');
+    type_dict.addEntry(log_bus_name, new_log_bus);
+       
+    % generate bus data types for inputs
+    for l=1:length(io_args)
+        a = io_args{l};
+        
+        if isa(a.Dim, 'function_handle')
+            if is_m_controller
+                dim = a.Dim(params, mux);
+            else
+                dim = a.Dim(params);
+            end
+        else
+            dim = a.Dim;
+        end
+
+        if isa(dim, 'struct')
+            busses = {};
+            type_name = get_argument_type_name(c_path, io_args{l}.Name);
+            busses = generate_input_bus(type_name, dim, busses);
+            for o=1:length(busses)
+               type_dict.addEntry(busses{o}.Name, busses{o}.Bus);
+            end
+        end
+    end
+
+    data_name = strcat(name, '_data');
+    no_indexers_data = replace_indexers(data);
+    mws = get_param(model_name, 'modelworkspace');
+    mws.assignin(data_name, no_indexers_data);
+    
 end

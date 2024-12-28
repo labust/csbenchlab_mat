@@ -78,6 +78,7 @@ function path_ret = create_environment(name, varargin)
     mkdir(path);
     setup_metrics(name, path);
     mkdir(fullfile(path, 'params'));
+    mkdir(fullfile(path, name));
     mkdir(fullfile(path, 'parts', 'controllers'));
     fclose(fopen(fullfile(path, strcat(name, '.cse')), "w"));
     new_system(name);
@@ -104,12 +105,8 @@ function path_ret = create_environment(name, varargin)
     System.Lib = options.SystemLib;
   
 
-    try
-        dims = evalin('caller', strcat(options.SystemParams, ".dims"));
-    catch
-        dims.input = -1;
-        dims.outout = -1;
-    end
+    dims.input = -1;
+    dims.outout = -1;
     System.Dims = dims;
 
     refs_path = fullfile(path, 'autogen', strcat(name, '_refs.mat'));

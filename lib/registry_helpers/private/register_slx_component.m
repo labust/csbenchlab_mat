@@ -5,13 +5,16 @@ function register_slx_component(info, typ, lib_name, tags)
     name = splits{end};
     dest = strcat(lib_name, '_', typ);
 
-    for i=1:length(tags)
-        model_append_tag(handle, tags{i});
-    end
+   
 
     load_and_unlock_system(dest);
     try
         add_block(src, fullfile(dest, name));
+
+         for i=1:length(tags)
+            model_append_tag(fullfile(dest, name), tags{i});
+        end
+
         save_system(dest);
     catch
     end

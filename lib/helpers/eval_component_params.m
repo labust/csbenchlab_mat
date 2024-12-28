@@ -1,8 +1,18 @@
-function params = eval_controller_params(block_path)
+function params = eval_component_params(block_path)
+
+    params = struct;
+    try
+        params_struct = get_mask_value(block_path, 'params');
+    catch
+        return
+    end
+
+    if ~model_has_tag(block_path, '__cs_m_ctl')
+        params = evalin('base', params_struct);
+        return
+    end
 
     parent_path = get_parent_controller(block_path);
-    
-    params_struct = get_mask_value(block_path, 'params');
 
     % if parent block is already a m-controller
     if strcmp(parent_path, block_path) 

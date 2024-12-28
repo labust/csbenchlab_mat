@@ -28,7 +28,6 @@ classdef (Abstract) Controller
             if ~isempty(args)
                 this.params = args{1};
             end
-
             begin_idx = 2;
             for i = begin_idx:2:length(args)
 
@@ -42,13 +41,17 @@ classdef (Abstract) Controller
                 switch as_char
                     case 'Dims'
                         validate_dims_struct(value);
-                        this.data = this.create_data_model(this.params, value);
+                        data = this.create_data_model(this.params, value);
                     case 'Data'
-                        this.data = value;
+                        data = value;
                     otherwise
                         warning(['Unexpected parameter name "', as_char, '"']);
                 end
             end
+            if isempty(data)
+                error("Data not set");
+            end
+            this.data = data;
 
         end
         

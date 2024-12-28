@@ -24,18 +24,47 @@ classdef (Abstract) DynSystem
        on_reset(this);
     end
 
+    methods (Abstract, Static)
+        get_dims_from_params(params);
+    end
+
     methods
-        function this = DynSystem(varargin)
-            if ~isempty(varargin)
-                this.params = varargin{1};
+        function this = DynSystem(args)
+            if ~isempty(args)
+                this.params = args{1};
             end
-            if length(varargin) > 1
-                this.noise_params = varargin{2};
-                this.noise_stream = RandStream("mlfg6331_64", "Seed", this.noise_params.seed);
-                this.has_noise = 1;
-            else
-                this.has_noise = 0;
+
+            begin_idx = 2;
+            for i = begin_idx:2:length(args)
+
+                if isstring(args{i})
+                    as_char = convertStringsToChars(args{i});
+                else
+                    as_char = args{i};
+                end
+                
+                value = args{i+1};
+                switch as_char
+                    case 'Data'
+                        data = value;
+                    otherwise
+                        warning(['Unexpected parameter name "', as_char, '"']);
+                end
             end
+
+            if isempty(data)
+                error("Data not set");
+            end
+
+            this.data = data;
+
+            % if length(args) > 1
+            %     this.noise_params = args{2};
+            %     this.noise_stream = RandStream("mlfg6331_64", "Seed", this.noise_params.seed);
+            %     this.has_noise = 1;
+            % else
+            %     this.has_noise = 0;
+            % end
         end
         
         function this = configure(this, ic)
@@ -45,10 +74,10 @@ classdef (Abstract) DynSystem
 
         function [this, y] = step(this, u, t, dt)
             [this, y] = on_step(this, u, t, dt);
-            if this.has_noise > 0
-                y = y + this.noise_params.bias ...
-                    + randn(this.noise_stream, size(y)) * this.noise_params.std;
-            end
+            % if this.has_noise > 0
+            %     y = y + this.noise_params.bias ...
+            %         + randn(this.noise_stream, size(y)) * this.noise_params.std;
+            % end
         end
 
         function [this, y] = step_no_noise(this, u, t, dt)
