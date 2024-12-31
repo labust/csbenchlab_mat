@@ -26,6 +26,10 @@ function setup_simulink_components(model_name, blocks)
         end
     end
 
+    for i=1:length(blocks.systems.systems)
+        setup_component_mask_parameters(blocks.systems.systems(i));
+    end
+
     cs_comps = blocks.cs_blocks;
 
     for i=1:length(cs_comps)
