@@ -20,6 +20,5 @@ function register_component(info, t, lib_name)
        elseif t == 4
            register_slx_component(info, 'dist', lib_name, { '__cs_slx_dist' });
        end
-   end    
+   end
 end
-

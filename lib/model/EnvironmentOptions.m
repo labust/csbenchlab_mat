@@ -16,6 +16,7 @@ classdef EnvironmentOptions
         Scenarios
         References
         Plots
+        Callbacks
         Override
     end
     
@@ -41,6 +42,7 @@ classdef EnvironmentOptions
                 obj.Plots = [];
                 obj.References = '';
                 obj.Override = 0;
+                obj.Callbacks.OnEnvLoad = '';
             end
                % Loop through the parameter names and not the values.
             for i = begin_idx:2:length(varargin)
@@ -77,6 +79,8 @@ classdef EnvironmentOptions
                         obj.Plots = value;
                     case 'Ts'
                         obj.Ts = value;
+                    case 'Callbacks'
+                        obj.Callbacks = value;
                     case 'Override'
                         obj.Override = value;
                     otherwise

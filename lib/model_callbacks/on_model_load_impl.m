@@ -23,5 +23,15 @@ function on_model_load_impl()
     % LIBRARY LINK WOULD OVERRIDE AUTOGEN TYPES
     setup_simulink_autogen_types(curr_model);
 
+    if isfield(info, 'Callbacks')
+        if is_valid_field(info.Callbacks, 'OnEnvLoad')
+            try
+                run(info.Callbacks.OnEnvLoad);
+            catch
+                error('OnEnvLoad callback resulted in errors');
+            end
+        end
+    end
+
 end
 
