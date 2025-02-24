@@ -1,4 +1,4 @@
-function setup_simulink_components(model_name, blocks)
+function setup_simulink_components(model_name, info, blocks)
     pa = @BlockHelpers.path_append;
 
     folder_path = fileparts(which(model_name));
@@ -18,7 +18,6 @@ function setup_simulink_components(model_name, blocks)
 
     dictObj = Simulink.data.dictionary.create(sldd_f);
     type_dict = dictObj.getSection("Design Data");
-
 
     for i=1:length(blocks.controllers)
         for j=1:length(blocks.controllers(i).Components)
@@ -232,7 +231,7 @@ function type_dict = setup_simulink_m_component(c, model_name, folder_path, type
             data = 0;
             % error(['Class ', class_name, ' must implement static method create_data_model']);
         else
-            warning(strcat('Error calling "', class_name, '.create_data_model(params', add_mux_arg_str, ')'));
+            error(strcat('Error calling "', class_name, '.create_data_model(params', add_mux_arg_str, ')'));
             rethrow(ME);
         end
     end
@@ -243,16 +242,26 @@ function type_dict = setup_simulink_m_component(c, model_name, folder_path, type
     if exist(data_f_name, 'file')
         delete(data_f_name);
     end
-    
+
+
+    if is_m_controller
+        a = 5;
+        
+    end    
+
+
     % generate bus data types for controller data
     name =  make_class_name(c_path);
     busses = {};
     busses = generate_bus_types(name, '_DT', data, busses);
-
-    % generate bus data types for controller params
-    busses = generate_bus_types(name, '_PT', params, busses);
-    for l=1:length(busses)
-        type_dict.addEntry(busses{l}.Name, busses{l}.Bus);
+    
+    % if param struct is valid
+    if ~isnumeric(params) && ~isempty(fieldnames(params))
+        % generate bus data types for controller params
+        busses = generate_bus_types(name, '_PT', params, busses);
+        for l=1:length(busses)
+            type_dict.addEntry(busses{l}.Name, busses{l}.Bus);
+        end
     end
 
 

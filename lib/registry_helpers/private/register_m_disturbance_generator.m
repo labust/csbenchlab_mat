@@ -50,9 +50,11 @@ function register_m_disturbance_generator(info, lib_name)
         v = strcat(info.Name, "_", output_args{j}, "_T");
         mask_parameters(end+1) = struct('Name', n, 'Value', v, 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
     end
+    icon = 'disturbance_icon';
+    extrinsic_init = "y_n = zeros(size(y))";
 
     create_m_component_simulink(info, lib_name, 'dist', ...
         {"__cs_m_dist"}, input_args_desc, output_args_desc, ...
         {'params', "'Data'", 'data'}, { }, [{'y', 'dt'}, input_args'], ...
-        mask_parameters);
+        mask_parameters, extrinsic_init, icon, [60, 40]);
 end

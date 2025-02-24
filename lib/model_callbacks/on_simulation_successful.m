@@ -15,20 +15,23 @@ function on_simulation_successful(env_name, run_id, plot_data)
 
     for i=1:length(loaded.blocks.controllers)
         c = loaded.blocks.controllers(i);
-
-        u_sig_name = strcat(c.Name, '_u');
-        y_sig_name = strcat(c.Name, '_y');
-        log_sig_name = strcat(c.Name, '_log');
-        eval(strcat(u_sig_name, ' = getSignalsByName(run_id, "', ...
-            u_sig_name, '").Values;'));
-        eval(strcat(y_sig_name, ' = getSignalsByName(run_id, "', ...
-            y_sig_name, '").Values;'));
-        eval(strcat(log_sig_name, ' = getSignalsByName(run_id, "', ...
-            log_sig_name, '").Values;'));
-
-        eval(strcat('out.u.', c.Name, ' = ', u_sig_name, ';'));
-        eval(strcat('out.y.', c.Name, ' = ', y_sig_name, ';'));
-        eval(strcat('out.log.', c.Name, ' = ', log_sig_name, ';'));
+        try
+            u_sig_name = strcat(c.Name, '_u');
+            y_sig_name = strcat(c.Name, '_y');
+            log_sig_name = strcat(c.Name, '_log');
+            eval(strcat(u_sig_name, ' = getSignalsByName(run_id, "', ...
+                u_sig_name, '").Values;'));
+            eval(strcat(y_sig_name, ' = getSignalsByName(run_id, "', ...
+                y_sig_name, '").Values;'));
+            eval(strcat(log_sig_name, ' = getSignalsByName(run_id, "', ...
+                log_sig_name, '").Values;'));
+    
+            eval(strcat('out.u.', c.Name, ' = ', u_sig_name, ';'));
+            eval(strcat('out.y.', c.Name, ' = ', y_sig_name, ';'));
+            eval(strcat('out.log.', c.Name, ' = ', log_sig_name, ';'));
+        catch
+            warning(strcat("Simulation data not obtained for controller ", c.Name, "."));
+        end
     end
     out.Ts = str2double(Ts);
     

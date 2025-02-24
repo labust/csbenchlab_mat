@@ -15,6 +15,7 @@ classdef EnvironmentOptions
         Controllers
         Scenarios
         References
+        Extrinsic
         Plots
         Callbacks
         Override
@@ -37,6 +38,7 @@ classdef EnvironmentOptions
                 obj.SystemType = '';
                 obj.SystemLib = '';
                 obj.SystemLibVersion = '';
+                obj.Extrinsic = 0;
                 obj.Controllers = [];
                 obj.Scenarios = [];
                 obj.Plots = [];
@@ -75,6 +77,8 @@ classdef EnvironmentOptions
                         obj.Scenarios = value;
                     case 'References'
                         obj.References = value;
+                    cas 'Extrinsic'
+                        obj.Extrinsic = value;
                     case 'Plots'
                         obj.Plots = value;
                     case 'Ts'

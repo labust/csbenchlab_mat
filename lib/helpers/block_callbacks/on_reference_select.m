@@ -36,16 +36,24 @@ function on_reference_select
 
     blocks = hws.getVariable('gen_blocks');
     sys_params = eval_component_params(blocks.systems.systems(1).Path);
-
-    % override system parameters with scenario params
-    f_names = fieldnames(active_scenario.Params);
-    if ~isempty(f_names)
-        for i=1:length(f_names)
-            sys_params.(f_names(i)) = active_scenario.Params.(f_names(i));
+    
+    if ~isnumeric(sys_params) && ~isempty(fieldnames(sys_params))
+        % override system parameters with scenario params
+        f_names = fieldnames(active_scenario.Params);
+        sys_params_names = fieldnames(sys_params);
+        if ~isempty(f_names)
+            for i=1:length(f_names)
+                name = f_names{i};
+                has_name = sum(cellfun(@(x) strcmp(x, name), sys_params_names));
+                if has_name
+                    sys_params.(f_names{i}) = active_scenario.Params.(f_names{i});
+                else
+                    warning(strcat("Parameter ", name, " not defined for system."));
+                end
+            end
         end
     end
     active_scenario.Params = sys_params;
-
 
     start_time = 0;
     if is_valid_field(active_scenario, 'StartTime')
@@ -58,17 +66,26 @@ function on_reference_select
     if is_valid_field(active_scenario, 'EndTime')
         end_time = active_scenario.EndTime;
     else
-        end_time = selected_reference.Values.Time(end) * 1.02;
+        if isa(selected_reference, 'timeseries')
+            end_time = selected_reference.Time(end) * 1.02;
+        else
+            end_time = selected_reference.Values.Time(end) * 1.02;
+        end
     end
 
   
     set_param(env_name, 'StartTime', num2str(start_time), ...
         'StopTime', num2str(end_time));
 
+    if isa(selected_reference, 'timeseries')
+        global_reference = selected_reference.Data;
+    else
+        global_reference = selected_reference.Values.Data;
+    end
 
     try
         hws.assignin('ActiveScenario', active_scenario);
-        hws.assignin('GlobalReference', selected_reference.Values.Data);
+        hws.assignin('GlobalReference', global_reference);
     catch e
     end
 

@@ -88,9 +88,7 @@ classdef ATDeePC < Controller
                 u(:) = this.data.x_op(idx.u.b:idx.u.b+idx.m-1);
             else
                 % u = this.data.x_op(idx.u.b:idx.u.b+idx.m-1);
-                a = 5;
             end
-            % u(1x  ) = 0;
             this.data.fval = fval_new;
 
             [this.data.uini, this.data.yini] = ...

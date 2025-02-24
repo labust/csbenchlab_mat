@@ -11,7 +11,7 @@ function generate_get_m_controller_log_function_handle(controller_registry)
     src = "function fh = " + f_name + "(class_name)" + newline;
     for i=1:length(controller_registry)
         info = controller_registry{i};
-        fn_name = strcat('gen_create_logs__', info.Name);
+        fn_name = strcat('gen_create_logs__', replace(info.Name, ' ', '_'));
         if i == 1
             src = src + "    " + strcat('if strcmp(class_name, "', info.Name, '")') + newline;
         else

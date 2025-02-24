@@ -16,6 +16,7 @@ classdef ControllerOptions
         Mux
         RefHorizon
         RegenerateEnv
+        LibVersion
     end
     
     methods
@@ -40,6 +41,7 @@ classdef ControllerOptions
                 obj.Mux.Outputs = [];
                 obj.RegenerateEnv = 0;
                 obj.RefHorizon = 1;
+                obj.LibVersion = '0.0';
             end
 
                % Loop through the parameter names and not the values.
@@ -96,6 +98,8 @@ classdef ControllerOptions
                     obj.RefHorizon = value;
                 case 'RegenerateEnv'
                     obj.RegenerateEnv = value;
+                case 'LibVersion'
+                    obj.LibVersion = value;
                 otherwise
                     warning(['Unexpected parameter name "', name, '"']);
             end

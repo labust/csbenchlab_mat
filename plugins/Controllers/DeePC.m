@@ -76,9 +76,9 @@ classdef DeePC < Controller
             else
                 u = zeros(1, 1);
             end
-
+            
             [this.data.uini, this.data.yini] = ...
-                DeePCHelpers.update_ini(u, y(1), this.data.uini, this.data.yini);
+                DeePCHelpers.update_ini(u, y(1), this.data.uini, this.data.yini, size(u, 1), size(y, 1));
 
             this.data.x_op_u = x_op_new(idx.u.r);
             this.data.x_op_y = x_op_new(idx.y.r);

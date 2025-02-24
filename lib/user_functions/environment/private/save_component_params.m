@@ -2,8 +2,11 @@
 function comp = save_component_params(comp, path)
     p = fullfile(path, 'params', strcat(comp.Id, '.mat'));
     Params = comp.Params;
-    save(p, 'Params');
-    comp.Params = comp.Id;
+
+    if ~isempty(Params)
+        save(p, 'Params');
+        comp.Params = comp.Id;
+    end
 end
 
 

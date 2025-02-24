@@ -73,13 +73,8 @@ classdef (Abstract) DisturbanceGenerator
             this = on_configure(this);
         end
 
-        function [this, u, log] = step(this, y_ref, y, dt, varargin)
-
-            [this, u] = on_step(this, y_ref, y, dt, varargin{:});
-
-            % TODO
-            log_func = get_m_controller_log_function_handle(class(this));
-            log = log_func(this.data);
+        function [this, u] = step(this, y, dt, varargin)
+            [this, u] = on_step(this, y, dt, varargin{:});
         end
 
         function this = reset(this)

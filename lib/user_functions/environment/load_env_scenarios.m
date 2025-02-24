@@ -17,7 +17,7 @@
     end
 
     for i=1:length(s)
-        s = load_component_params(s(i), env_path);
+        s(i) = load_component_params(s(i), env_path);
     end
 
 end

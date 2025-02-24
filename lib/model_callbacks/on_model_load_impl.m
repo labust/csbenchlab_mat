@@ -9,11 +9,13 @@ function on_model_load_impl()
     info = loaded.env_info;
     blocks = loaded.blocks;
 
+
     scenarios_path = pa(folder_path, 'autogen', strcat(curr_model, '_refs.mat'));
     sig_editor_h = getSimulinkBlockHandle(pa(blocks.refgen.Path, 'Reference'));
     set_param(sig_editor_h, 'FileName', scenarios_path);
 
-    setup_simulink_components(curr_model, blocks);
+    setup_simulink_components(curr_model, info, blocks);
+    setup_simulink_explicit_functions(curr_model, info, blocks);
     setup_simulink_with_scenarios(curr_model, blocks);
     setup_scenario_const_horizon_reference(curr_model, info.Controllers, blocks);
 
@@ -23,10 +25,10 @@ function on_model_load_impl()
     % LIBRARY LINK WOULD OVERRIDE AUTOGEN TYPES
     setup_simulink_autogen_types(curr_model);
 
-    if isfield(info, 'Callbacks')
-        if is_valid_field(info.Callbacks, 'OnEnvLoad')
+    if isfield(info.Metadata, 'Callbacks')
+        if is_valid_field(info.Metadata.Callbacks, 'OnEnvLoad')
             try
-                run(info.Callbacks.OnEnvLoad);
+                run(info.Metadata.Callbacks.OnEnvLoad);
             catch
                 error('OnEnvLoad callback resulted in errors');
             end

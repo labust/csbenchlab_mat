@@ -1,10 +1,18 @@
 function p = get_plugin_info(component_path)
     
+    
+
+
     splits = split(component_path, ':');
     component_path = splits{1};
     if length(splits) > 1
         rel_path = splits{2};
     end
+
+    if startsWith(component_path, '.')
+        component_path = fullfile(pwd, component_path);
+    end
+    
 
     [folder, name, ext] = fileparts(component_path);
     

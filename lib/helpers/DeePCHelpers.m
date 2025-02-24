@@ -390,10 +390,10 @@ classdef DeePCHelpers
                 ic = yd;
                 term_v = ref(end, :);                
                 rt = ref';
-                optim_f(idx.y.r) = DeePCHelpers.normalize_Q(params) * (- rt(:));
+                optim_f(idx.y.r) = 2 * DeePCHelpers.normalize_Q(params) * (- rt(:));
                 ref_u = saturate(ref ./ end_point', params.u_min, params.u_max);
                 rt(:, :) = ref_u';
-                optim_f(idx.u.r) = DeePCHelpers.normalize_R(params) * (- rt(:));
+                optim_f(idx.u.r) = 2 * DeePCHelpers.normalize_R(params) * (- rt(:));
             end
 
             last_u = x0(idx.u.b:idx.u.b+idx.m-1);

@@ -1,0 +1,1 @@
+on_model_start_impl();

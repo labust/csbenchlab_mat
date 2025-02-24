@@ -12,20 +12,25 @@ function setup_simulink_autogen_types(curr_model)
             b_h = getSimulinkBlockHandle(path);
             c = libinfo(path);
 
+            is_m_controller = model_has_tag(path, '__cs_m_ctl');
+
             class_name = get_m_component_class_name(c.ReferenceBlock);
 
-            name =  make_class_name(path);
+            name = make_class_name(path);
             
                
             io_args = get_m_component_inputs(class_name);
             params = eval_component_params(path);
+
+            if is_m_controller
+                 mux = get_controller_mux_struct(path);
+                 set_mask_values(b_h, 'u_ic', mat2str(zeros(length(mux.Outputs), 1)));
+            end
             
             for l=1:length(io_args)
                 a = io_args{l};
                 if isa(a.Dim, 'function_handle')
-                    is_m_controller = model_has_tag(c_path, '__cs_m_ctl');
                     if is_m_controller
-                        mux = get_controller_mux_struct(path);
                         dim = a.Dim(params, mux);
                     else
                         dim = a.Dim(params);
@@ -53,8 +58,15 @@ function setup_simulink_autogen_types(curr_model)
             end
             set_mask_values(b_h, 'data', data_name);
             set_mask_values(b_h, 'DataType', data_type_name);
-            params_type_name = strcat(name, '_PT');
+
+ 
+            if isnumeric(params) && isequal(params, 0)
+                params_type_name = '"double"';
+            else
+                params_type_name = strcat(name, '_PT');
+            end
             set_mask_values(b_h, 'ParamsType', params_type_name);
+
             log_bus_name = strcat(name, '_LT');
             set_mask_values(b_h, 'LogEntryType', log_bus_name);
         end

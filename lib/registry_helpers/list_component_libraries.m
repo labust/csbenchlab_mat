@@ -8,7 +8,7 @@ function libs = list_component_libraries(ignore_csbenchlab)
     libs = strings(0, 1);
     for i=1:length(fs)
         n = fs(i).name;
-        if strcmp(n, '.') || strcmp(n, '..')
+        if strcmp(n, '.') || strcmp(n, '..') || strcmp(n, 'slprj')
             continue
         end
 

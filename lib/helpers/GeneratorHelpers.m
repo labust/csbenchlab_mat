@@ -180,11 +180,68 @@ classdef GeneratorHelpers
                 end
                 controllers(i).Components = gen_c;
                 controllers(i).IoHandles = io_handles;
+                controllers(i).Estimator = [];
+                controllers(i).Disturbance = [];
+
+                
+                if is_valid_field(info(i), 'Estimator')
+                    controllers(i).Estimator = ...
+                        GeneratorHelpers.generate_estimator(model_name, info(i).Estimator, subs_position);
+                end
+                if is_valid_field(info(i), 'Disturbance')
+                    controllers(i).Disturbance = ...
+                        GeneratorHelpers.generate_disturbance(model_name, info(i).Disturbance, subs_position, 1);
+                end
 
                 clear('gen_c');
 
                 subs_position = off(subs_position, [0, GeneratorHelpers.master_offset_value]);
             end
+        end
+
+        function gen_s = generate_disturbance(model_name, info, position, is_ctl)
+            pa = @BlockHelpers.path_append;
+            move = @BlockHelpers.move_block;
+
+            path = get_component_simulink_path(info, 'dist');
+            gen_s = struct;
+            sp = split(path, '/');
+            s_block = pa(model_name, BlockHelpers.get_name_or_empty(info, sp{end}));
+
+            if is_ctl > 0
+                off = [180, 0];
+            else
+                off = [140, -90];
+            end
+            
+            [s_h, name] = BlockHelpers.add_block_at(path, s_block);
+            move(s_h, position, off);
+            blockObj = get_param(s_h, 'Object');
+            blockObj.Orientation = 'right';
+            BlockHelpers.add_from_tag_to_inport(model_name, s_h, 'dt', 2);
+            gen_s.Handle = s_h;
+            gen_s.Name = name;
+            % BlockHelpers.add_from_tag_to_inport(model_name, s_h, 'ic', 3);
+        end
+
+
+        function gen_s = generate_estimator(model_name, info, position)
+            pa = @BlockHelpers.path_append;
+            move = @BlockHelpers.move_block;
+
+            path = get_component_simulink_path(info, 'est');
+            gen_s = struct;
+            sp = split(path, '/');
+            s_block = pa(model_name, BlockHelpers.get_name_or_empty(info, sp{end}));
+            
+            [s_h, name] = BlockHelpers.add_block_at(path, s_block);
+            move(s_h, position, [180, 55]);
+            blockObj = get_param(s_h, 'Object');
+            blockObj.Orientation = 'left';
+            BlockHelpers.add_from_tag_to_inport(model_name, s_h, 'dt', 2, 'left');
+            BlockHelpers.add_from_tag_to_inport(model_name, s_h, 'ic', 3, 'left');
+            gen_s.Handle = s_h;
+            gen_s.Name = name;
         end
 
 
@@ -240,6 +297,7 @@ classdef GeneratorHelpers
                 gen_s.Name = name;
                 gen_s.Handle = s_h;
                 gen_s.Path = pa(model_name, gen_s.Name);
+                gen_s.Disturbance = [];
 
                 position = BlockHelpers.offset_position(position, ...
                     [0, GeneratorHelpers.master_offset_value]);
@@ -247,6 +305,12 @@ classdef GeneratorHelpers
                 BlockHelpers.add_from_tag_to_inport(model_name, s_h, 'dt', 3);
                 BlockHelpers.add_from_tag_to_inport(model_name, s_h, 'ic', 4);
                 systems.systems(i) = gen_s;
+
+                if is_valid_field(info, 'Disturbance')
+                    systems.systems(i).Disturbance = ...
+                        GeneratorHelpers.generate_disturbance(model_name, info.Disturbance, position, 0);
+                end
+             
             end
             systems = BlockHelpers.get_system_io_port_dims(systems, info);
         end
@@ -335,11 +399,7 @@ classdef GeneratorHelpers
                 c_ports = get_param(c.Handle, 'PortHandles');
                 s_ports = get_param(s.Handle, 'PortHandles');
                 
-                % connect signals on the top level
-                add_line(model_name, c_ports.Outport(1), s_ports.Inport(1), "autorouting", 'smart');
-                add_line(model_name, refgen_ports.Outport, c_ports.Inport(1), "autorouting", 'smart');
-                add_line(model_name, s_ports.Outport, c_ports.Inport(2), "autorouting", 'smart');
-
+                % set data logging
                 set_param(s_ports.Outport, 'datalogging', 'on'); % log system output
                 set_param(s_ports.Outport, 'Name', strcat(c.Name, '_y')); 
 
@@ -347,8 +407,58 @@ classdef GeneratorHelpers
                 set_param(c_ports.Outport(1), 'Name', strcat(c.Name, '_u')); 
 
                 set_param(c_ports.Outport(2), 'datalogging', 'on'); % log controller logs
-                set_param(c_ports.Outport(2), 'Name', strcat(c.Name, '_log')); 
+                set_param(c_ports.Outport(2), 'Name', strcat(c.Name, '_log'));
 
+                % connect signals on the top level
+                
+                % first, check if disturbance on controller and connect
+
+                if is_valid_field(c, 'Disturbance')
+                    d_h = c.Disturbance.Handle;
+                    d_ports = get_param(d_h, 'PortHandles');
+                    add_line(model_name, c_ports.Outport(1), d_ports.Inport(1), "autorouting", 'smart');
+                    add_line(model_name, d_ports.Outport(1), s_ports.Inport(1), "autorouting", 'smart');
+                    set_param(d_ports.Outport(1), 'datalogging', 'on'); % log noise control input
+                    set_param(d_ports.Outport(1), 'Name', strcat(c.Name, '_u_n'));
+                else
+                    add_line(model_name, c_ports.Outport(1), s_ports.Inport(1), "autorouting", 'smart');
+                end
+
+                
+                % then, if disturbance is on system
+                if is_valid_field(s, 'Disturbance')
+                    d_h = s.Disturbance.Handle;
+                    d_ports = get_param(d_h, 'PortHandles');
+                    add_line(model_name, s_ports.Outport(1), d_ports.Inport(1), "autorouting", 'smart');
+                    set_param(d_ports.Outport(1), 'datalogging', 'on'); % log noise control input
+                    set_param(d_ports.Outport(1), 'Name', strcat(c.Name, '_y_n'));
+                    dist_out_ports = d_ports.Outport;
+                else
+                    dist_out_ports = s_ports.Outport;
+                end
+
+                % if controller has estimator, connect to it
+                if is_valid_field(c, 'Estimator')
+                    e_h = c.Estimator.Handle;
+                    e_ports = get_param(e_h, 'PortHandles');
+                    add_line(model_name, dist_out_ports(1), e_ports.Inport(1), "autorouting", 'smart');
+                    set_param(e_ports.Outport(1), 'datalogging', 'on'); % log estimated value
+                    set_param(e_ports.Outport(1), 'Name', strcat(c.Name, '_y_hat'));
+                    est_out_ports = e_ports.Outport;                
+                else
+                    est_out_ports = dist_out_ports;
+                end
+                
+                % finally, connect estimator out to controller 
+                add_line(model_name, est_out_ports, c_ports.Inport(2), "autorouting", 'smart');
+
+                
+                % connect refgen to controller
+                add_line(model_name, refgen_ports.Outport, c_ports.Inport(1), "autorouting", 'smart');
+
+                 
+                
+                % connect signals in the controller
                 io_h = c.IoHandles;
                 add_line(c.Path, io_h.inport_y.p.Outport, io_h.in_demux.p.Inport, "autorouting", 'smart');
                 add_line(c.Path, io_h.inport_yref.p.Outport, io_h.in_demux_ref.p.Inport, "autorouting", 'smart');

@@ -51,8 +51,13 @@ function register_m_estimator(info, lib_name)
         mask_parameters(end+1) = struct('Name', n, 'Value', v, 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
     end
 
+    % for some reason, disabling of rotation 
+    % programatiaclly does not work!
+    icon = 'estimator_icon_mirror';
+    extrinsic_init = "y_hat = zeros(size(ic))";
+
     create_m_component_simulink(info, lib_name, 'est', ...
         {"__cs_m_est"}, input_args_desc, output_args_desc, ...
         {'params', "'Data'", 'data'}, { 'ic' }, [{'y', 'dt'}, input_args], ...
-        mask_parameters);
+        mask_parameters, extrinsic_init, icon, [60, 40]);
 end

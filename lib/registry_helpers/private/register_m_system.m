@@ -52,9 +52,11 @@ function register_m_system(info, lib_name)
         v = strcat(info.Name, "_", output_args{j}, "_T");
         mask_parameters(end+1) = struct('Name', n, 'Value', v, 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
     end
-
+    
+    icon = 'system_icon';
+    extrinsic_init = "y = zeros(size(ic))";
     create_m_component_simulink(info, lib_name, 'sys', ...
         {"__cs_m_sys"}, input_args_desc, output_args_desc, ...
         {'params_merged', "'Data'", 'data'}, { 'ic' }, [{'u', 't', 'dt'}, input_args], ...
-        mask_parameters);
+        mask_parameters, extrinsic_init, icon, [100, 40]);
 end

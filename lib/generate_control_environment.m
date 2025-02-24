@@ -81,6 +81,7 @@ function handle = generate_control_environment(env_info, folder_path)
             % configure model
             save(strcat(folder_path, '/autogen/', name, '.mat'), 'env_info', 'blocks');
             set_param(handle, 'PostLoadFcn', 'on_model_load');
+            set_param(handle, 'StartFcn', 'on_model_start');
             set_param(handle, 'PostSaveFcn', 'on_model_save');
             set_param(handle, 'StopFcn', 'on_simulation_done');
         end

@@ -3,7 +3,6 @@ function load_environment(env_name, varargin)
     pa = @BlockHelpers.path_append;
     save_folder_name = 'saves';
 
-    now_t = int64(posixtime(datetime('now', 'TimeZone','local')));
     file_path = which(strcat(env_name, '.slx'));
 
     if isempty(file_path)
@@ -45,9 +44,6 @@ function load_environment(env_name, varargin)
     end
 
     % load variable names from environment slx
-    loaded = load(pa(folder_path, 'autogen', strcat(env_name, '.mat')));
-    info = loaded.env_info;
-    blocks = loaded.blocks;
 
     saved_cfg = readstruct(pa(curr_save, 'config.json'), "FileType", "json");
     env_cfg = readstruct(pa(folder_path, 'config.json'), "FileType", "json");
@@ -72,6 +68,10 @@ function load_environment(env_name, varargin)
             pa(folder_path, strcat(env_name, '.slx')));
         copyfile(pa(curr_save, 'config.json'), pa(folder_path, 'config.json'));   
     end
+
+    addpath(folder_path);
+    addpath(fullfile(folder_path, env_name));
+    addpath(fullfile(folder_path, 'autogen'));
     
     % load vars
     path = pa(curr_save, 'vars.mat');

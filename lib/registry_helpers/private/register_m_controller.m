@@ -1,14 +1,17 @@
 function register_m_controller(info, lib_name)
     
-    default_inputs = {'y_ref', 'y', 'dt'};
+    default_inputs = { 'y_ref', 'y', 'dt' };
     default_outputs = {'u', 'log'};
     input_args = cellfun(@(x) string(x.Name), get_m_component_inputs(info.Name));
     output_args = cellfun(@(x) string(x.Name), get_m_component_outputs(info.Name));
     
-    input_args_desc = create_argument_description([default_inputs, input_args, 'params', 'data']);
+    input_args_desc = create_argument_description([default_inputs, input_args, 'u_ic', 'params', 'data']);
     output_args_desc = create_argument_description([default_outputs, output_args]);
 
     % params
+    input_args_desc(end-2).DataType = 'double';
+    input_args_desc(end-2).Scope = 'Parameter';
+    input_args_desc(end-2).Tunable = 0;
     input_args_desc(end-1).DataType = 'ParamsType';
     input_args_desc(end-1).Scope = 'Parameter';
     input_args_desc(end).DataType = 'DataType';
@@ -31,6 +34,7 @@ function register_m_controller(info, lib_name)
     else
         params_visible = 'off';
     end
+
     mask_parameters = struct('Name', 'params', 'Prompt', 'Parameter struct:', ...
         'Value', '{block_name}_params', 'Visible', params_visible, 'Evaluate', 'on');
     mask_parameters(end+1) = struct('Name', 'data', ...
@@ -41,6 +45,9 @@ function register_m_controller(info, lib_name)
         'Value', '{block_name}_DT', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
     mask_parameters(end+1) = struct('Name', 'LogEntryType', ...
         'Value', '{block_name}_LT', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
+    mask_parameters(end+1) = struct('Name', 'u_ic', ...
+        'Value', '0', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
+
     for j=1:length(input_args)
         n = strcat(input_args{j}, '_T');
         v = strcat(info.Name, "_", input_args{j}, "_T");
@@ -51,11 +58,12 @@ function register_m_controller(info, lib_name)
         v = strcat(info.Name, "_", output_args{j}, "_T");
         mask_parameters(end+1) = struct('Name', n, 'Value', v, 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
     end
-
+    icon = 'controller_icon';
+    extrinsic_init = "u = u_ic";
     create_m_component_simulink(info, lib_name, 'ctl', ...
         {"__cs_m_ctl"}, input_args_desc, output_args_desc, ...
         {'params', "'Data'", 'data'}, {'1', 'size(y)', 'size(y_ref)'}, [{'y_ref', 'y', 'dt'}, input_args], ...
-        mask_parameters);
+        mask_parameters, extrinsic_init, icon, [120, 40]);
 
     generate_log_functions(info);
 end

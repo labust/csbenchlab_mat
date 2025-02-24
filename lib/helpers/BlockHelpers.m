@@ -67,18 +67,37 @@ classdef BlockHelpers
             systems.dims.output = o_p;
         end
 
-        function add_from_tag_to_inport(model_name, handle, tag, idx)
+        function add_from_tag_to_inport(model_name, handle, tag, idx, orient)
             pa = @BlockHelpers.path_append;
             offset = @BlockHelpers.move_block;
+
+            if ~exist("orient", 'var')
+                orient = 'right';
+            end
+
             pos = get_param(handle, 'Position');
             ps = get_param(handle, 'PortHandles');
             from_h = add_block('simulink/Signal Routing/From', pa(model_name, 'From'), 'MakeNameUnique','on');
-            
-            off = (idx - (length(ps.Inport)+1) / 2) * 15;
-            offset(from_h, pos, [-80, off], 0.7, 0.5)
-            set_param(from_h, 'GotoTag', tag);
             from_ports = get_param(from_h, 'PortHandles');
             ports = get_param(handle, 'PortHandles');
+            ports_pos = get_param(ports.Inport, 'Position');
+
+            if strcmp(orient, 'left')
+                sign = 1;
+            else
+                sign = -1;
+            end
+
+            blockObj = get_param(from_h, 'Object');
+            blockObj.orientation = orient;
+
+            w = (pos(3) - pos(1)) / 2 + 20;
+            h = ports_pos{idx};
+            off = h(2);
+
+            pos = [pos(1), 0, pos(3), 0]; % to set absolute value in height
+            offset(from_h, pos, [sign*w, off], 0.5, 0.3)
+            set_param(from_h, 'GotoTag', tag);
             add_line(model_name, from_ports.Outport, ports.Inport(idx));
         end
 
