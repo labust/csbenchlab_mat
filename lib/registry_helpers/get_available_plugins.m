@@ -1,6 +1,5 @@
 function plugins = get_available_plugins(varargin)
 
-
     lib_list = list_component_libraries();
     reg = get_app_registry_path();
 

@@ -8,7 +8,11 @@ function params = eval_component_params(block_path)
     end
 
     if ~model_has_tag(block_path, '__cs_m_ctl')
-        params = evalin('base', params_struct);
+        try
+            params = evalin('base', params_struct);
+        catch
+            params = 0;
+        end
         return
     end
 

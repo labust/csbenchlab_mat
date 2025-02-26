@@ -17,8 +17,16 @@ function register_slx_component(info, typ, lib_name, tags, size)
     position = [idx_i * dl, idx_j * dl, idx_i * dl + size(1), idx_j * dl + size(2)]';
 
     load_and_unlock_system(dest);
+    
+    % delete block if exists
+
+    dest_path = fullfile(dest, name);
+    handle = getSimulinkBlockHandle(dest_path);
+    if handle ~= -1
+        delete_block(dest_path);    
+    end
     try
-        block = add_block(src, fullfile(dest, name));
+        block = add_block(src, dest_path);
         set_param(block, 'Position', position);
         for i=1:length(tags)
             model_append_tag(block, tags{i});

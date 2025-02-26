@@ -36,7 +36,8 @@ function on_reference_select
 
     blocks = hws.getVariable('gen_blocks');
     sys_params = eval_component_params(blocks.systems.systems(1).Path);
-    
+
+
     if ~isnumeric(sys_params) && ~isempty(fieldnames(sys_params))
         % override system parameters with scenario params
         f_names = fieldnames(active_scenario.Params);

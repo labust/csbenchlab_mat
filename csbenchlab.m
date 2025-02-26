@@ -30,14 +30,11 @@ function register_common_components(path)
     get_or_create_component_library(fullfile(path, 'registry'), 'local');
 
     handle = get_or_create_component_library(fullfile(path, 'registry'), 'csbenchlab');
+    
 
-    registry.ctl = {};
-    registry.sys = {};
-    registry.est = {};
-    registry.dist = {};
-    for i = 1:length(lib_paths)
-        registry = detect_components_from_path(fullfile(path, lib_paths{i}), registry);
-    end
+    lib_paths = cellfun(@(x) fullfile(path, x), lib_paths);
+
+    registry = make_component_registry_from_path(lib_paths, 'csbenchlab');
 
     for i = 1:length(registry.ctl)
         register_component(registry.ctl{i}, parse_comp_type('ctl'), handle.name);
@@ -52,9 +49,6 @@ function register_common_components(path)
     for i = 1:length(registry.dist)
         register_component(registry.dist{i}, parse_comp_type('dist'), handle.name);
     end
-    version = '0.1';
-    library = 'csbenchlab';
-    save(fullfile(path, 'registry', 'csbenchlab', 'manifest.mat'), "registry", 'version', 'library');
 end
 
 
