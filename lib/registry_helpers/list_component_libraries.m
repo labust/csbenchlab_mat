@@ -5,7 +5,7 @@ function libs = list_component_libraries(ignore_csbenchlab)
     end
     reg = get_app_registry_path();
     fs = dir(reg);
-    libs = strings(0, 1);
+    libs = struct('Name', {}, 'Type', {}, 'Path', {});
     for i=1:length(fs)
         n = fs(i).name;
         if strcmp(n, '.') || strcmp(n, '..') || strcmp(n, 'slprj')
@@ -17,7 +17,11 @@ function libs = list_component_libraries(ignore_csbenchlab)
         end
 
         if isfolder(fullfile(reg, n))
-            libs(end+1) = n;
+            libs(end+1) = struct('Name', n, "Type", 'install', 'Path', fullfile(reg, n));
+        elseif endsWith(n, '.json')
+            [~, name, ~] = fileparts(n);
+            s = readstruct(fullfile(fs(i).folder, fs(i).name));
+            libs(end+1) = struct('Name', name, "Type", 'link', 'Path', s.path);
         end
     end
 

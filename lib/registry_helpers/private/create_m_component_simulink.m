@@ -33,8 +33,8 @@ function block_path = create_m_component_simulink(info, lib_name, comp_type, tag
 
 
     % create function block
-    fun_block_name = [block_name, '_fun'];
-    fun_block_path = [block_path, '/', fun_block_name];
+    fun_block_name = strcat(block_name, '_fun');
+    fun_block_path = strcat(block_path, '/', fun_block_name);
 
 
     fun_handle = add_block('simulink/User-Defined Functions/MATLAB Function', fun_block_path); 

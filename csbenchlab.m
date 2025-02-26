@@ -20,35 +20,31 @@ function init_app(path)
 end
 
 function register_common_components(path)
+    plugin_desc_path = fullfile(path, "plugins", "plugins.json");
 
-    lib_paths = {   
-        "plugins/Controllers", ...
-        "plugins/Systems", ...
-        "plugins/Estimators", ...
-        "plugins/DisturbanceGenerators"
-    };
-    get_or_create_component_library(fullfile(path, 'registry'), 'local');
+    get_or_create_component_library(fullfile(path, 'registry', 'local'), 1);
+    handle = get_or_create_component_library(fullfile(path, 'registry', 'csbenchlab'));
+    registry = make_component_registry_from_plugin_description(plugin_desc_path, ...
+        fullfile(path, 'registry', 'csbenchlab', 'autogen'));
 
-    handle = get_or_create_component_library(fullfile(path, 'registry'), 'csbenchlab');
-    
 
-    lib_paths = cellfun(@(x) fullfile(path, x), lib_paths);
+    fnames = fieldnames(registry);
+    types = get_component_types();
+    for i=1:length(fnames)
+        fname = fnames{i};
+        if ~any(arrayfun(@(x) strcmp(fname, x), types))
+            warning(strcat("Found unknown component type '", fname, "'."));
+            continue
+        end
 
-    registry = make_component_registry_from_path(lib_paths, 'csbenchlab');
-
-    for i = 1:length(registry.ctl)
-        register_component(registry.ctl{i}, parse_comp_type('ctl'), handle.name);
+        plugin_list = registry.(fname);
+        for j = 1:length(plugin_list)
+            register_component(plugin_list{j}, parse_comp_type(fname), handle.name);
+        end
     end
+
+    % exception: m controllers have to generate log function 
     generate_get_m_controller_log_function_handle(registry.ctl);
-    for i = 1:length(registry.sys)
-        register_component(registry.sys{i}, parse_comp_type('sys'), handle.name);
-    end
-    for i = 1:length(registry.est)
-        register_component(registry.est{i}, parse_comp_type('est'), handle.name);
-    end
-    for i = 1:length(registry.dist)
-        register_component(registry.dist{i}, parse_comp_type('dist'), handle.name);
-    end
 end
 
 

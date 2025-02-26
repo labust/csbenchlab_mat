@@ -1,0 +1,28 @@
+{
+    "library": "csbenchlab",
+    "version": "0.0.1",
+    "description": "An official CsBenchLab base component library",
+    "authors": ["Luka Mandic"],
+    "plugins": [
+        {
+            "type": "folder_scan",
+            "path": "Controllers"
+        },
+        {
+            "type": "folder_scan",
+            "path": "DisturbanceGenerators"
+        },
+        {
+            "type": "folder_scan",
+            "path": "Estimators"
+        },
+        {
+            "type": "folder_scan",
+            "path": "Systems"
+        },
+        {
+            "type": "file",
+            "path": "test1.slx:PID2"
+        }
+    ]
+}
