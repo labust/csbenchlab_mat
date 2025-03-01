@@ -3,6 +3,8 @@ function on_reference_select
     handle = gcbh;
 
     env_name = gcs;
+
+    env_path = fileparts(which(env_name));
    
 
     % if no config, this is not an environment
@@ -61,7 +63,7 @@ function on_reference_select
         start_time = active_scenario.StartTime;
     end
 
-    refs = load(pa(env_name, 'autogen', strcat(env_name, '_refs')));
+    refs = load(pa(env_path, 'parts', strcat(env_name, '_refs')));
     selected_reference = refs.(active_scenario.Reference);
     selected_reference = selected_reference{1};
     if is_valid_field(active_scenario, 'EndTime')

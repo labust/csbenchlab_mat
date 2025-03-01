@@ -7,7 +7,7 @@ classdef LinearSystem < DynSystem
             ParamDescriptor("A", 1), ...
             ParamDescriptor("B", 1), ... 
             ParamDescriptor("C", 1), ... 
-            ParamDescriptor("D", @(params) zeros(params.dims.output, params.dims.input)), ... 
+            ParamDescriptor("D", @(params) zeros(params.dims.Outputs, params.dims.Inputs)), ... 
             ParamDescriptor("sat_min", @(params) -inf * ones(params.dims.output, 1)), ... 
             ParamDescriptor("sat_max", @(params) inf * ones(params.dims.output, 1)) ...
         );
@@ -46,15 +46,15 @@ classdef LinearSystem < DynSystem
 
     methods (Static)
         function dims = get_dims_from_params(params)
-            dims.input = size(params.B, 2);
-            dims.output = size(params.C, 1);
+            dims.Inputs = size(params.B, 2);
+            dims.Outputs = size(params.C, 1);
         end
 
         function data = create_data_model(params)
             dims = LinearSystem.get_dims_from_params(params);
             sz = size(params.D);
             if (isequal(sz, [1, 1]) && params.D == 0)
-                data.D = zeros(dims.output, dims.input);
+                data.D = zeros(dims.Outputs, dims.Inputs);
             else
                 data.D = params.D;
             end

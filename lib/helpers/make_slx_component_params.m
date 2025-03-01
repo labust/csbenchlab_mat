@@ -15,9 +15,8 @@ function resolved = make_slx_component_params(comp_name, comp_type, lib)
         e = 'dist';
     end
     
-    reg = get_app_registry_path();
     model_name = strcat(lib, '_', e);
-    slx_path = fullfile(reg, lib, model_name);
+    slx_path = which(model_name);
     load_system(slx_path);
 
     h = getSimulinkBlockHandle(fullfile(model_name, comp_name));
@@ -29,7 +28,7 @@ function resolved = make_slx_component_params(comp_name, comp_type, lib)
     if ~isempty(mo)    
         for i=1:length(mo.Parameters)
             p = mo.Parameters(i);
-            if strcmp(p.Visible, 'on')
+            if strcmp(p.Visible, 'on') && ~strcmp(p.Name, 'params')
                 resolved.(p.Name) = p.Value;
             end
         end

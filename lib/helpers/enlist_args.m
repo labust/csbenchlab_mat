@@ -3,5 +3,5 @@ function s = enlist_args(a)
         s = '';
         return
     end
-    s = [sprintf('%s, ',a{1:end-1}), a{end}];
+    s = strcat(sprintf('%s, ',a{1:end-1}), " ", a{end});
 end

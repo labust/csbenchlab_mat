@@ -10,12 +10,9 @@ classdef DeePCHelpers
             T = size(D_u, 1);
         end
 
-        function [uini, yini] = update_ini(u, y, uini, yini, m, p)
-            uini = circshift(uini, -m);
-            uini(end-m+1:end) = u;
-
-            yini = circshift(yini, -p);
-            yini(end-p+1:end) = y;
+        function sini = update_ini(s, sini, d)
+            sini = circshift(sini, -d);
+            sini(end-d+1:end) = s;
         end
 
         function [lb, ub] = configure_bounds(lb, ub, idx, params)

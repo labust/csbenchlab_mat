@@ -17,8 +17,9 @@ function register_m_controller(info, lib_name)
     input_args_desc(end).DataType = 'DataType';
     input_args_desc(end).Scope = 'Parameter';
     output_args_desc(2).DataType = 'LogEntryType';
+    output_args_desc(2).Size = 1;
 
-    % set io types types
+    % set io types type names
     for j=length(default_inputs)+1:length(default_inputs)+length(input_args)
         input_args_desc(j).DataType = ...
             strcat(input_args_desc(j).Name, "_T");
@@ -59,10 +60,13 @@ function register_m_controller(info, lib_name)
         mask_parameters(end+1) = struct('Name', n, 'Value', v, 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
     end
     icon = 'controller_icon';
-    extrinsic_init = "u = u_ic";
+    extrinsic_init = "u = u_ic;" + newline ...
+        + "      log = evaluate_m_controller_log('" + info.Name + "', '" ...
+        + lib_name + "', data)";
     create_m_component_simulink(info, lib_name, 'ctl', ...
         {"__cs_m_ctl"}, input_args_desc, output_args_desc, ...
-        {'params', "'Data'", 'data'}, {'1', 'size(y)', 'size(y_ref)'}, [{'y_ref', 'y', 'dt'}, input_args], ...
+        {"params", "'Data'", "data", "'library'", strcat("'", lib_name, "'")}, ...
+        {'1', 'size(y)', 'size(y_ref)'}, [{'y_ref', 'y', 'dt'}, input_args], ...
         mask_parameters, extrinsic_init, icon, [120, 40]);
 
     generate_log_functions(info);
@@ -89,7 +93,7 @@ function generate_log_functions(info)
             src = src + "    " + strcat('log.', d.Name, ' = data.', d.Name, ';') + newline;
         end
     else
-        src = src + "    " + strcat('log = struct;') + newline;
+        src = src + "    " + strcat('log = 0;') + newline;
     end
 
     src = src + 'end';

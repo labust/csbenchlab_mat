@@ -40,7 +40,7 @@ function refresh_component_library(lib)
         end
         
         % exception: m controllers have to generate log function 
-        generate_get_m_controller_log_function_handle(registry.ctl);
+        generate_get_m_controller_log_function_handle(registry.ctl, lib);
     
         addpath(dest_path);
         addpath(fullfile(dest_path, lib));

@@ -1,7 +1,4 @@
 function p = get_plugin_info(component_path)
-    
-    
-
 
     splits = split(component_path, ':');
     component_path = splits{1};
@@ -29,8 +26,8 @@ function p = get_plugin_info(component_path)
         catch e
             if rm > 0
                 rmpath(folder);
-                rethrow(e);
             end
+            rethrow(e);
         end
     elseif strcmp(ext, '.slx')
         try

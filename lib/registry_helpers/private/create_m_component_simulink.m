@@ -95,6 +95,11 @@ function block_path = create_m_component_simulink(info, lib_name, comp_type, tag
     in_ports = {};
     for i=1:length(fun_p.Inport)
         in_handles(end+1) = add_block('simulink/Quick Insert/Ports & Subsystems/Inport', strcat(block_path, '/', input_cell{i})); 
+        
+        if any(inputs(i).Size > 0) 
+            set_param(in_handles(end), 'PortDimensions', mat2str(inputs(i).Size));
+        end
+        
         in_ports{end+1} = get_param(in_handles(end), 'PortHandles');
         block_offset(in_handles(end), fun_pos, pos);
         add_line(block_path, in_ports{i}.Outport, fun_p.Inport(i), "autorouting", "smart");
@@ -108,6 +113,11 @@ function block_path = create_m_component_simulink(info, lib_name, comp_type, tag
     out_ports = {};
     for i=1:length(fun_p.Outport)
         out_handles(end+1) = add_block('simulink/Quick Insert/Ports & Subsystems/Outport', strcat(block_path, '/', output_cell{i})); 
+        
+        if any(outputs(i).Size > 0) 
+            set_param(out_handles(end), 'PortDimensions', mat2str(outputs(i).Size));
+        end
+        
         out_ports{end+1} = get_param(out_handles(end), 'PortHandles');
         block_offset(out_handles(end), fun_pos, pos);
         add_line(block_path, fun_p.Outport(i), out_ports{i}.Inport, "autorouting", "smart");

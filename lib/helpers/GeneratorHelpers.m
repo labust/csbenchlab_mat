@@ -71,9 +71,9 @@ classdef GeneratorHelpers
                 inport_y_p = get_param(inport_y_h, 'PortHandles');
                 outport_log_p = get_param(outport_log_h, 'PortHandles');
 
-                set_param(inport_yref_h, 'PortDimensions', num2str(system_dims.output));
-                set_param(outport_u_h, 'PortDimensions', num2str(system_dims.input));
-                set_param(inport_y_h, 'PortDimensions', num2str(system_dims.output));
+                set_param(inport_yref_h, 'PortDimensions', num2str(system_dims.Outputs));
+                set_param(outport_u_h, 'PortDimensions', num2str(system_dims.Inputs));
+                set_param(inport_y_h, 'PortDimensions', num2str(system_dims.Outputs));
 
                 io_handles.inport_y.h = inport_y_h;
                 io_handles.inport_y.p = inport_y_p;
@@ -164,8 +164,8 @@ classdef GeneratorHelpers
                         set_param(out_demux, 'Outputs', num2str(length(comp.Mux.Outputs)));
                         io_handles.adapters(j).Mux.Outputs = comp.Mux.Outputs;
                     else
-                        set_param(out_demux, 'Outputs', num2str(system_dims.input));
-                        io_handles.adapters(j).Mux.Outputs = 1:system_dims.input;
+                        set_param(out_demux, 'Outputs', num2str(system_dims.Inputs));
+                        io_handles.adapters(j).Mux.Outputs = 1:system_dims.Inputs;
                     end
 
                     % refresh port handles after dimension setting
@@ -499,7 +499,7 @@ classdef GeneratorHelpers
                         %     add_line(c.Path, io_h.in_demux.p.Outport(k), h.in_mux.p.Inport(k), "autorouting", 'smart');
                         %     add_line(c.Path, io_h.in_demux_ref.p.Outport(k), h.in_mux_ref.p.Inport(k), "autorouting", 'smart');
                         % end
-                        % for k=1:systems.dims.input
+                        % for k=1:systems.dims.Inputs
                         %     add_line(c.Path, h.out_demux.p.Outport(k), io_h.out_mux.p.Inport(k), "autorouting", 'smart');
                         % end
                     end
@@ -516,8 +516,8 @@ classdef GeneratorHelpers
                 'simulink/Commonly Used Blocks/Demux',  pa(cs_path, 'DemuxYrefIn'));
             [in_demux, ~] = BlockHelpers.add_block_at( ...
                 'simulink/Commonly Used Blocks/Demux',  pa(cs_path, 'DemuxYIn'));
-            set_param(in_demux_ref, 'Outputs', num2str(system_dims.output));
-            set_param(in_demux, 'Outputs', num2str(system_dims.output));
+            set_param(in_demux_ref, 'Outputs', num2str(system_dims.Outputs));
+            set_param(in_demux, 'Outputs', num2str(system_dims.Outputs));
             
             move(in_demux, comp_position, [-400, 60]);
             move(in_demux_ref, comp_position, [-400, -60]);
@@ -532,7 +532,7 @@ classdef GeneratorHelpers
                 'simulink/Commonly Used Blocks/Bus Creator',  pa(cs_path, 'MuxOut'));
             move(out_mux_log, comp_position, [300, 100]);
 
-            set_param(out_mux, 'Inputs', num2str(system_dims.input));
+            set_param(out_mux, 'Inputs', num2str(system_dims.Inputs));
             set_param(out_mux_log, 'Inputs', num2str(num_components));
 
             out_mux_p = get_param(out_mux, 'PortHandles'); 

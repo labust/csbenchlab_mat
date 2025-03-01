@@ -10,6 +10,7 @@ classdef (Abstract) Controller
         input_size
         output_size
         data
+        library_name
     end
 
     methods (Abstract)
@@ -44,6 +45,8 @@ classdef (Abstract) Controller
                         data = this.create_data_model(this.params, value);
                     case 'Data'
                         data = value;
+                    case 'library'
+                        library_name = value;
                     otherwise
                         warning(['Unexpected parameter name "', as_char, '"']);
                 end
@@ -52,6 +55,7 @@ classdef (Abstract) Controller
                 error("Data not set");
             end
             this.data = data;
+            this.library_name = library_name;
 
         end
         
@@ -80,9 +84,7 @@ classdef (Abstract) Controller
 
             [this, u] = on_step(this, y_ref, y, dt, varargin{:});
 
-            % TODO
-            log_func = get_m_controller_log_function_handle(class(this));
-            log = log_func(this.data);
+            log = evaluate_m_controller_log(class(this), this.library_name, this.data);
         end
 
         function this = reset(this)

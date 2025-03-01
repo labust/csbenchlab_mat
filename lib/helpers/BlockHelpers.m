@@ -60,11 +60,18 @@ classdef BlockHelpers
                 if model_has_tag(systems.systems(1).Path, '__cs_py_sys')
                     error('TODOO');
                 end
-                i_p = dims.input;
-                o_p = dims.output;
+                
+                if ~exist('dims', 'var')
+                    error("Cannot deduce system i/o sizes. If system is a " + ...
+                        "simulink block, make sure that you specified i/o port sizes. " + ...
+                        "If Matlab or Python were used, get_dims_from_params function should be implemented.");
+                end
+
+                i_p = dims.Inputs;
+                o_p = dims.Outputs;
             end
-            systems.dims.input = i_p;
-            systems.dims.output = o_p;
+            systems.dims.Inputs = i_p;
+            systems.dims.Outputs = o_p;
         end
 
         function add_from_tag_to_inport(model_name, handle, tag, idx, orient)

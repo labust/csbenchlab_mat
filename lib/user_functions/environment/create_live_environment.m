@@ -114,8 +114,8 @@ function create_live_environment(name, controller, varargin)
     try
         dims = evalin('caller', strcat(options.SystemParams, ".dims"));
     catch
-        dims.inputs = -1;
-        dims.outouts = -1;
+        dims.Inputs = -1;
+        dims.Outputs = -1;
     end
     cfg.System.Dims = dims;
 

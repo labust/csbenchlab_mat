@@ -68,7 +68,12 @@ function setup_simulink_autogen_types(curr_model)
             set_mask_values(b_h, 'ParamsType', params_type_name);
 
             log_bus_name = strcat(name, '_LT');
-            set_mask_values(b_h, 'LogEntryType', log_bus_name);
+            log_desc = get_m_component_log_description(class_name);
+            if ~isempty(log_desc)
+                set_mask_values(b_h, 'LogEntryType', log_bus_name);
+            else
+                set_mask_values(b_h, 'LogEntryType', '"double"');
+            end
         end
     end
 end

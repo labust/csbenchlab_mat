@@ -18,7 +18,13 @@ function registry = detect_component(path, registry)
         [~, sim_lib_name, ~] = fileparts(prefix_path);
         h_first = getSimulinkBlockHandle(sim_lib_name);
         if h_first == -1
-            h = load_and_unlock_system(sim_lib_name);
+            try
+                h = load_and_unlock_system(sim_lib_name);
+            catch
+                warning(strcat("Simulink model with name '", sim_lib_name, ...
+                    "' is not on path. Skipping..." ));
+                return
+            end
         end
 
         objects = find_system(h, 'SearchDepth', 1);

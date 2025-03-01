@@ -61,6 +61,18 @@ function handle = init_component_library(path, close_after_creation)
     save(fullfile(handle.path, 'autogen', 'manifest.mat'), 'registry');
     writestruct(lib_meta, fullfile(handle.path, 'package.json'));
 
+    if ~isfile(fullfile(handle.path, 'plugins.json'))
+        
+        content = fileread(fullfile(get_app_template_path(), 'plugins_template.json'));
+        replaced = replace(content, '{{library_name}}', name);
+        try
+            fid = fopen(fullfile(handle.path, 'plugins.json'),'wt');
+            fprintf(fid, replaced);
+            fclose(fid);
+        catch
+        end
+    end
+
     if close_after_creation > 0
         close_system(handle.sh);
         close_system(handle.ch);

@@ -1,6 +1,6 @@
 function remove_env_scenario(env_path, name)
     scenarios = load_env_scenarios(env_path);
-    idx = strcmp(scenarios.Name, name);
+    idx = arrayfun(@(x)strcmp(x, name), [scenarios.Name]);
     if any(idx)
         scenarios(idx) = [];
     end

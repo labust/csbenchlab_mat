@@ -258,10 +258,10 @@ function type_dict = setup_simulink_m_component(c, model_name, folder_path, type
     % if param struct is valid
     if ~isnumeric(params) && ~isempty(fieldnames(params))
         % generate bus data types for controller params
-        busses = generate_bus_types(name, '_PT', params, busses);
-        for l=1:length(busses)
-            type_dict.addEntry(busses{l}.Name, busses{l}.Bus);
-        end
+        busses = generate_bus_types(name, '_PT', params, busses);     
+    end
+    for l=1:length(busses)
+        type_dict.addEntry(busses{l}.Name, busses{l}.Bus);
     end
 
 
@@ -284,7 +284,9 @@ function type_dict = setup_simulink_m_component(c, model_name, folder_path, type
         new_log_bus.Elements(end+1) = el; 
     end
     log_bus_name = strcat(name, '_LT');
-    type_dict.addEntry(log_bus_name, new_log_bus);
+    if ~isempty(new_log_bus.Elements)
+        type_dict.addEntry(log_bus_name, new_log_bus);
+    end
        
     % generate bus data types for inputs
     for l=1:length(io_args)

@@ -1,15 +1,13 @@
-function fh = get_m_controller_log_function_handle(class_name)
-    if strcmp(class_name, "ATDeePC")
-        fh = @gen_create_logs__ATDeePC;
-    elseif strcmp(class_name, "ATDeePC_tune")
-        fh = @gen_create_logs__ATDeePC_tune;
-    elseif strcmp(class_name, "DeePC")
-        fh = @gen_create_logs__DeePC;
-    elseif strcmp(class_name, "DeePCPI")
-        fh = @gen_create_logs__DeePCPI;
-    elseif strcmp(class_name, "ATDeePC_wrap")
-        fh = @gen_create_logs__ATDeePC_wrap;
+function fh = get_m_controller_log_function_handle(class_name, lib_name)
+    if strcmp(lib_name, "csbenchlab")
+        fh = get_m_log_fh__csbenchlab(class_name);
+    elseif strcmp(lib_name, "data_driven_lib")
+        fh = get_m_log_fh__data_driven_lib(class_name);
+    elseif strcmp(lib_name, "local")
+        fh = get_m_log_fh__local(class_name);
+    elseif strcmp(lib_name, "marine_lib")
+        fh = get_m_log_fh__marine_lib(class_name);
     else
-        error("Unknown class type")
+        error("Unknown library")
     end
 end

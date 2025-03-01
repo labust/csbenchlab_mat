@@ -8,18 +8,6 @@ function path_ret = create_environment(name, varargin)
     elseif nargin > 2
         options = EnvironmentOptions(varargin{:});
     end
-    
-    % set only after all the checks
-    path_ret = '';
-    if (isa(options.SystemParams, "char") || isa(options.SystemParams, "string")) && ~isempty(options.SystemParams)
-        exist_exp = strcat("exist('", options.SystemParams, "', 'var')");
-        if ~evalin('caller', exist_exp)
-            error(strcat('Cannot create environemnt. ', options.SystemParams, ' variable does not exist...'));
-        end
-        paramsStruct = evalin('caller', options.SystemParams);
-    else
-        paramsStruct = options.SystemParams;
-    end
 
     if ~isempty(options.Path)
         path = options.Path;
@@ -98,18 +86,16 @@ function path_ret = create_environment(name, varargin)
     cfg.Version = '0.1';
     cfg.Ts = options.Ts;
 
-    System.Id = string(java.util.UUID.randomUUID.toString);
-    System.Name = options.SystemName;
-    System.Params = options.SystemParams;
-    System.Type = options.SystemType;
-    System.Lib = options.SystemLib;
-  
 
-    dims.input = -1;
-    dims.outout = -1;
-    System.Dims = dims;
+    System = SystemOptions( ...
+        "Id", string(java.util.UUID.randomUUID.toString), ...
+        "Name", options.SystemName, ...
+        "Params", options.SystemParam, ...
+        "Type", options.SystemType, ...
+        "Lib", options.SystemLib);
 
-    refs_path = fullfile(path, 'autogen', strcat(name, '_refs.mat'));
+
+    refs_path = fullfile(path, 'parts', strcat(name, '_refs.mat'));
     if ~isempty(options.References)
         if isa(options.References, 'Simulink.SimulationData.Dataset')
             refs = options.References;
@@ -147,7 +133,7 @@ function path_ret = create_environment(name, varargin)
     cfgName = fullfile(path, 'config.json');
     sysName = fullfile(path, 'parts', 'system.json');
     writestruct(cfg, cfgName, 'FileType','json');
-    writestruct(System, sysName, 'FileType','json');
+    writestruct(options_as_struct(System), sysName, 'FileType','json');
 
     
     addpath(path);
@@ -162,7 +148,7 @@ function setup_metrics(env_name, path)
     mkdir(fullfile(path, 'autogen', 'metrics', 'private'));
     addpath(fullfile(path, 'autogen', 'metrics'));
 
-    f = fullfile(get_app_root_path, 'lib', 'helpers', 'templates', 'eval_metrics_template.mt');
+    f = fullfile(get_app_template_path, 'eval_metrics_template.mt');
 
     t = fileread(f);
     f_name = strcat(env_name, '_eval_metrics');

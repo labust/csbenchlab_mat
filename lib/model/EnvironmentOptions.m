@@ -44,7 +44,7 @@ classdef EnvironmentOptions
                 obj.Plots = [];
                 obj.References = '';
                 obj.Override = 0;
-                obj.Callbacks.OnEnvLoad = '';
+                obj.Callbacks = init_env_callbacks;
             end
                % Loop through the parameter names and not the values.
             for i = begin_idx:2:length(varargin)

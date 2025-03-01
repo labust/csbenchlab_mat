@@ -1,25 +1,34 @@
-classdef ControllerComponent < ComponentOptions
+classdef ComponentOptions
     %CONTROLLEROPTIONS Summary of this class goes here
     %   Detailed explanation goes here
     
     properties
-        Mux
-        RefHorizon
-        RegenerateEnv
+        Id
+        Name
+        Params
+        ParamsStructName
+        Type
+        Lib
+        LibVersion
+        Callbacks
     end
     
     methods
-        function obj = ControllerComponent(varargin)
-            obj = obj@ComponentOptions(varargin{:});
+        function obj = ComponentOptions(varargin)
+
             begin_idx = 1;
-            if nargin > 0 && isa(varargin{1}, 'ControllerComponent')
+            if nargin > 0 && isa(varargin{1}, 'ComponentOptions')
                 obj = varargin{1};
                 begin_idx = 2;
             else
-                obj.Mux.Inputs = [];
-                obj.Mux.Outputs = [];
-                obj.RegenerateEnv = 0;
-                obj.RefHorizon = 1;
+                obj.Id = string(java.util.UUID.randomUUID.toString);
+                obj.Name = '';
+                obj.Params = [];
+                obj.ParamsStructName = '';
+                obj.Type = '';
+                obj.Lib = '';
+                obj.LibVersion = '0.0';
+                obj.Callbacks = init_env_callbacks;
             end
 
                % Loop through the parameter names and not the values.
@@ -31,7 +40,6 @@ classdef ControllerComponent < ComponentOptions
                     as_char = varargin{i};
                 end
                 value = varargin{i+1};
-
 
                 obj = set_value(obj, as_char, value);
 
@@ -51,14 +59,10 @@ classdef ControllerComponent < ComponentOptions
                     obj.Params = value;
                 case 'ParamsStructName'
                     obj.ParamsStructName = value;
-                case 'Mux'
-                    obj.Mux = value;
-                case 'RefHorizon'
-                    obj.RefHorizon = value;
-                case 'RegenerateEnv'
-                    obj.RegenerateEnv = value;
                 case 'LibVersion'
                     obj.LibVersion = value;
+                case 'Callbacks'
+                    obj.Callbacks = value;
                 otherwise
                     warning(['Unexpected parameter name "', name, '"']);
             end
