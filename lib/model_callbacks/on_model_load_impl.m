@@ -25,7 +25,7 @@ function on_model_load_impl()
     % LIBRARY LINK WOULD OVERRIDE AUTOGEN TYPES
     setup_simulink_autogen_types(curr_model);
 
-    trigger_model_callback(info, 'on_model_load');
+    trigger_model_callback(info, 'OnEnvLoad');
 
 end
 

@@ -24,8 +24,15 @@ function setup_simulink_explicit_functions(curr_model, info, blocks)
 
         split_lines = splitlines(fun_block.Script);
 
+
         % HARDCODE
-        ext_fun_script = strjoin(split_lines(11:end), newline);
+        if model_has_tag(b, '__cs_m_ctl')
+            BEGIN_LINE = 13;
+        else
+            BEGIN_LINE = 11;
+        end
+
+        ext_fun_script = strjoin(split_lines(BEGIN_LINE:end), newline);
 
         first_bra = strfind(ext_fun_script, '(');
         first_bra = first_bra(1);
