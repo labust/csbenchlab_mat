@@ -30,14 +30,8 @@ function setup_simulink_explicit_functions(curr_model, info, blocks)
         cfg_args = get_script_parameter(fun_block.Script, '__cfg_args');
         step_args = get_script_parameter(fun_block.Script, '__step_args');
 
-        if isscalar(split(output_args, ','))
-            out_args_bracketed = output_args;
-        else
-            out_args_bracketed = strcat('[', output_args, ']');
-        end
 
-
-        ext_fun_script = fileread(fullfile(get_app_template_path(), 'eval_extrinsic_component_template.mt'));
+        ext_fun_script = readlines(fullfile(get_app_template_path(), 'eval_extrinsic_component_template.mt'));
         
         new_name = strcat(fnname, '_ext');
         ext_fun_script_new = replace(ext_fun_script, '{{function_name}}', new_name);
@@ -46,8 +40,6 @@ function setup_simulink_explicit_functions(curr_model, info, blocks)
         ext_fun_script_new = replace(ext_fun_script_new, '{{ctor_args}}', ctor_args);
         ext_fun_script_new = replace(ext_fun_script_new, '{{cfg_args}}', cfg_args);
         ext_fun_script_new = replace(ext_fun_script_new, '{{step_args}}', step_args);
-        ext_fun_script_new = replace(ext_fun_script_new, '{{output_args}}', output_args);
-        ext_fun_script_new = replace(ext_fun_script_new, '{{output_args_bracketed}}', out_args_bracketed);
 
         [env_path, ~] = fileparts(which(curr_model));
         ext_file = fullfile(env_path, 'autogen', strcat(new_name, '.m'));

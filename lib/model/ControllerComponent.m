@@ -21,47 +21,13 @@ classdef ControllerComponent < ComponentOptions
                 obj.RegenerateEnv = 0;
                 obj.RefHorizon = 1;
             end
-
-               % Loop through the parameter names and not the values.
-            for i = begin_idx:2:length(varargin)
-
-                if isstring(varargin{i})
-                    as_char = convertStringsToChars(varargin{i});
-                else
-                    as_char = varargin{i};
-                end
-                value = varargin{i+1};
+    
+            if length(varargin) >= begin_idx
+                obj = parse_name_value_varargin(varargin{begin_idx:end}, ...
+                        properties('ControllerComponent'), obj);
+             end
 
 
-                obj = set_value(obj, as_char, value);
-
-            end
-
-        end
-
-        function obj = set_value(obj, name, value)
-            switch name
-                case 'Name' 
-                    obj.Name = value;
-                case 'Type'
-                    obj.Type = value;  
-                case 'Lib'
-                    obj.Lib = value;      
-                case 'Params'
-                    obj.Params = value;
-                case 'ParamsStructName'
-                    obj.ParamsStructName = value;
-                case 'Mux'
-                    obj.Mux = value;
-                case 'RefHorizon'
-                    obj.RefHorizon = value;
-                case 'RegenerateEnv'
-                    obj.RegenerateEnv = value;
-                case 'LibVersion'
-                    obj.LibVersion = value;
-                otherwise
-                    warning(['Unexpected parameter name "', name, '"']);
-            end
         end
 
         

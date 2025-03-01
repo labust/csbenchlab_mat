@@ -10,6 +10,8 @@ classdef (Abstract) DisturbanceGenerator
         input_size
         output_size
         data
+        iid
+        pid
     end
 
     methods (Abstract)
@@ -30,6 +32,7 @@ classdef (Abstract) DisturbanceGenerator
             end
 
             begin_idx = 2;
+            pid = 0; iid = 0;
             for i = begin_idx:2:length(args)
 
                 if isstring(args{i})
@@ -45,11 +48,16 @@ classdef (Abstract) DisturbanceGenerator
                         this.data = this.create_data_model(this.params, value);
                     case 'Data'
                         this.data = value;
+                    case 'iid'
+                        iid = value;
+                    case 'pid'
+                        pid = value;
                     otherwise
                         warning(['Unexpected parameter name "', as_char, '"']);
                 end
             end
-
+            this.pid = pid;
+            this.iid = iid;
         end
         
         function this = configure(this, varargin)

@@ -154,8 +154,12 @@ function busses = generate_bus_types(block_name, name_sufix, data, busses)
         el.Name = name;
         el.DimensionsMode = "Fixed";
         el.Dimensions = size(value);
-
-        if isa(value, 'struct')
+        
+        if isstring(value) || ischar(value)
+            error("String type is not supported by simulink. Use uint8 array instead");
+        elseif isa(value, 'uint8')
+            el.DataType = 'uint8';
+        elseif isa(value, 'struct')
             busses = generate_bus_types(strcat(block_name, '_', name), ...
                 name_sufix, value, busses);
             el.DataType = strcat(block_name, '_', name, name_sufix);
@@ -212,6 +216,9 @@ function type_dict = setup_simulink_m_component(c, model_name, folder_path, type
     params = eval_component_params(c_path);
     is_m_controller = model_has_tag(c_path, '__cs_m_ctl');
     l_info = libinfo(c);
+
+
+    setup_simulink_component_instance_id(c_path);
 
     class_name = get_m_component_class_name(l_info.ReferenceBlock);    
     

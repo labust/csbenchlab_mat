@@ -10,7 +10,9 @@ classdef (Abstract) Controller
         input_size
         output_size
         data
-        library_name
+        iid
+        pid
+        is_configured_v
     end
 
     methods (Abstract)
@@ -26,10 +28,12 @@ classdef (Abstract) Controller
 
     methods
         function this = Controller(args)
+            this.is_configured_v = 0;
             if ~isempty(args)
                 this.params = args{1};
             end
             begin_idx = 2;
+            pid = 0; iid = 0;
             for i = begin_idx:2:length(args)
 
                 if isstring(args{i})
@@ -45,8 +49,10 @@ classdef (Abstract) Controller
                         data = this.create_data_model(this.params, value);
                     case 'Data'
                         data = value;
-                    case 'library'
-                        library_name = value;
+                    case 'iid'
+                        iid = value;
+                    case 'pid'
+                        pid = value;
                     otherwise
                         warning(['Unexpected parameter name "', as_char, '"']);
                 end
@@ -55,7 +61,8 @@ classdef (Abstract) Controller
                 error("Data not set");
             end
             this.data = data;
-            this.library_name = library_name;
+            this.iid = iid;
+            this.pid = pid;
 
         end
         
@@ -78,17 +85,22 @@ classdef (Abstract) Controller
             end
 
             this = on_configure(this);
+            this.is_configured_v = 1;
         end
 
         function [this, u, log] = step(this, y_ref, y, dt, varargin)
 
             [this, u] = on_step(this, y_ref, y, dt, varargin{:});
 
-            log = evaluate_m_controller_log(class(this), this.library_name, this.data);
+            log = evaluate_m_controller_log(this.pid, this.iid, this.data);
         end
 
         function this = reset(this)
             this = on_reset(this);
+        end
+
+        function t = is_configured(this)
+            t = this.is_configured_v;
         end
 
     end

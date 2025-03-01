@@ -6,6 +6,7 @@ classdef ParamDescriptor
         Name
         DefaultValue
         IsValid
+        Serialize
     end
     
     methods
@@ -13,9 +14,9 @@ classdef ParamDescriptor
             
             this.Name = name;
             this.DefaultValue = default_value;
-
+            
             if ~isempty(varargin)
-                this.IsValid  = varargin{1};
+                this = parse_name_value_varargin(varargin, ["Serialize", "IsValid"], this);
             end
         end
 

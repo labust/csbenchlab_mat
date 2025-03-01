@@ -18,6 +18,11 @@ function p = get_script_parameter(script, param_name)
         end
         if strcmp(strtrim(splits{1}), param_name)
             p = strtrim(splits{2});
+            if startsWith(p, '"') && endsWith(p, '"')
+                p = p(2:end-1);
+            else
+                error(strcat("Error while parsing scrip parameter '", param_name, "'."));
+            end
             return
         end
     end

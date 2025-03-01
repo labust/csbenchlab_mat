@@ -29,8 +29,9 @@ function trigger_cb(comp, cb_name)
         if is_valid_field(comp.Callbacks, cb_name)
             try
                 run(comp.Callbacks.OnEnvLoad);
-            catch
-                error(strcat("OnEnvLoad callback resulted in errors in '", comp, "'."));
+            catch ME
+                disp(strcat("OnEnvLoad callback resulted in errors in '", comp.Name, "'."));
+                rethrow(ME);
             end
         end
     end

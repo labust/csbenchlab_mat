@@ -12,6 +12,8 @@ classdef (Abstract) DynSystem
         noise_params
         has_noise
         ic
+        pid
+        iid
     end
 
     methods (Abstract)
@@ -35,6 +37,7 @@ classdef (Abstract) DynSystem
             end
 
             begin_idx = 2;
+            pid = 0; iid = 0;
             for i = begin_idx:2:length(args)
 
                 if isstring(args{i})
@@ -47,6 +50,10 @@ classdef (Abstract) DynSystem
                 switch as_char
                     case 'Data'
                         data = value;
+                    case 'pid'
+                        pid = value;
+                    case 'iid'
+                        iid = value;
                     otherwise
                         warning(['Unexpected parameter name "', as_char, '"']);
                 end
@@ -57,6 +64,8 @@ classdef (Abstract) DynSystem
             end
 
             this.data = data;
+            this.pid = pid;
+            this.iid = iid;
 
             % if length(args) > 1
             %     this.noise_params = args{2};

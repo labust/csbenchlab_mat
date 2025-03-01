@@ -21,7 +21,7 @@ classdef ComponentOptions
                 obj = varargin{1};
                 begin_idx = 2;
             else
-                obj.Id = string(java.util.UUID.randomUUID.toString);
+                obj.Id = new_uuid;
                 obj.Name = '';
                 obj.Params = [];
                 obj.ParamsStructName = '';
@@ -30,45 +30,12 @@ classdef ComponentOptions
                 obj.LibVersion = '0.0';
                 obj.Callbacks = init_env_callbacks;
             end
-
-               % Loop through the parameter names and not the values.
-            for i = begin_idx:2:length(varargin)
-
-                if isstring(varargin{i})
-                    as_char = convertStringsToChars(varargin{i});
-                else
-                    as_char = varargin{i};
-                end
-                value = varargin{i+1};
-
-                obj = set_value(obj, as_char, value);
-
+            
+            if length(varargin) >= begin_idx
+                obj = parse_name_value_varargin(varargin{begin_idx:end}, ...
+                        properties('ComponentOptions'), obj);
             end
-
-        end
-
-        function obj = set_value(obj, name, value)
-            switch name
-                case 'Name' 
-                    obj.Name = value;
-                case 'Type'
-                    obj.Type = value;  
-                case 'Lib'
-                    obj.Lib = value;      
-                case 'Params'
-                    obj.Params = value;
-                case 'ParamsStructName'
-                    obj.ParamsStructName = value;
-                case 'LibVersion'
-                    obj.LibVersion = value;
-                case 'Callbacks'
-                    obj.Callbacks = value;
-                otherwise
-                    warning(['Unexpected parameter name "', name, '"']);
-            end
-        end
-
-        
+        end        
     end
 end
 

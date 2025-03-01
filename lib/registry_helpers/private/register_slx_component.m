@@ -27,16 +27,30 @@ function register_slx_component(info, typ, lib_name, tags, size)
     end
     try
         block = add_block(src, dest_path);
+        block_name = get_param(block, 'Name');
         set_param(block, 'Position', position);
         for i=1:length(tags)
             model_append_tag(block, tags{i});
         end
+        % 
+        % mask_parameters = struct('Name', 'cs_instance_id__', ...
+        %     'Value', '', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'off');
+        % mask_parameters(end+1) = struct('Name', 'cs_plugin_id__', ...
+        %     'Value', encode_plugin_id(info.Name, lib_name), 'Visible', 'off', 'Prompt', '', 'Evaluate', 'off');
+        
+        % does not work on linked blocks - TODO
+        % set_block_mask_parameters(block, block_name, mask_parameters);
 
         save_system(dest);
-    catch
+    catch ME
+        close_system(info.model_name, 0);
+        close_system(dest, 0);
+        rethrow(ME);
     end
     close_system(info.model_name, 0);
-    close_system(dest);
+    close_system(dest, 0);
 end
 
     
+
+
