@@ -3,10 +3,10 @@ classdef Gauss < DisturbanceGenerator
     %   Detailed explanation goes here
     
     properties (Constant)
-        param_description = ParamSet( ...
+        param_description = {
             ParamDescriptor("mu", 0), ...
             ParamDescriptor("sigma", 1) ...
-        );
+        };
     end
     
     methods

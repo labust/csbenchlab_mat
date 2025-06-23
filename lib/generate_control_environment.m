@@ -1,4 +1,4 @@
-function handle = generate_control_environment(env_info, folder_path)
+function handle = generate_control_environment(env_info, folder_path, indices)
     % Generates a new simulink environment for testing the controller
     % behavior
 
@@ -42,6 +42,12 @@ function handle = generate_control_environment(env_info, folder_path)
 %            reference: timeseries, or matrix
    
     % create path if given as optional argument
+
+    if ~exist('indices', 'var')
+        indices = linspace(1, length(env_info.Controllers), length(env_info.Controllers));
+    end
+
+    env_info.Controllers = env_info.Controllers(indices);
 
     [t, msg] = validate_env_cfg(env_info);
     if t > 0

@@ -90,13 +90,14 @@ function path_ret = create_environment(name, varargin)
     System = SystemOptions( ...
         "Id", new_uuid, ...
         "Name", options.SystemName, ...
-        "Params", options.SystemParam, ...
+        "Params", options.SystemParams, ...
         "Type", options.SystemType, ...
         "Lib", options.SystemLib);
 
 
     refs_path = fullfile(path, 'parts', strcat(name, '_refs.mat'));
     if ~isempty(options.References)
+        ref_config = struct;
         if isa(options.References, 'Simulink.SimulationData.Dataset')
             refs = options.References;
         else
@@ -112,22 +113,16 @@ function path_ret = create_environment(name, varargin)
             copyfile(f, refs_path);
         end
     else
-        refs = Simulink.SimulationData.Dataset;
-        element1 = Simulink.SimulationData.Signal;
-        element1.Name = "Signal1";
-        element1.Values = timeseries(0, 0);
-        refs{1} = element1;
-    end
-    names = {};
-    for i=1:refs.numElements
-        names{end+1} = refs{i}.Name;
-        ds = Simulink.SimulationData.Dataset;
-        ds = ds.addElement(refs{i});
-        eval(strcat(refs{i}.Name, ' = ds;'));
+        refs{1}.Name = "Zero";
+        refs{1}.Data = timeseries(0, 0);
+        refs{2}.Name = "Step";
+        refs{2}.Data = @(params, Ts, sys_info) generate_reference(params.t_sim, params.Ts, sys_info.dim, 1, params.dim);
+        refs{2}.Params.t_sim = 10;
+        refs{2}.Params.dim = 1;
     end
 
-
-    save(refs_path, names{:});
+    references = refs;
+    save(refs_path, 'references');
 
 
     cfgName = fullfile(path, 'config.json');

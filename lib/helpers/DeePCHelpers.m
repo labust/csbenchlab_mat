@@ -401,7 +401,7 @@ classdef DeePCHelpers
             x0(idx.s.r) = 0;
             
             % x0(idx.a.r) = rand(idx.a.sz, 1);
-            % x0 = rand(params.dim.state, 1);
+            % x0 = rand(size(x0, 1), 1);
             
 
             
@@ -480,16 +480,16 @@ classdef DeePCHelpers
 
         function [x_op, fval, exit_flag] = optim(optim_T, optim_f, A, b, lb, ub, x0)
             % o = optimoptions('quadprog','Algorithm','interior-point-convex');            
-            o = optimoptions('quadprog','Algorithm','active-set', 'Display','off');            
+            o = optimoptions('quadprog','Algorithm','active-set', 'Display','off');  
+            o.ConstraintTollerance = 1e-4;
+            o.ConstraintTolerance = 1e-4;
             [x_op, fval, exit_flag] = quadprog(optim_T, optim_f, [], [], A, b, lb, ub, x0, o);
         end
 
 
         function [x_op, fval, exit_flag] = optim_lt(optim_T, optim_f, A, b, A_lt, b_lt, lb, ub, x0)
-        
-            o = optimoptions('quadprog','Algorithm','active-set', 'Display','off');            
+            o = optimoptions('quadprog','Algorithm','active-set', 'Display','off', 'ConstraintTolerance', 1e-6);      
             [x_op, fval, exit_flag] = quadprog(optim_T, optim_f, A_lt, b_lt, A, b, lb, ub, x0, o);
-         
         end
 
 
@@ -563,7 +563,7 @@ classdef DeePCHelpers
         end
         
         function p = get_deepc_param_set(override_params)
-            p = ParamSet( ...
+            p = {
                 ParamDescriptor("L", 1), ...
                 ParamDescriptor("Tini", 1), ...
                 ParamDescriptor("Ts", 1), ...
@@ -597,10 +597,10 @@ classdef DeePCHelpers
                 ParamDescriptor("u_max", inf), ...
                 ParamDescriptor("y_min", -inf), ...
                 ParamDescriptor("y_max", inf) ...
-            );
+            };
 
             if exist('override_params', 'var')
-                p = p.override_params(override_params);
+                p = ParamHelpers.override_params(p, override_params);
             end
         end
 

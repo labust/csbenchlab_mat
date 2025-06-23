@@ -17,7 +17,8 @@ Each Matlab Class Controller should have the following form:
 ```
 
 
-```
+```matlab
+% Controller1.m
 classdef Controller1 < Controller
 
     properties (Constant)

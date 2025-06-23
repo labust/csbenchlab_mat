@@ -45,3 +45,9 @@
 - ParamsStructName: string
 - Type: string
 - Lib: string
+
+
+# StepReferenceParams
+- t_sim: double
+- dim: int
+- amplitude: double

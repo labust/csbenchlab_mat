@@ -32,7 +32,7 @@ function setup_simulink_with_controllers(model_name)
 
         l_info = libinfo(c);
 
-        class_name = get_m_component_class_name(l_info.ReferenceBlock);    
+        class_name = get_component_class_name(l_info.ReferenceBlock);    
             
         try
             mux = get_controller_mux_struct(c_path);

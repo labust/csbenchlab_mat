@@ -1,4 +1,4 @@
-function setup_simulink_with_scenarios(env_name, blocks)
+function active_scenario = setup_simulink_with_scenarios(env_name, blocks)
     
      selector_name = fullfile(blocks.refgen.Path, 'Reference');
      hws = get_param(env_name, 'modelworkspace');
@@ -18,7 +18,6 @@ function setup_simulink_with_scenarios(env_name, blocks)
 
     active_scenario_idx = 1;
     active_scenario = scenarios(active_scenario_idx);
-    set_param(selector_name, 'ActiveScenario', active_scenario.Reference);
 
     hws.assignin('Scenarios', scenarios);
     hws.assignin('ActiveScenario', active_scenario);

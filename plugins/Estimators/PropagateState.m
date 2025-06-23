@@ -2,7 +2,7 @@ classdef PropagateState < Estimator
     %PROPAGATESTATE Summary of this class goes here
     %   Detailed explanation goes here
     properties(Constant)
-        param_description = ParamSet();
+        param_description = {};
     end
 
 

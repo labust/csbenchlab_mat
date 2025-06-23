@@ -10,7 +10,6 @@ function init_app(path)
     init_f_name = fullfile(path, 'registry', 'init_f');
     if ~exist(init_f_name, 'file')
         mkdir(fullfile(path, 'autogen'));
-        mkdir(fullfile(path, 'code_autogen'));
         mkdir(fullfile(path, 'registry'));
         mkdir(fullfile(path, 'appdata'))
         addpath(fullfile(path, 'code_autogen'));
@@ -25,7 +24,7 @@ function register_common_components(path)
     get_or_create_component_library(fullfile(path, 'registry', 'local'), 1);
     handle = get_or_create_component_library(fullfile(path, 'registry', 'csbenchlab'));
     registry = make_component_registry_from_plugin_description(plugin_desc_path, ...
-        fullfile(path, 'registry', 'csbenchlab', 'autogen'));
+        'csbenchlab', fullfile(path, 'registry', 'csbenchlab', 'autogen'));
 
 
     fnames = fieldnames(registry);
@@ -39,10 +38,9 @@ function register_common_components(path)
 
         plugin_list = registry.(fname);
         for j = 1:length(plugin_list)
-            register_component(plugin_list{j}, parse_comp_type(fname), handle.name);
+            register_component(plugin_list{j}, parse_comp_type(fname), handle.name, handle.path);
         end
     end
-    generate_get_m_controller_log_function_handle(registry.ctl, 'csbenchlab');
 end
 
 

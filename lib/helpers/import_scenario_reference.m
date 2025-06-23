@@ -1,34 +1,17 @@
 function import_scenario_reference(env_path, scenario, read_path)
     
+    env_refs = load_env_references(env_path, 0);
 
-    [~, name, ~] = fileparts(env_path);
-    env_refs = fullfile(env_path, 'parts', strcat(name, "_refs.mat"));
-    c_r = load(env_refs);
-    fnames = fieldnames(c_r);
+    r = load(fullfile(read_path, 'parts', 'scneario_ref.mat')).scneario_ref;
+    
+    idx = cellfun(@(x) strcmp(x.Name, r.Name), env_refs);
 
-    r = load(fullfile(read_path, 'parts', 'refs.mat'));
-    fnames_import = fieldnames(r);
-
-
-    variables = {};
-    for i=1:length(fnames)
-        n = fnames{i};
-        eval(strcat(n, ' = c_r.("', n, '");'));
-        idx = cellfun(@(x) strcmp(x, n), variables);
-        if ~any(idx)
-            variables{end+1} = n;
-        end
+    if any(idx)
+        env_refs{idx} = r;
+    else
+        env_refs{end+1} = r;
     end
-    for i=1:length(fnames_import)
-        n = fnames_import{i};
-        eval(strcat(n, ' = r.("', n, '");'));
-        idx = cellfun(@(x) strcmp(x, n), variables);
-        if ~any(idx)
-            variables{end+1} = n;
-        end
-    end
-
-    save(env_refs, variables{:});
-
+    save_env_references(env_path, env_refs);
+    
 end
 

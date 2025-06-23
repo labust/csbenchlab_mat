@@ -17,7 +17,6 @@ classdef GeneratorHelpers
         
         
         function controllers = generate_controllers(model_name, info, system_dims)
-            controllers = [];
 
             pa = @BlockHelpers.path_append;
             gn = @BlockHelpers.get_name_or_empty;
@@ -28,7 +27,8 @@ classdef GeneratorHelpers
             subs_position = [330, 125, 430, 180]; 
             % position of controller component in 'n1/Subsystem'
             comp_position = [330, 130, 430, 180];
-
+            
+            controllers = [];
             for i=1:length(info)
                 io_handles = struct;
 
@@ -108,22 +108,12 @@ classdef GeneratorHelpers
                     gen_c(j).Name = name;
                     gen_c(j).Handle = c_h;
                     gen_c(j).Path = pa(cs_path, name);
-
-                    ctrls = get_model_blocks_with_tag(c_h, '__cs_m_ctl');
                     
                     % if block is not m_controller, set its params
                     if ~isempty(get_param(c_h, 'MaskValues'))
                         set_mask_values(c_h, 'params', comp.ParamsStructName);
                     end
 
-                    for k=1:length(ctrls)
-                        full_path = getfullname(ctrls(k));
-                        l_info = libinfo(ctrls(k));
-
-                        gen_c(j).MControllers(k).Path = full_path;
-                        gen_c(j).MControllers(k).Library = l_info.Library;
-                        gen_c(j).MControllers(k).ReferenceBlock = l_info.ReferenceBlock;
-                    end
 
                     extractor = GeneratorHelpers.generate_reference_extractor(cs_path, comp_position, ...
                         length(components));
@@ -155,9 +145,9 @@ classdef GeneratorHelpers
                         set_param(in_mux_ref, 'Inputs', num2str(length(comp.Mux.Inputs)));
                         io_handles.adapters(j).Mux.Inputs = comp.Mux.Inputs;
                     else
-                        set_param(in_mux, 'Inputs', num2str(system_dims.output));
-                        set_param(in_mux_ref, 'Inputs', num2str(system_dims.output));
-                        io_handles.adapters(j).Mux.Inputs = 1:system_dims.output;
+                        set_param(in_mux, 'Inputs', num2str(system_dims.Outputs));
+                        set_param(in_mux_ref, 'Inputs', num2str(system_dims.Outputs));
+                        io_handles.adapters(j).Mux.Inputs = 1:system_dims.Outputs;
                     end
                     
                     if ~isempty(comp.Mux.Outputs)    

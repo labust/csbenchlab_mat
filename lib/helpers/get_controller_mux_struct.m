@@ -6,7 +6,7 @@ function mux = get_controller_mux_struct(path)
     parent_path = get_parent_controller(path);
     
     splits = split(parent_path, '/');
-    demux_path = pa(splits{1:end-1}, 'DemuxYrefIn');
+    demux_path = pa(splits{1:end-1}, 'DemuxYIn');
     mux_path = pa(splits{1:end-1}, 'MuxOut');
 
 

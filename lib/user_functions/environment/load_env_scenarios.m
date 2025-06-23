@@ -1,4 +1,4 @@
-    function s = load_env_scenarios(env_path, check_path)
+function s = load_env_scenarios(env_path, check_path)
     if ~exist('check_path', 'var')
         check_path = 1;
     end

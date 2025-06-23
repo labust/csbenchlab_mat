@@ -53,7 +53,7 @@ classdef BlockHelpers
             if i_p < 0 || o_p < 0
                 if model_has_tag(systems.systems(1).Path, '__cs_m_sys')
                     info = libinfo(systems.systems(1).Path);
-                    class_name = get_m_component_class_name(info.ReferenceBlock);
+                    class_name = get_component_class_name(info.ReferenceBlock);
                     dims = eval(strcat(class_name, '.get_dims_from_params(sys_info.Params)'));
                 end
 

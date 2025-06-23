@@ -10,4 +10,3 @@ function cfg = load_env_data(env_path, check_path)
     cfg.Metrics = load_env_metrics(env_path, check_path);
     cfg.Scenarios = load_env_scenarios(env_path, check_path);
 end
-

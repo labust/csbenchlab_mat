@@ -40,8 +40,12 @@ function out_with_ref(out, plot_cfg, f_handle)
 
 
     plot(out.ref.Time, out.ref.Data(:, ref_dims), 'LineWidth', lw, 'LineStyle', '--');
-
-    names = fieldnames(out.y);
+    
+    if isfield(plot_cfg.Params, 'Controllers')
+        names = plot_cfg.Params.Controllers;
+    else
+        names = fieldnames(out.y);
+    end
     for i=1:length(names)
         n = names{i};
         data = out.y.(n);

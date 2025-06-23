@@ -1,0 +1,38 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/usr/local/MATLAB/R2024a/sys/ros2/glnxa64/ros2/lib/python3.9/site-packages",
+        "/home/luka/ros2_ws/install/grpc_ros_adapter/lib/python3.10/site-packages",
+        "/home/luka/ros2_ws/install/uuv_sensor_msgs/local/lib/python3.10/dist-packages",
+        "/home/luka/ros2_ws/install/mbzirc_xbee_comms/local/lib/python3.10/dist-packages",
+        "/home/luka/ros2_ws/install/mbzirc_vessel_tracking/lib/python3.10/site-packages",
+        "/home/luka/ros2_ws/install/mbzirc_range_localization/lib/python3.10/site-packages",
+        "/home/luka/ros2_ws/install/mbzirc_msgs/local/lib/python3.10/dist-packages",
+        "/home/luka/ros2_ws/install/lora_msgs/local/lib/python3.10/dist-packages",
+        "/home/luka/ros2_ws/install/labust_spektrum/lib/python3.10/site-packages",
+        "/home/luka/ros2_ws/install/labust_nav2_msgs/local/lib/python3.10/dist-packages",
+        "/home/luka/ros2_ws/install/labust_msgs/local/lib/python3.10/dist-packages",
+        "/home/luka/ros2_ws/install/labust_localization/local/lib/python3.10/dist-packages",
+        "/home/luka/ros2_ws/install/labust_common/local/lib/python3.10/dist-packages",
+        "/home/luka/ros2_ws/install/auv_msgs/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/usr/local/MATLAB/R2024a/sys/ros2/glnxa64/ros2/lib/python3.9/site-packages",
+        "/home/luka/ros2_ws/install/grpc_ros_adapter/lib/python3.10/site-packages",
+        "/home/luka/ros2_ws/install/uuv_sensor_msgs/local/lib/python3.10/dist-packages",
+        "/home/luka/ros2_ws/install/mbzirc_xbee_comms/local/lib/python3.10/dist-packages",
+        "/home/luka/ros2_ws/install/mbzirc_vessel_tracking/lib/python3.10/site-packages",
+        "/home/luka/ros2_ws/install/mbzirc_range_localization/lib/python3.10/site-packages",
+        "/home/luka/ros2_ws/install/mbzirc_msgs/local/lib/python3.10/dist-packages",
+        "/home/luka/ros2_ws/install/lora_msgs/local/lib/python3.10/dist-packages",
+        "/home/luka/ros2_ws/install/labust_spektrum/lib/python3.10/site-packages",
+        "/home/luka/ros2_ws/install/labust_nav2_msgs/local/lib/python3.10/dist-packages",
+        "/home/luka/ros2_ws/install/labust_msgs/local/lib/python3.10/dist-packages",
+        "/home/luka/ros2_ws/install/labust_localization/local/lib/python3.10/dist-packages",
+        "/home/luka/ros2_ws/install/labust_common/local/lib/python3.10/dist-packages",
+        "/home/luka/ros2_ws/install/auv_msgs/local/lib/python3.10/dist-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ]
+}

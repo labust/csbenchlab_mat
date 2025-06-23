@@ -20,6 +20,8 @@ function on_reference_select
     selector_name = pa(env_name, name, 'Reference');
 
     scenarios = hws.getVariable('Scenarios');
+
+    old_active_scenario = hws.getVariable('ActiveScenario');
     
     scenario_name = mo.Parameters(1).Value;
     active_scenario_idx = 0;
@@ -33,6 +35,10 @@ function on_reference_select
         active_scenario_idx = 1;
     end
     active_scenario = scenarios(active_scenario_idx);
+
+    % if strcmp(old_active_scenario.Id, active_scenario.Id)
+    %     return
+    % end
 
     set_param(selector_name, 'ActiveScenario', active_scenario.Reference);
 
@@ -56,15 +62,22 @@ function on_reference_select
             end
         end
     end
-    active_scenario.Params = sys_params;
+    if ~isfield(active_scenario, 'RefParams')
+        active_scenario.Params = sys_params;
+    else
+        ref_params = active_scenario.Params.RefParams;
+        active_scenario.Params = sys_params;
+        active_scenario.Params.RefParams = ref_params;
+    end
+
 
     start_time = 0;
     if is_valid_field(active_scenario, 'StartTime')
         start_time = active_scenario.StartTime;
     end
 
-    refs = load(pa(env_path, 'parts', strcat(env_name, '_refs')));
-    selected_reference = refs.(active_scenario.Reference);
+    ref = load(pa(env_path, 'autogen', strcat(env_name, '_dataset_ref')));
+    selected_reference = ref.(active_scenario.Reference);
     selected_reference = selected_reference{1};
     if is_valid_field(active_scenario, 'EndTime')
         end_time = active_scenario.EndTime;
