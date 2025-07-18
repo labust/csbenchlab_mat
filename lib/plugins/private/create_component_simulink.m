@@ -147,7 +147,10 @@ function block_path = create_component_simulink(info, lib_name, comp_type, tags,
         add_line(block_path, fun_p.Outport(i), out_ports{i}.Inport, "autorouting", "smart");
         pos = [pos(1), pos(2) + 15];
     end
-    set_block_mask_parameters(handle, block_name, mask_parameters, info, lib_name, add_logging);
+
+
+    set_block_mask_parameters(handle, block_name, ...
+        [get_component_default_mask_params(info, lib_name, add_logging), mask_parameters]);
 
     if exist("icon", 'var')
         set_param(handle, 'MaskBlockDVGIcon', strcat('MaskBlockIcon.', icon));

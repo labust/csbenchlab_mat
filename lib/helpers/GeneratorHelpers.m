@@ -110,10 +110,12 @@ classdef GeneratorHelpers
                     gen_c(j).Path = pa(cs_path, name);
                     
                     % if block is not m_controller, set its params
-                    if ~isempty(get_param(c_h, 'MaskValues'))
+                    if has_mask_parameter(c_h, 'param_struct_name')
+                        set_mask_values(c_h, 'param_struct_name', comp.ParamsStructName);
+                    end
+                    if has_mask_parameter(c_h, 'params')
                         set_mask_values(c_h, 'params', comp.ParamsStructName);
                     end
-
 
                     extractor = GeneratorHelpers.generate_reference_extractor(cs_path, comp_position, ...
                         length(components));
@@ -278,12 +280,16 @@ classdef GeneratorHelpers
                 s_block = pa(model_name, gn(info, sp{end}));
                 [s_h, name] = BlockHelpers.add_block_at(path, s_block, position);
                 
-                if ~isempty(get_param(s_h, 'MaskValues'))
-                    if is_valid_field(info, 'Params')
-                        set_mask_values(s_h, 'params', info.ParamsStructName);
-                    end
-                    set_mask_values(s_h, 'params_merged', 'ActiveScenario.Params');
-                end                    
+                if has_mask_parameter(s_h, 'params_struct_name')
+                    set_mask_values(s_h, 'params_struct_name', info.ParamsStructName);
+                end
+                if has_mask_parameter(s_h, 'params')
+                    set_mask_values(s_h, 'params', info.ParamsStructName);
+                end
+                if has_mask_parameter(s_h, 'params_merged')
+                    set_mask_values(s_h, 'params', 'ActiveScenario.Params');
+                end
+
                 gen_s.Name = name;
                 gen_s.Handle = s_h;
                 gen_s.Path = pa(model_name, gen_s.Name);

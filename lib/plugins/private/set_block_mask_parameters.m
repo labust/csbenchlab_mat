@@ -1,14 +1,6 @@
-function set_block_mask_parameters(handle, block_name, mask_parameters, info, lib_name, add_logging)
+function set_block_mask_parameters(handle, block_name, mask_parameters)
     
-    % default component parameters
-    mask_parameters(end+1) = struct('Name', 'LogEntryType', ...
-        'Value', '{block_name}_LT', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
-    mask_parameters(end+1) = struct('Name', 'iid__', ...
-        'Value', '[0]', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
-    v = mat2str(uint8(encode_plugin_id(info.Name, lib_name)));
-    mask_parameters(end+1) = struct('Name', 'pid__', ...
-        'Value', v, 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
-
+    
     mo = get_param(handle, 'MaskObject');
     if isempty(mo)
         mo = Simulink.Mask.create(handle);

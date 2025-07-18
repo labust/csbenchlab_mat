@@ -32,12 +32,7 @@ function setup_simulink_components(model_name, blocks)
     cs_comps = blocks.cs_blocks;
 
     for i=1:length(cs_comps)
-        if model_has_tag(cs_comps{i}, '__cs_m')
-            type_dict = setup_simulink_m_component(cs_comps{i}, model_name, folder_path, type_dict);
-        elseif model_has_tag(cs_comps{i}, '__cs_slx')
-        elseif model_has_tag(cs_comps{i}, '__cs_py')
-            type_dict = setup_simulink_py_component(cs_comps{i}, model_name, folder_path, type_dict);
-        end
+        type_dict = setup_simulink_component(cs_comps{i}, model_name, type_dict);
     end
     set_param(model_name, 'DataDictionary', bus_types_name);
     saveChanges(dictObj)
@@ -212,134 +207,30 @@ function setup_component_mask_parameters(c)
 end
 
 
-function type_dict = setup_simulink_m_component(c, model_name, folder_path, type_dict)
+function type_dict = setup_simulink_component(c, model_name, type_dict)
     c_path = getfullname(c);
-    params = eval_component_params(c_path);
-    is_m_controller = model_has_tag(c_path, '__cs_m_ctl');
-    l_info = libinfo(c);
-
-
     setup_simulink_component_instance_id(c_path);
-    class_name = get_component_class_name(l_info(1).ReferenceBlock);    
+
+    is_slx = model_has_tag(c_path, '__cs_slx');
     
-    mux = struct;
-    if is_m_controller
-        try
-            mux = get_controller_mux_struct(c_path);
-        catch
-            mux = evalin('base', 'mux');
-        end
-    end
-    typ = get_component_script_parameter_ref(l_info(1).ReferenceBlock, '__plugin_type');
-    lib_name = get_component_script_parameter_ref(l_info(1).ReferenceBlock, '__lib_name');
-    m = ComponentManager.get(typ);
-
-    try
-        data = m.create_component_data_model(class_name, lib_name, params, mux);
-    catch ME
-        if strcmp(ME.identifier,  'MATLAB:subscripting:classHasNoPropertyOrMethod')
-            data = 0;
-            % error(['Class ', class_name, ' must implement static method create_data_model']);
-        else
-            error(strcat('Error calling "', class_name, '.create_data_model'));
-            rethrow(ME);
-        end
+    % slx components are exceptions
+    if is_slx
+        SlxComponentManager.setup_component(c_path)
+        return
     end
 
-    io_args = m.get_component_inputs(class_name, lib_name);
-    
-    data_f_name = strcat(folder_path, '/autogen/data_bus_.m');
-    if exist(data_f_name, 'file')
-        delete(data_f_name);
-    end
-
-
-    % generate bus data types for controller data
-    name =  make_class_name(c_path);
-    busses = {};
-    busses = generate_bus_types(name, '_DT', data, busses);
-    
-    % if param struct is valid
-    if ~isnumeric(params) && ~isempty(fieldnames(params))
-        % generate bus data types for controller params
-        busses = generate_bus_types(name, '_PT', params, busses);     
-    end
-    for l=1:length(busses)
-        type_dict.addEntry(busses{l}.Name, busses{l}.Bus);
-    end
-
-
-    % generate bus data types for logs
-    log_desc = m.get_component_log_description(class_name, lib_name);
-    new_log_bus = Simulink.Bus;
-    for l=1:length(log_desc)
-        d = log_desc{l};
-        
-        try 
-            value = data.(d.Name);
-        catch
-            error(['Log entry "', d.Name, '" does not exist in the data model']);
-        end
-
-        el = Simulink.BusElement;
-        el.Name = d.Name;
-        el.DimensionsMode = "Fixed";
-        el.Dimensions = size(value);
-        new_log_bus.Elements(end+1) = el; 
-    end
-    log_bus_name = strcat(name, '_LT');
-    if ~isempty(new_log_bus.Elements)
-        type_dict.addEntry(log_bus_name, new_log_bus);
-    end
-       
-    % generate bus data types for inputs
-    for l=1:length(io_args)
-        a = io_args{l};
-        
-        if isa(a.Dim, 'function_handle')
-            if is_m_controller
-                dim = a.Dim(params, mux);
-            else
-                dim = a.Dim(params);
-            end
-        else
-            dim = a.Dim;
-        end
-
-        if isa(dim, 'struct')
-            busses = {};
-            type_name = get_argument_type_name(c_path, io_args{l}.Name);
-            busses = generate_input_bus(type_name, dim, busses);
-            for o=1:length(busses)
-               type_dict.addEntry(busses{o}.Name, busses{o}.Bus);
-            end
-        end
-    end
-
-    data_name = strcat(name, '_data');
-    no_indexers_data = replace_indexers(data);
-    mws = get_param(model_name, 'modelworkspace');
-    mws.assignin(data_name, no_indexers_data);
-    
-end
-
-
-
-function type_dict = setup_simulink_py_component(c, model_name, folder_path, type_dict)
-    c_path = getfullname(c);
-    params = eval_component_params(c_path);
-    is_py_controller = model_has_tag(c_path, '__cs_py_ctl');
     l_info = libinfo(c);
+    is_controller = model_has_tag(c_path, '__cs_ctl');
+    params = eval_component_params(c_path);
 
-
-    setup_simulink_component_instance_id(c_path);
 
     class_name = get_component_class_name(l_info(1).ReferenceBlock);    
     lib_name = get_component_script_parameter_ref(l_info(1).ReferenceBlock, '__lib_name');
     typ = get_component_script_parameter_ref(l_info(1).ReferenceBlock, '__plugin_type');
     m = ComponentManager.get(typ);
+
     mux = struct;
-    if is_py_controller
+    if is_controller
         try
             mux = get_controller_mux_struct(c_path);
         catch
@@ -359,11 +250,6 @@ function type_dict = setup_simulink_py_component(c, model_name, folder_path, typ
     end
 
     io_args = m.get_component_inputs(class_name, lib_name);
-    
-    data_f_name = strcat(folder_path, '/autogen/data_bus_.m');
-    if exist(data_f_name, 'file')
-        delete(data_f_name);
-    end
 
 
     % generate bus data types for controller data

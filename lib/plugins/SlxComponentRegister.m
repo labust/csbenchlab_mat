@@ -134,14 +134,16 @@ classdef SlxComponentRegister < ComponentRegister
                 for i=1:length(tags)
                     model_append_tag(block, tags{i});
                 end
-                % 
-                % mask_parameters = struct('Name', 'cs_instance_id__', ...
-                %     'Value', '', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'off');
-                % mask_parameters(end+1) = struct('Name', 'cs_plugin_id__', ...
-                %     'Value', encode_plugin_id(info.Name, lib_name), 'Visible', 'off', 'Prompt', '', 'Evaluate', 'off');
                 
+                % break link with file
+                % required for mask parameter changes
+                set_param(block, 'LinkStatus', 'none'); 
+                mask_parameters  = struct('Name', 'params_struct_name', ...
+                    'Value', '', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'off');
+
                 % does not work on linked blocks - TODO
-                % set_block_mask_parameters(block, block_name, mask_parameters);
+                set_block_mask_parameters(block, block_name, [ ...
+                    get_component_default_mask_params(info, lib_name, 0), mask_parameters]);
         
                 save_system(dest);
             catch ME

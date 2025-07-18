@@ -152,10 +152,12 @@ Similar to exporting components, by clicking on the `Import <component-name>` bu
 
 ## Sharing environments
 
+The entirety of the Environment information is stored in the environment folder, which is created when the Environment is generated. Sharing the Environment is done by simply sharing the environment folder.
 
+### Exporting environments
 
+In the Environment Manager GUI, click on the `Export environment` button. This will create the `export` directory in the current Matlab working directory with the exported environment files.
 
+### Importing environments
 
-# Install libraries
-
-
+In the Startup GUI, click on the `Open control environment` button. This will open a file selector dialog where you can select the `.cse` file containing the exported environment. After selecting the file, the Environment will be imported and registered in the CSBenchlab environment.

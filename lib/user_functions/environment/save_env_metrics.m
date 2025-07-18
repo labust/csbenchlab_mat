@@ -10,5 +10,7 @@ function save_env_metrics(env_path, metrics, check_path)
         metrics(i) = save_component_params(metrics(i), env_path);
     end
     f = fullfile(env_path, 'parts', 'metrics.json');
-    writestruct(metrics, f, 'FileType', 'json');
+    if ~isempty(metrics)
+        writestruct(metrics, f, 'FileType', 'json');
+    end
 end

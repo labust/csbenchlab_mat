@@ -4,6 +4,7 @@ classdef PyComponentManager < ComponentManager
     
    
     methods (Static)
+
         function data = create_component_data_model(class_name, lib_name, params, mux)
             m = get_python_module(class_name, lib_name);
             py_data = m.(class_name).create_data_model(m.(class_name), params, mux);
@@ -15,7 +16,6 @@ classdef PyComponentManager < ComponentManager
             cls = m.(class_name);
             res = cls(varargin{:});
         end
-
 
         function resolved = make_component_params(name, lib_name, param_values)
             if ~exist('param_values', 'var')
