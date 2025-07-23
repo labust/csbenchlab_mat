@@ -1,4 +1,4 @@
-function handle = init_component_library(path, close_after_creation)
+function handle = create_component_library(path, close_after_creation)
     
     if nargin == 0
         dest_path = '.';
