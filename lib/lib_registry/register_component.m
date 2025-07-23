@@ -1,6 +1,6 @@
 function register_component(info, t, lib_name, lib_path, append_to_json)
    
-   if ~startsWith(info.ComponentPath, lib_path)
+   if ~strcmp(lib_name, 'csbenchlab') &&~startsWith(info.ComponentPath, lib_path) 
        error(['Cannot register component. Component source file should be inside ' ...
            'the library.'])
    end

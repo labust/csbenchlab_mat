@@ -9,6 +9,6 @@ function path = get_app_root_path()
     catch
         % remove before instalation
         % path = fullfile('.');
-        path = fullfile('/home/luka/matlab/csbenchlab');
+        path = fullfile('/home/luka/matlab/test/csbenchlab');
     end
 end

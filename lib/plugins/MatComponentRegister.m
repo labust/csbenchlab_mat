@@ -194,8 +194,9 @@ classdef MatComponentRegister < ComponentRegister
     
             default_inputs = {'y', 'dt', 'ic'};
             default_outputs = {'y_hat'};
-            input_args = cellfun(@(x) string(x.Name), get_m_component_inputs(info.Name));
-            output_args = cellfun(@(x) string(x.Name), get_m_component_outputs(info.Name));
+            cm = MatComponentManager;
+            input_args = cellfun(@(x) string(x.Name), cm.get_component_inputs(info.Name));
+            output_args = cellfun(@(x) string(x.Name), cm.get_component_outputs(info.Name));
             
             input_args_desc = create_argument_description([default_inputs, input_args, 'params', 'data']);
             output_args_desc = create_argument_description([default_outputs, output_args]);
@@ -259,8 +260,10 @@ classdef MatComponentRegister < ComponentRegister
 
             default_inputs = {'y', 'dt'};
             default_outputs = {'y_n'};
-            input_args = cellfun(@(x) string(x.Name), get_m_component_inputs(info.Name));
-            output_args = cellfun(@(x) string(x.Name), get_m_component_outputs(info.Name));
+            cm = MatComponentManager;
+
+            input_args = cellfun(@(x) string(x.Name), cm.get_component_inputs(info.Name));
+            output_args = cellfun(@(x) string(x.Name), cm.get_component_outputs(info.Name));
             
             input_args_desc = create_argument_description([default_inputs, input_args, 'params', 'data']);
             output_args_desc = create_argument_description([default_outputs, output_args]);

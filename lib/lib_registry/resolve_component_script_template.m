@@ -10,6 +10,9 @@ function fun_script_new = resolve_component_script_template(info, lib_name, ...
     if add_logging
         output_args_fn = bracket_outputs(output_args + ", log");
         logging_define = generate_logging_function(info, lib_name);
+    else
+        output_args_fn = output_args;
+        logging_define = "";
     end
     
     comp_fun_script = fileread(fullfile(get_app_template_path(), template_name));
