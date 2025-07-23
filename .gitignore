@@ -31,7 +31,6 @@
 *.out
 *.app
 
-registry/
 slprj/
 .DS_Store
 *.slxc
