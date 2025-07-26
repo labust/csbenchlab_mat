@@ -19,10 +19,6 @@
         {
             "type": "folder_scan",
             "path": "Systems"
-        },
-        {
-            "type": "file",
-            "path": "test1.slx:PID2"
         }
     ]
 }

@@ -27,6 +27,7 @@ function handle = get_or_create_component_library(path, close_after_creation)
 
     % check if package is already created
     if autogen_created
+        close_library(name);
         handle = create_component_library(path, 0);
     else
         handle.sh = load_and_unlock_system(fullfile(autogen_folder, syspath));

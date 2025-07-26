@@ -244,7 +244,7 @@ function type_dict = setup_simulink_component(c, model_name, type_dict)
             data = 0;
             % error(['Class ', class_name, ' must implement static method create_data_model']);
         else
-            error(strcat('Error calling "', class_name, '.create_data_model'));
+            warning(strcat('Error calling "', class_name, '.create_data_model'));
             rethrow(ME);
         end
     end
@@ -295,7 +295,7 @@ function type_dict = setup_simulink_component(c, model_name, type_dict)
         a = io_args{l};
         
         if isa(a.Dim, 'function_handle')
-            if is_py_controller
+            if is_controller
                 dim = a.Dim(params, mux);
             else
                 dim = a.Dim(params);

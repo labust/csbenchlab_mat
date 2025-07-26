@@ -1,5 +1,5 @@
 function add_to_lib_manifest(p, t, lib_name)
-    lib_path = fullfile(get_app_registry_path(), lib_name);
+    lib_path = fullfile(CSPath.get_app_registry_path(), lib_name);
     load(fullfile(lib_path, 'autogen', 'manifest.mat'), 'registry');
     
     if t == 1

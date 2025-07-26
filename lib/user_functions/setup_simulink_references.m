@@ -1,32 +1,42 @@
-function setup_simulink_references(env_name, info, blocks, active_scenario)
+function setup_simulink_references(env_name, info, blocks, scenarios, active_scenario)
     folder_path = fileparts(which(env_name));
     sig_editor_h = getSimulinkBlockHandle(fullfile(blocks.refgen.Path, 'Reference'));
 
     refs = load_env_references(env_name);
-    path = generate_dataset_references(env_name, folder_path, info, blocks, refs, active_scenario);
+    path = generate_dataset_references(env_name, folder_path, info, blocks, refs, scenarios);
 
     set_param(sig_editor_h, 'FileName', path);
     selector_name = fullfile(blocks.refgen.Path, 'Reference');
-    set_param(selector_name, 'ActiveScenario', active_scenario.Reference);
+
+    set_param(selector_name, 'ActiveScenario', get_ref_name(active_scenario.Name));
 end
 
 
-function path = generate_dataset_references(env_name, env_path, info, blocks, refs, active_scenario)
-
-    idx = cellfun(@(x) strcmp(x.Name, active_scenario.Reference), refs);
-    ref = refs{idx};
-    ds = Simulink.SimulationData.Dataset;
-    if isa(ref.Data, 'function_handle')           
-        data = ref.Data(active_scenario.Params.RefParams, info.Metadata.Ts, blocks.systems.dims);
-    else
-        data = ref.Data;
+function path = generate_dataset_references(env_name, env_path, info, blocks, refs, scenarios)
+    save_names = {};
+    for i=1:length(scenarios)
+        scenario = scenarios(i);
+        idx = cellfun(@(x) strcmp(x.Name, scenario.Reference), refs);
+        ref = refs{idx};
+        ds = Simulink.SimulationData.Dataset;
+        if isa(ref.Data, 'function_handle')           
+            data = ref.Data(scenario.Params.RefParams, info.Metadata.Ts, blocks.systems.dims);
+        else
+            data = ref.Data;
+        end
+        if ~isa(data, 'timeseries')
+            error(strcat("Error generating reference for scenario ", scenario.Name, ...
+             "'. Data is not timeseries."));
+        end
+        ds = ds.addElement(data);
+        fixed_name = get_ref_name(scenario.Name);
+        eval(strcat(fixed_name, ' = ds;'));
+        save_names{end+1} = fixed_name;
     end
-    if ~isa(data, 'timeseries')
-        error(strcat("Error generating reference for scenario ", active_scenario.Name, ...
-         "'. Data is not timeseries."));
-    end
-    ds = ds.addElement(data);
-    eval(strcat(ref.Name, ' = ds;'));
     path = fullfile(env_path, 'autogen', strcat(env_name, '_dataset_ref.mat'));
-    save(path, ref.Name);
+    save(path, save_names{:});
+end
+
+function n = get_ref_name(n)
+    n = replace(n, ' ', '_');
 end

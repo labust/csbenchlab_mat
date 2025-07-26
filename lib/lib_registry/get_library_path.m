@@ -1,6 +1,6 @@
 function lib = get_library_path(lib_name)
    
-    reg = get_app_registry_path();
+    reg = CSPath.get_app_registry_path();
     fs = dir(reg);
     for i=1:length(fs)
         n = fs(i).name;

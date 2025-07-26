@@ -40,7 +40,7 @@ function on_reference_select
     %     return
     % end
 
-    set_param(selector_name, 'ActiveScenario', active_scenario.Reference);
+    set_param(selector_name, 'ActiveScenario', fix_ref_name(active_scenario.Name));
 
     blocks = hws.getVariable('gen_blocks');
     sys_params = eval_component_params(blocks.systems.systems(1).Path);
@@ -53,6 +53,9 @@ function on_reference_select
         if ~isempty(f_names)
             for i=1:length(f_names)
                 name = f_names{i};
+                if strcmp(name, 'RefParams')
+                    continue
+                end
                 has_name = sum(cellfun(@(x) strcmp(x, name), sys_params_names));
                 if has_name
                     sys_params.(f_names{i}) = active_scenario.Params.(f_names{i});
@@ -62,7 +65,7 @@ function on_reference_select
             end
         end
     end
-    if ~isfield(active_scenario, 'RefParams')
+    if ~isfield(active_scenario.Params, 'RefParams')
         active_scenario.Params = sys_params;
     else
         ref_params = active_scenario.Params.RefParams;
@@ -77,7 +80,7 @@ function on_reference_select
     end
 
     ref = load(pa(env_path, 'autogen', strcat(env_name, '_dataset_ref')));
-    selected_reference = ref.(active_scenario.Reference);
+    selected_reference = ref.(fix_ref_name(active_scenario.Name));
     selected_reference = selected_reference{1};
     if is_valid_field(active_scenario, 'EndTime')
         end_time = active_scenario.EndTime;
@@ -105,4 +108,9 @@ function on_reference_select
     catch e
     end
 
+end
+
+
+function n = fix_ref_name(n)
+    n = replace(n, ' ', '_');
 end

@@ -11,8 +11,8 @@ function on_model_load_impl()
 
     setup_simulink_components(curr_model, blocks);
     setup_simulink_extrinsic_functions(curr_model, info, blocks);
-    active_scenario = setup_simulink_with_scenarios(curr_model, blocks);
-    setup_simulink_references(curr_model, info, blocks, active_scenario)
+    [scenarios, active_scenario] = setup_simulink_with_scenarios(curr_model, blocks);
+    setup_simulink_references(curr_model, info, blocks, scenarios, active_scenario)
     
     setup_simulink_reference_handlers(curr_model, info.Controllers, blocks);
     open_system(strcat(curr_model, '/RefGenerator'));

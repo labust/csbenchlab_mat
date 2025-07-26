@@ -8,7 +8,7 @@ function csbenchlab_hyperparam_optim(env_name)
     dest = fullfile(env_path, 'hyperparam_optim', 'HyperparameterOptimization');
     if ~exist(fullfile(env_path, 'hyperparam_optim'), 'dir')
         mkdir(fullfile(env_path, 'hyperparam_optim'));
-        root = get_app_root_path();
+        root = CSPath.get_app_root_path();
         mkdir(dest);
         copyfile(fullfile(root, 'HyperparameterOptimization'), dest);
     end

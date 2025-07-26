@@ -1,13 +1,18 @@
-function close_library(name, varargin)
+function close_library(varargin)
 
-    if ~isempty(varargin)
+    if isnumeric(varargin{end})
         f = varargin{1};
+        n = nargin - 1;
     else
         f = 0;
+        n = nargin;
     end
-    close_system(strcat(name, '_sys'), f);
-    close_system(strcat(name, '_ctl'), f);
-    close_system(strcat(name, '_est'), f);
-    close_system(strcat(name, '_dist'), f);
+    for i=1:n
+        name = varargin{i};
+        close_system(strcat(name, '_sys'), f);
+        close_system(strcat(name, '_ctl'), f);
+        close_system(strcat(name, '_est'), f);
+        close_system(strcat(name, '_dist'), f);
+    end
 end
 

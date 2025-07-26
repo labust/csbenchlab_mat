@@ -1,6 +1,6 @@
 function remove_from_lib_manifest(name, t, lib_name)
 
-    lib_path = fullfile(get_app_registry_path(), lib_name);
+    lib_path = fullfile(CSPath.get_app_registry_path(), lib_name);
     
     load(fullfile(lib_path, 'autogen', 'manifest.mat'), 'registry');
     

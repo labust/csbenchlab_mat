@@ -130,20 +130,20 @@ function path_ret = create_environment(name, varargin)
     writestruct(cfg, cfgName, 'FileType','json');
     writestruct(options_as_struct(System), sysName, 'FileType','json');
 
-    
-    addpath(path);
-    addpath(fullfile(path, 'autogen'));
+    make_sourceing_scripts(path, name);
+    source_environment(path, name);
     if save_controllers == 1    
         movefile(save_controllers_temp_file, controllers_lib_path);
     end
 end
 
 
+
 function setup_metrics(env_name, path)
     mkdir(fullfile(path, 'autogen', 'metrics', 'private'));
     addpath(fullfile(path, 'autogen', 'metrics'));
 
-    f = fullfile(get_app_template_path, 'eval_metrics_template.mt');
+    f = fullfile(CSPath.get_app_template_path, 'eval_metrics_template.mt');
 
     t = fileread(f);
     f_name = strcat(env_name, '_eval_metrics');
@@ -153,4 +153,8 @@ function setup_metrics(env_name, path)
     h = fopen(new_file_path, 'w');
     fprintf(h, content);
     fclose(h);
+end
+
+function make_sourceing_scripts(env_path, env_name)
+    filePath = matlab.desktop.editor.getActiveFilename;
 end

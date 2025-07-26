@@ -32,15 +32,14 @@ function setup_m_extrinsics(b, curr_model)
     fnname = get_script_parameter(fun_block.Script, '__fnname');
     input_args = get_script_parameter(fun_block.Script, '__input_args');
     output_args = get_script_parameter(fun_block.Script, '__output_args');
-    fn_output_args = get_script_parameter(fun_block.Script, '__fn_output_args');
     ctor_args = get_script_parameter(fun_block.Script, '__ctor_args');
     cfg_args = get_script_parameter(fun_block.Script, '__cfg_args');
     step_args = get_script_parameter(fun_block.Script, '__step_args');
 
-    if length(strsplit(fn_output_args, ',')) > 1
-        output_args_fn = strcat('[', fn_output_args, ']');
+    if length(strsplit(output_args, ',')) > 1
+        output_args_fn = strcat('[', output_args, ']');
     else
-        output_args_fn = fn_output_args;
+        output_args_fn = output_args;
     end
     ext_fun_script = fileread(fullfile(CSPath.get_app_template_path(), 'eval_extrinsic_m_component_template.mt'));
     
@@ -120,7 +119,6 @@ end
 
 function src = get_eval_log_fn_src(script)
     f = strfind(script, 'eval_log');
-    start_idx = f(end) - 16;
-    src = script(start_idx:end);
+    start_idx = f(end) - 
 
 end

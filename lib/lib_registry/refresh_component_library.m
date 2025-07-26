@@ -1,5 +1,5 @@
 function refresh_component_library(lib)
-    reg = get_app_registry_path();
+    reg = CSPath.get_app_registry_path();
         
     if isfolder(fullfile(reg, lib))
         dest_path = fullfile(reg, lib);

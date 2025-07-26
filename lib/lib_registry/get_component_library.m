@@ -1,7 +1,7 @@
 function lib = get_component_library(n)
     
    
-    reg = get_app_registry_path();
+    reg = CSPath.get_app_registry_path();
     ff = fullfile(reg, n);
     if isfolder(ff)
         lib = struct('Name', n, "Type", 'install', 'Path', fullfile(reg, n));

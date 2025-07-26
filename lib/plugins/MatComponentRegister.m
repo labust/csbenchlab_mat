@@ -112,12 +112,11 @@ classdef MatComponentRegister < ComponentRegister
             
             icon = 'system_icon';
             extrinsic_init = "y = zeros(size(ic))";
-            add_logging = 0;
             create_component_simulink(info, lib_name, 'sys', ...
                 {"__cs_m_sys"}, 'm_component_simulink_template', input_args_desc, output_args_desc, ...
                 {"'Params'", 'params_merged', "'Data'", 'data'}, ...
                 { 'ic' }, [{'u', 't', 'dt'}, input_args], ...
-                add_logging, mask_parameters, extrinsic_init, icon, [100, 40]);
+                mask_parameters, extrinsic_init, icon, [100, 40]);
         end
 
         function register_controller_(info, lib_name)
@@ -181,12 +180,11 @@ classdef MatComponentRegister < ComponentRegister
             end
             icon = 'controller_icon';
             extrinsic_init = "u = u_ic;";
-            add_logging = 1;
             create_component_simulink(info, lib_name, 'ctl', ...
                 {"__cs_m_ctl"}, 'm_component_simulink_template', input_args_desc, output_args_desc, ...
                 {"'Params'", "params", "'Data'", "data"}, ...
                 {'u_ic', 'size(y)', 'size(y_ref)'}, [{'y_ref', 'y', 'dt'}, input_args], ...
-                add_logging, mask_parameters, extrinsic_init, icon, [120, 40]);
+                mask_parameters, extrinsic_init, icon, [120, 40]);
         
         end
 
@@ -248,12 +246,11 @@ classdef MatComponentRegister < ComponentRegister
             % programatiaclly does not work!
             icon = 'estimator_icon_mirror';
             extrinsic_init = "y_hat = zeros(size(ic))";
-            add_logging = 0;
             create_component_simulink(info, lib_name, 'est', ...
                 {"__cs_m_est"}, 'm_component_simulink_template', input_args_desc, output_args_desc, ...
                 {"'Params'", 'params', "'Data'", 'data'}, ...
                 { 'ic' }, [{'y', 'dt'}, input_args], ...
-                add_logging, mask_parameters, extrinsic_init, icon, [60, 40]);
+                mask_parameters, extrinsic_init, icon, [60, 40]);
         end
 
         function register_disturbance_generator_(info, lib_name)
@@ -312,12 +309,11 @@ classdef MatComponentRegister < ComponentRegister
             end
             icon = 'disturbance_icon';
             extrinsic_init = "y_n = zeros(size(y))";
-            add_logging = 0;
             create_component_simulink(info, lib_name, 'dist', ...
                 {"__cs_m_dist"}, 'm_component_simulink_template', input_args_desc, output_args_desc, ...
                 {"'Params'", 'params', "'Data'", 'data'}, ...
                 { }, [{'y', 'dt'}, input_args'], ...
-                add_logging, mask_parameters, extrinsic_init, icon, [60, 40]);
+                mask_parameters, extrinsic_init, icon, [60, 40]);
         end
     end
 end

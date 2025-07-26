@@ -63,7 +63,7 @@ function handle = create_component_library(path, close_after_creation)
 
     if ~isfile(fullfile(handle.path, 'plugins.json'))
         
-        content = fileread(fullfile(get_app_template_path(), 'plugins_template.json'));
+        content = fileread(fullfile(CSPath.get_app_template_path(), 'plugins_template.json'));
         replaced = replace(content, '{{library_name}}', name);
         try
             fid = fopen(fullfile(handle.path, 'plugins.json'),'wt');

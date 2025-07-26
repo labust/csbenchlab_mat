@@ -110,8 +110,8 @@ classdef GeneratorHelpers
                     gen_c(j).Path = pa(cs_path, name);
                     
                     % if block is not m_controller, set its params
-                    if has_mask_parameter(c_h, 'param_struct_name')
-                        set_mask_values(c_h, 'param_struct_name', comp.ParamsStructName);
+                    if has_mask_parameter(c_h, 'params_struct_name')
+                        set_mask_values(c_h, 'params_struct_name', comp.ParamsStructName);
                     end
                     if has_mask_parameter(c_h, 'params')
                         set_mask_values(c_h, 'params', comp.ParamsStructName);

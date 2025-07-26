@@ -15,7 +15,7 @@ function {{output_args_fn}} = fcn_{{function_name}}({{input_args}}, pid__, iid__
         obj = {{class_name}}({{ctor_args}}, 'pid', pid__, 'iid', iid__);
         obj = obj.configure({{cfg_args}});
     end
-    [obj, {{output_args_comp}}] = obj.step({{step_args}});
+    [obj, {{output_args}}] = obj.step({{step_args}});
     log = eval_log(obj.data);
 end
 

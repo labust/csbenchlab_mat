@@ -1,6 +1,6 @@
 function csbenchlab()
     
-    path = get_app_root_path();
+    path = CSPath.get_app_root_path();
 
     init_app(path);
     run('csbenchlab_app.mlapp');

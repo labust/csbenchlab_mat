@@ -5,7 +5,7 @@ classdef MatComponentManager  < ComponentManager
         function data = create_component_data_model(class_name, ~, params, mux)
     
             add_mux_arg_str = "";
-            if isempty(mux)
+            if ~isempty(mux)
                 add_mux_arg_str = ", mux";
             end
             data = eval(strcat(class_name, '.create_data_model(params', add_mux_arg_str, ');'));

@@ -1,4 +1,4 @@
-function {{output_args_bracketed}} = {{function_name}}({{input_args}})
+function {{output_args_fn}} = {{function_name}}({{input_args}})
 
     persistent comp_dict
     if isempty(comp_dict)
@@ -17,5 +17,8 @@ function {{output_args_bracketed}} = {{function_name}}({{input_args}})
     
     [o, {{comp_outputs}}] = o.step({{step_args}});
     comp_dict(iid) = o;
+    log = eval_log(o.data);
 end
+
+{{eval_log_fn}}
 

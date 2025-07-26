@@ -1,4 +1,4 @@
-function block_path = create_component_simulink(info, lib_name, comp_type, tags, script_template, inputs, outputs, ctor_args, cfg_args, step_args, mask_parameters, extrinsic_init, icon, size)
+function block_path = create_component_simulink(info, lib_name, comp_type, tags, script_template, inputs, outputs, ctor_args, cfg_args, step_args, add_logging, mask_parameters, extrinsic_init, icon, size)
     block_name = convertStringsToChars(info.Name);
     
     sim_lib_name = strcat(lib_name, '_', comp_type);
@@ -47,9 +47,7 @@ function block_path = create_component_simulink(info, lib_name, comp_type, tags,
     input_cell = arrayfun(@(x) {x.Name}, inputs);
     output_cell = arrayfun(@(x) {x.Name}, outputs);
 
-    m = ComponentManager.get(info.Type);
-    log_desc = m.get_component_log_description(info.Name, lib_name);
-    add_logging = ~isempty(log_desc);
+    MatComponentRegister.
 
     if add_logging
         fn_output_cell = [output_cell, {'log'}];

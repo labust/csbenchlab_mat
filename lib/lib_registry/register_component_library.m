@@ -1,11 +1,18 @@
 function register_component_library(path, link_register)
+    
+    if ~exist('link_register', 'var')
+        link_register = 0;
+    end
+
+    
+   
     if isfolder(path)
 
         if endsWith(path, '/')
             path = path(1:end-1);
         end
         meta = readstruct(fullfile(path, 'package.json'));
-        reg = get_app_registry_path();
+        reg = CSPath.get_app_registry_path();
         name = meta.library;
 
         if exist(fullfile(reg, name), 'dir')
@@ -15,6 +22,8 @@ function register_component_library(path, link_register)
 
         if ~link_register
             dest_path = fullfile(reg, name);
+            paths = library_paths(path, name);
+            addpath(paths{:});
             copyfile(path, dest_path);
         else
             link_lib.path = path;
@@ -44,14 +53,41 @@ function register_component_library(path, link_register)
     
             plugin_list = registry.(fname);
             for j = 1:length(plugin_list)
-                register_component(plugin_list{j}, parse_comp_type(fname), handle.name, handle.path);
+                register_component(plugin_list{j}, parse_comp_type(fname), handle.name, handle.path, 0);
             end
         end
-
-        addpath(dest_path);
-        addpath(fullfile(dest_path, name));
-        addpath(fullfile(dest_path, 'autogen'));
+        
+        % remove old library from path
+        if ~link_register
+            rmpath(paths{:});
+        end
+        
+        new_paths = library_paths(dest_path, name);
+        addpath(new_paths{:});
         close_library(name);
     end
 end
 
+
+
+function paths = library_paths(lib_path, name)
+    
+    function rf = recurse_folders(path)
+        rf = dir(fullfile(path, '**'));
+        rf = rf([rf.isdir] & ~strcmp({rf.name}, '.')  & ~strcmp({rf.name}, '..'));
+        if isempty(rf)
+            rf = string(path);
+            return
+        end
+        rf = [string(path),
+            arrayfun(@(x) string(fullfile(x.folder, x.name)), rf)]; 
+    end
+    lib_paths = recurse_folders(fullfile(lib_path, name));
+    src_paths = recurse_folders(fullfile(lib_path, 'src'));
+    paths = [
+        {lib_path}, ...
+        {fullfile(lib_path, 'autogen')}, ...
+        lib_paths(:)', ...
+        src_paths(:)' ...
+        ];
+end

@@ -1,5 +1,5 @@
 function export_component_library(lib_name)
-    reg = get_app_registry_path();
+    reg = CSPath.get_app_registry_path();
     path = fullfile(reg, lib_name);
     
 

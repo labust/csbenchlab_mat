@@ -7,7 +7,7 @@ classdef PyComponentRegister < ComponentRegister
         function info = get_plugin_info(~, plugin_path)
             info = struct;
         
-            f = fullfile(get_app_python_src_path(), 'registry', 'get_plugin_info.py');
+            f = fullfile(CSPath.get_app_python_src_path(), 'registry', 'get_plugin_info.py');
             plugin_info = run_py_file(f, "plugin_info", '--plugin_path', plugin_path);
         
             info.T = int32(plugin_info{"T"});
@@ -17,7 +17,7 @@ classdef PyComponentRegister < ComponentRegister
         end
 
         function instance = instantiate_plugin(plugin_path)        
-            f = fullfile(get_app_python_src_path(), 'registry', 'instantiate_plugin.py');
+            f = fullfile(CSPath.get_app_python_src_path(), 'registry', 'instantiate_plugin.py');
             instance = run_py_file(f, "instance", '--plugin_path', plugin_path);
         end
 
@@ -135,13 +135,12 @@ classdef PyComponentRegister < ComponentRegister
                 mask_parameters(end+1) = struct('Name', n, 'Value', v, 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
             end
             icon = 'controller_icon';
-            add_logging = 1;
             extrinsic_init = "u = u_ic;" + newline + "data_n = data;" + newline;
             create_component_simulink(info, lib_name, 'ctl', ...
                 {"__cs_py_ctl"}, 'py_component_simulink_template', input_args_desc, output_args_desc, ...
                 {"'Params'", "params", "'Data'", "data"}, ...
                 {'u_ic', 'size(y)', 'size(y_ref)'}, [{'y_ref', 'y', 'dt'}, input_args], ...
-                add_logging, mask_parameters, extrinsic_init, icon, [120, 40]);
+                mask_parameters, extrinsic_init, icon, [120, 40]);
         
         end
 
