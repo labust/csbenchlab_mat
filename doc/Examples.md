@@ -32,7 +32,7 @@ simulink block path of the component.
 - Manually - the plugin can be registered manually by selecting the library and clicking `Open context` button. Inside, there is a file named `plugins.json` which lists all the components to be registered from the selected library. Its format is further explained in [`Plugin file`](./FileSchema.md#pluginsjson)
 
 
-For this example, we will register the `system.slx`, `controller1.m` and `controller2.py` components.
+For this example, we will register `system.slx`, `controller1.m` and `controller2.py` components.
 The library context should look like this:
 
 ```
@@ -46,7 +46,7 @@ test_lib/
 └── test_lib/
 ```
 
-and after registering the components, the `plugins.json` file should look like this:
+After registering the components (enter `demo_double_integrator` when prompted for path while registering `system.slx`), the `plugins.json` file should look like this:
 
 ```json
 {
@@ -92,6 +92,8 @@ To add the second controller, click on the `Controllers` node in the tree view a
 
 
 Now, we define the environment experiments. Click on the `Experiments` node in the tree view. Click on the `Add experiment` button. This will create a new experiment with the default name `New_experiment`. In this example, we will leave it as `Experiment1`. The ['Experiment'](./Concepts.md#experiment) is described by the system initial conditions, system parameters and the reference signals. Insert `[0, 0]` as the system initial condition, which means that the system starts at rest. By default, the reference signals include `Zero` and `Step` references. Click on the `Select reference` and select the `Step` reference, which can be parametrized as described [here](./MatlabModel.md#stepreferenceparams). The reference parameters are stored as the `RefParams` field of the `Experiment` parameters. By clicking the `Save to workspace` button, the parameters will be saved to the matlab workspace. You can modify the parameters in the workspace and click on the `Load from workspace` (or `Refresh parameters`) button to load the modified parameters back to the Environment. Finally, click on the `Save changes` button to save the experiment configuration to the Environment.
+
+Finally, we add the Metric (Plot) to be generated after successful simulation. Select `Metrics` and click on the `Add metric` button. Select `out_with_ref.m` file which is the plot that displays reference values with system output of each controller in the simulation.
 
 
 After adding both controllers, the Environment tree should look like this:
