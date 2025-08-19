@@ -33,7 +33,8 @@ function out_with_ref(out, plot_cfg, f_handle)
     if is_valid_field(plot_cfg.Params, 'OutDimensions')
         out_dims = plot_cfg.Params.OutDimensions;
     else
-        out_dim = size(out.y.Data, 2);
+        fns = fieldnames(out.y);
+        out_dim = size(out.y.(fns{1}).Data, 2);
         out_dims = linspace(1, out_dim, out_dim);
     end
 
@@ -75,6 +76,18 @@ function out_with_ref(out, plot_cfg, f_handle)
 
     if is_valid_field(plot_cfg.Params, 'Legend')
         legend(plot_cfg.Params.Legend{:});
+    else
+        leg_names = {};
+        for i=1:length(ref_dims)
+            leg_names{end+1} = strcat('Reference_', num2str(i));
+        end
+        fns = fieldnames(out.y);
+        for i=1:length(fns)
+            for j=1:length(out_dims)
+                leg_names{end+1} = strcat(fns{i}, '_', num2str(j));
+            end
+        end
+        legend(leg_names{:});
     end
 
 end

@@ -47,8 +47,8 @@ function block_path = create_component_simulink(info, lib_name, comp_type, tags,
     input_cell = arrayfun(@(x) {x.Name}, inputs);
     output_cell = arrayfun(@(x) {x.Name}, outputs);
 
-    m = ComponentManager.get(info.Type);
-    log_desc = m.get_component_log_description(info.Name, lib_name);
+    r = ComponentRegister.get(info.Type);
+    log_desc = r.get_component_log_description_from_file(info.ComponentPath);
     add_logging = ~isempty(log_desc);
 
     if add_logging
@@ -74,7 +74,7 @@ function block_path = create_component_simulink(info, lib_name, comp_type, tags,
     end
     
     fun_block.Script = generate_script_parameters() + newline ...        
-        + resolve_component_script_template(info, lib_name, script_template, ...
+        + resolve_component_script_template(info, script_template, ...
         unique_name, obj_name, enlist_args(input_cell), enlist_args(output_cell), ...
         enlist_args(ctor_args), enlist_args(cfg_args), enlist_args(step_args), ...
         extrinsic_init);

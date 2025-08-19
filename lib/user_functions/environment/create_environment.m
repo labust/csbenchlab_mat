@@ -116,7 +116,7 @@ function path_ret = create_environment(name, varargin)
         refs{1}.Name = "Zero";
         refs{1}.Data = timeseries(0, 0);
         refs{2}.Name = "Step";
-        refs{2}.Data = @(params, Ts, sys_info) generate_reference(params.t_sim, params.Ts, sys_info.dim, 1, params.dim);
+        refs{2}.Data = @(params, Ts, dims) generate_reference(params.t_sim, Ts, dims.Outputs, 1, params.dim);
         refs{2}.Params.t_sim = 10;
         refs{2}.Params.dim = 1;
     end

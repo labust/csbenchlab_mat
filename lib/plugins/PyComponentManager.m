@@ -21,7 +21,7 @@ classdef PyComponentManager < ComponentManager
             if ~exist('param_values', 'var')
                 param_values = struct;
             end
-            desc = get_py_component_params(name, lib_name);
+            desc = PyComponentManager.get_component_params(name, lib_name);
         
         
             resolved = struct;

@@ -1,4 +1,4 @@
-function fun_script_new = resolve_component_script_template(info, lib_name, ...
+function fun_script_new = resolve_component_script_template(info, ...
     template_name, function_name, classname, ...
     input_args, output_args, ctor_args, ...
     cfg_args, step_args, extrinsic_init)
@@ -9,11 +9,11 @@ function fun_script_new = resolve_component_script_template(info, lib_name, ...
 
     
 
-    [has_log, logging_define] = generate_logging_function(info, lib_name);
+    [has_log, logging_define] = generate_logging_function(info);
     if has_log
         output_args_fn = bracket_outputs(output_args + ", log");
     else
-        output_args_fn = output_args;
+        output_args_fn = bracket_outputs(output_args);
     end
     
     comp_fun_script = fileread(fullfile(CSPath.get_app_template_path(), template_name));
@@ -39,9 +39,9 @@ function o = bracket_outputs(o)
 end
 
 
-function [has_log, src] = generate_logging_function(info, lib_name)
-    m = ComponentManager.get(info.Type);
-    log_desc = m.get_component_log_description(info.Name, lib_name);
+function [has_log, src] = generate_logging_function(info)
+    r = ComponentRegister.get(info.Type);
+    log_desc = r.get_component_log_description_from_file(info.ComponentPath);
     src = "";
     if ~isempty(log_desc) 
         has_log = 1;

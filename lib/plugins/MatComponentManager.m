@@ -52,8 +52,8 @@ classdef MatComponentManager  < ComponentManager
             desc = eval(strcat(class_name, '.param_description'));
         
             resolved = struct;
-            for i=1:length(desc.params)
-                p = desc.params{i};
+            for i=1:length(desc)
+                p = desc{i};
                 
                 exists = isfield(param_values, p.Name);
                 if exists

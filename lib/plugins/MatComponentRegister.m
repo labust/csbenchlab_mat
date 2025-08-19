@@ -54,6 +54,75 @@ classdef MatComponentRegister < ComponentRegister
             end
         end
 
+        function params = get_component_params_from_file(file_path)
+            [folder, name, ~] = fileparts(file_path);
+            try
+                params = MatComponentManager.get_component_params(name);
+                return
+            catch ME
+                addpath(folder);
+            end
+            try
+                params = MatComponentManager.get_component_params(name);
+                rmpath(folder);
+            catch
+                warning('Error getting mat parameters.')
+                rethrow(ME);
+            end
+        end
+
+        function logs = get_component_log_description_from_file(file_path)
+            [folder, name, ~] = fileparts(file_path);
+            try
+                logs = MatComponentManager.get_component_log_description(name);
+                return
+            catch ME
+                addpath(folder);
+            end
+            try
+                logs = MatComponentManager.get_component_log_description(name);
+                rmpath(folder);
+            catch
+                warning('Error getting mat logs.')
+                rethrow(ME);
+            end
+        end
+
+
+        function inputs = get_component_input_description_from_file(file_path)
+            [folder, name, ~] = fileparts(file_path);
+            try
+                inputs = MatComponentManager.get_component_inputs(name);
+                return
+            catch ME
+                addpath(folder);
+            end
+            try
+                inputs = MatComponentManager.get_component_inputs(name);
+                rmpath(folder);
+            catch
+                warning('Error getting mat logs.')
+                rethrow(ME);
+            end
+        end
+
+        function outputs = get_component_output_description_from_file(file_path)
+            [folder, name, ~] = fileparts(file_path);
+            try
+                outputs = MatComponentManager.get_component_outputs(name);
+                return
+            catch ME
+                addpath(folder);
+            end
+            try
+                outputs = MatComponentManager.get_component_outputs(name);
+                rmpath(folder);
+            catch
+                warning('Error getting mat logs.')
+                rethrow(ME);
+            end
+        end
+
         function register_system_(info, lib_name)
     
             default_inputs = {'u', 't', 'dt', 'ic'};
