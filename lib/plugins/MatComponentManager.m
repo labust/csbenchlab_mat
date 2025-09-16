@@ -44,7 +44,7 @@ classdef MatComponentManager  < ComponentManager
             end
         end
 
-        function resolved = make_component_params(class_name, param_values)
+        function resolved = make_component_params(class_name, ~, param_values)
     
             if ~exist('param_values', 'var')
                 param_values = struct;

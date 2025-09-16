@@ -41,7 +41,7 @@ function metrics = calculate_result_metrics(out)
         refs = any(y_ref);
         ref_dims = find(refs);
 
-        ret.qi = containers.Map('KeyType', 'int32', 'ValueType', 'any');
+        ret.qi = dictionary;
         for j=1:length(ref_dims)
             idx = ref_dims(j);
 
@@ -81,7 +81,8 @@ function metrics = calculate_result_metrics(out)
                 step_metrics(k).t_5p = sum(t_5p_v) .* out.Ts;
                 step_metrics(k).rise_t = sum(rt_v) .* out.Ts;
             end
-            ret.qi(idx) = step_metrics;
+            a = 5;
+            ret.qi(idx) = {step_metrics;
         end
         metrics.(ns{i}) = ret;
 

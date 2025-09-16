@@ -470,9 +470,11 @@ classdef GeneratorHelpers
                     add_line(c.Path, ex.Outport(1), cont_p.Inport(1), "autorouting", 'smart');
                     add_line(c.Path, h.in_mux.p.Outport, cont_p.Inport(2), "autorouting", 'smart');
                     add_line(c.Path, cont_p.Outport(1), h.out_demux.p.Inport, "autorouting", 'smart');
-
-                    add_line(c.Path, cont_p.Outport(2), io_h.out_mux_log.p.Inport(j), "autorouting", 'smart');
-
+                    
+                    if length(cont_p.Outport) > 1
+                        add_line(c.Path, cont_p.Outport(2), io_h.out_mux_log.p.Inport(j), "autorouting", 'smart');
+                    end
+                    
                     % connect scopes
                     add_line(c.Path, h.in_mux_ref.p.Outport, h.scopes.y.p.Inport(1), "autorouting", 'smart');
                     add_line(c.Path, h.in_mux.p.Outport, h.scopes.y.p.Inport(2), "autorouting", 'smart');

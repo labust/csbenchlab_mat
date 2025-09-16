@@ -16,19 +16,26 @@ function path = generate_dataset_references(env_name, env_path, info, blocks, re
     save_names = {};
     for i=1:length(scenarios)
         scenario = scenarios(i);
-        idx = cellfun(@(x) strcmp(x.Name, scenario.Reference), refs);
+        idx = cellfun(@(x) isa(x, 'Simulink.SimulationData.Dataset') && ...
+            strcmp(x.getElement(1).Name, scenario.Reference)...
+            || strcmp(x.Name, scenario.Reference), refs);
         ref = refs{idx};
-        ds = Simulink.SimulationData.Dataset;
-        if isa(ref.Data, 'function_handle')           
-            data = ref.Data(scenario.Params.RefParams, info.Metadata.Ts, blocks.systems.dims);
+
+        if isa(ref, 'Simulink.SimulationData.Dataset')
+            ds = ref;
         else
-            data = ref.Data;
+            ds = Simulink.SimulationData.Dataset;
+            if isa(ref.Data, 'function_handle')           
+                data = ref.Data(scenario.Params.RefParams, info.Metadata.Ts, blocks.systems.dims);
+            else
+                data = ref.Data;
+            end
+            if ~isa(data, 'timeseries')
+                error(strcat("Error generating reference for scenario ", scenario.Name, ...
+                 "'. Data is not timeseries."));
+            end
+            ds = ds.addElement(data);
         end
-        if ~isa(data, 'timeseries')
-            error(strcat("Error generating reference for scenario ", scenario.Name, ...
-             "'. Data is not timeseries."));
-        end
-        ds = ds.addElement(data);
         fixed_name = get_ref_name(scenario.Name);
         eval(strcat(fixed_name, ' = ds;'));
         save_names{end+1} = fixed_name;

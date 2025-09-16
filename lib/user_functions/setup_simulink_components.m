@@ -114,21 +114,23 @@ function replaced = replace_indexers(data)
 
     fields = fieldnames(data);
     replaced = struct;
-    for j=1:length(fields)
-        name = fields(j);
-        name = name{1};
-        value = data.(name);
-
-        if isa(value, 'struct')
-           replaced.(name) = replace_indexers(value);
-        
-        elseif isa(value, 'Indexer')
-           replaced.(name).b = value.b;
-           replaced.(name).e = value.e;
-           replaced.(name).sz = value.sz;
-           replaced.(name).r = value.r;
-        else
-           replaced.(name) = value;
+    for i = 1:length(data)
+        for j=1:length(fields)
+            name = fields(j);
+            name = name{1};
+            value = data(i).(name);
+    
+            if isa(value, 'struct')
+               replaced(i).(name) = replace_indexers(value);
+            
+            elseif isa(value, 'Indexer')
+               replaced(i).(name).b = value.b;
+               replaced(i).(name).e = value.e;
+               replaced(i).(name).sz = value.sz;
+               replaced(i).(name).r = value.r;
+            else
+               replaced(i).(name) = value;
+            end
         end
     end
 end
