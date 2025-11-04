@@ -40,39 +40,8 @@ function on_simulation_successful(env_name, run_id, plot_data)
     save(fullfile(folder, 'results.mat'), 'out');
     assignin('base', 'sim_result', out);
     
-    eval_fun = strcat(env_name, '_eval_metrics');
     if plot_data
-        metrics = load_env_metrics(env_name);    
-        close all;
-        for i=1:length(metrics)
-            
-            if ~is_valid_field(metrics(i), 'Type') && ~is_valid_field(metrics(i), 'Callback')
-                error(['Cannot create metric. Metric object should have "Type" or "Callback"' ...
-                    'field specified.']);
-            end
-
-            f = figure;
-
-            if is_valid_field(metrics(i), 'Type')
-                path = which(metrics(i).Type);
-        
-                if ~exist(path, 'file')
-                    error(strcat('Cannot create metric. Function with name "', ...
-                        metrics(i).Type, '" does not exist'));
-                end
-    
-                eval(strcat(eval_fun, '(', metrics(i).Type, ', out, metrics(i), f)'));
-            end
-
-            try
-                if is_valid_field(metrics(i), 'Callback')
-                    eval(strcat(eval_fun, '("', metrics(i).Callback, '", out, metrics(i), f)'));
-                end
-            catch e
-                disp(strcat("Error in computing metric '", metrics(i).Name, "'."));
-                disp(e);
-            end
-        end
+        eval_env_metrics(folder, out, fullfile(folder, 'results.mat'));
     end
 end
 

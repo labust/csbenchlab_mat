@@ -47,7 +47,7 @@ function [has_log, src] = generate_logging_function(info)
         has_log = 1;
         for i=1:length(log_desc)
             d = log_desc{i};
-            src = src + "    " + strcat('log.', d.Name, ' = data.', d.Name, ';') + newline;
+            src = src + "    " + strcat('log.', d.Name, ' = double(data.', d.Name, ');') + newline;
         end
     else
         has_log = 0;

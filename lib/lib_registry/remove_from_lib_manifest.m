@@ -2,19 +2,19 @@ function remove_from_lib_manifest(name, t, lib_name)
 
     lib_path = fullfile(CSPath.get_app_registry_path(), lib_name);
     
-    load(fullfile(lib_path, 'autogen', 'manifest.mat'), 'registry');
+    manifest = load_lib_manifest(lib_path);
     
     if t == 1
-        registry.sys = remove_from_struct(registry.sys, name);
+        manifest.registry.sys = remove_from_struct(manifest.registry.sys, name);
     elseif t == 2
-        registry.ctl = remove_from_struct(registry.ctl, name);
+        manifest.registry.ctl = remove_from_struct(manifest.registry.ctl, name);
     elseif t == 3
-        registry.est = remove_from_struct(registry.est, name);
+        manifest.registry.est = remove_from_struct(manifest.registry.est, name);
     elseif t == 4
-        registry.dist = remove_from_struct(registry.dist, name);
+        manifest.registry.dist = remove_from_struct(manifest.registry.dist, name);
     end
 
-    save(fullfile(lib_path, 'autogen', 'manifest.mat'), 'registry');
+    writestruct(manifest, fullfile(lib_path, 'autogen', 'manifest.json'));
 end
 
 

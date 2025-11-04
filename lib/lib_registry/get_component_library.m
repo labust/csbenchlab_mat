@@ -7,7 +7,7 @@ function lib = get_component_library(n)
         lib = struct('Name', n, "Type", 'install', 'Path', fullfile(reg, n));
     elseif isfile(strcat(ff, '.json'))
         s = readstruct(strcat(ff, '.json'));
-        lib = struct('Name', n, "Type", 'link', 'Path', s.path);
+        lib = struct('Name', n, "Type", 'link', 'Path', s.Path);
     else
         error(strcat("Error loading library. Library '", n, " does not exist"));
     end

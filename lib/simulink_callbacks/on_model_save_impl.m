@@ -8,5 +8,5 @@ function on_model_save_impl()
     loaded = load(fullfile(env_path, 'autogen', strcat(curr_model, '.mat')));
     setup_simulink_autogen_types(curr_model);
 
-    trigger_model_callback(loaded.env_info, 'OnEnvSave');
+    trigger_model_callback(curr_model, loaded.env_info, 'on_save');
 end

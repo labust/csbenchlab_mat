@@ -4,9 +4,13 @@ function t = is_valid_field(s, name)
         t = 0;
         return
     end
-    if isa(s.(name), 'string')
-        t = s.(name) ~= "";
+    v = s.(name);
+    if isa(v, 'string')
+        t = v ~= "";
+    elseif isa(v, 'struct')
+        t = ~isempty(fieldnames(v));
     else
         t = ~isempty(s.(name));
     end
+    
 end

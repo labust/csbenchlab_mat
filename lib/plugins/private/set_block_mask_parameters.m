@@ -7,6 +7,10 @@ function set_block_mask_parameters(handle, block_name, mask_parameters)
     end
 
     for i=1:length(mask_parameters)
+        if has_mask_parameter(handle, mask_parameters(i).Name)
+            mo.removeParameter(mask_parameters(i).Name);
+        end
+
         mo.addParameter('Name', mask_parameters(i).Name, ...
             'Value', replace(mask_parameters(i).Value, '{block_name}', block_name), ...
             'Visible', mask_parameters(i).Visible, ...

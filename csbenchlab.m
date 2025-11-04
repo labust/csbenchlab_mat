@@ -1,28 +1,26 @@
 function csbenchlab()
     
     path = CSPath.get_app_root_path();
-
     init_app(path);
-    run('csbenchlab_app.mlapp');
 end
 
 function init_app(path)
     init_f_name = fullfile(path, 'registry', 'init_f');
-    if ~exist(init_f_name, 'file')
+    % if ~exist(init_f_name, 'file')
         mkdir(fullfile(path, 'autogen'));
         mkdir(fullfile(path, 'registry'));
         mkdir(fullfile(path, 'appdata'))
         addpath(fullfile(path, 'code_autogen'));
         fclose(fopen(init_f_name, 'w'));
         register_common_components(path);
-    end
+    % end
 end
 
 function register_common_components(path)
     plugin_desc_path = fullfile(path, "plugins", "plugins.json");
 
-    get_or_create_component_library(fullfile(path, 'registry', 'local'), 1);
-    handle = get_or_create_component_library(fullfile(path, 'registry', 'csbenchlab'));
+    get_or_create_component_library('local', 1);
+    handle = get_or_create_component_library('csbenchlab');
     registry = make_component_registry_from_plugin_description(plugin_desc_path, ...
         'csbenchlab', fullfile(path, 'registry', 'csbenchlab', 'autogen'));
 

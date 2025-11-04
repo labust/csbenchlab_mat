@@ -29,4 +29,5 @@ function t = do_plot_data(plot_params, last_run)
     if strcmp(last_run.Status, 'ReachedStopTime')
         t = 1;
     end
+    t = 1;
 end

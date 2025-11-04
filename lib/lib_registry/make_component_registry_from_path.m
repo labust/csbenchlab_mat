@@ -13,9 +13,10 @@ function registry = make_component_registry_from_path(lib_paths, save_manifest_l
 
     if ~strempty(save_manifest_library)
         path = CSPath.get_app_root_path();
-        version = '0.1';
-        library = save_manifest_library;
-        save(fullfile(path, 'registry', save_manifest_library, 'manifest.mat'), "registry", 'version', 'library');
+        manifest.version = '0.1';
+        manifest.library = save_manifest_library;
+        manifest.registry = registry;
+        writestruct(manifest, fullfile(path, 'registry', save_manifest_library, 'manifest.json'));
     end
 end
 

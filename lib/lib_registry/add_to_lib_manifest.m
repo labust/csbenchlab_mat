@@ -1,17 +1,18 @@
 function add_to_lib_manifest(p, t, lib_name)
     lib_path = fullfile(CSPath.get_app_registry_path(), lib_name);
-    load(fullfile(lib_path, 'autogen', 'manifest.mat'), 'registry');
+
+    manifest = load_lib_manifest(lib_path);
     
     if t == 1
-        registry.sys{end+1} = p;
+        manifest.registry.sys{end+1} = p;
     elseif t == 2
-        registry.ctl{end+1} = p;
+        manifest.registry.ctl{end+1} = p;
     elseif t == 3
-        registry.est{end+1} = p;
+        manifest.registry.est{end+1} = p;
     elseif t == 4
-        registry.dist{end+1} = p;
+        manifest.registry.dist{end+1} = p;
     end
-    save(fullfile(lib_path, 'autogen', 'manifest.mat'), 'registry');
+    writestruct(manifest, fullfile(lib_path, 'autogen', 'manifest.json'));
     
 end
 

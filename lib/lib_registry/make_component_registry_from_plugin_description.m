@@ -37,7 +37,8 @@ function registry = make_component_registry_from_plugin_description(plugin_desc_
     registry = append_lib_name_to_registry(registry, lib_name);
 
     if ~strempty(save_manifest_library_path)
-        save(fullfile(save_manifest_library_path, 'manifest.mat'), "registry");
+        manifest.registry = registry;
+        writestruct(manifest, fullfile(save_manifest_library_path, 'manifest.json'));
     end
 
 

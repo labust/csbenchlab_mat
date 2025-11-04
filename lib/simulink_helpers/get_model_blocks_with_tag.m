@@ -6,7 +6,7 @@ function t = get_model_blocks_with_tag(model, tag)
         model_h = model;
     end
 
-    if model_has_tag(model_h, tag)
+    if block_has_tag(model_h, tag)
         t = model_h;
         return
     end
@@ -15,7 +15,7 @@ function t = get_model_blocks_with_tag(model, tag)
 
     indices = [];
     for i=1:length(blocks)
-        if model_has_tag(blocks(i), tag)
+        if block_has_tag(blocks(i), tag)
             indices(end+1) = i;
         end
     end

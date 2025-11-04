@@ -7,7 +7,7 @@ classdef PyComponentRegister < ComponentRegister
         function info = get_plugin_info(~, plugin_path)
             info = struct;
         
-            f = fullfile(CSPath.get_app_python_src_path(), 'registry', 'get_plugin_info.py');
+            f = fullfile(CSPath.get_app_python_src_path(), 'm_scripts', 'get_plugin_info.py');
             plugin_info = run_py_file(f, "plugin_info", '--plugin_path', plugin_path);
         
             info.T = int32(plugin_info{"T"});
@@ -17,20 +17,20 @@ classdef PyComponentRegister < ComponentRegister
         end
 
         function instance = instantiate_plugin(plugin_path)        
-            f = fullfile(CSPath.get_app_python_src_path(), 'registry', 'instantiate_plugin.py');
+            f = fullfile(CSPath.get_app_python_src_path(), 'm_scripts', 'instantiate_plugin.py');
             instance = run_py_file(f, "instance", '--plugin_path', plugin_path);
         end
 
 
         function register(info, t, lib_name)
             if t == 1
-                register_py_component(info, 'sys', lib_name, { '__cs_slx_sys' });
+                PyComponentRegister.register_system_(info, lib_name);
             elseif t == 2
                 PyComponentRegister.register_controller_(info, lib_name);
             elseif t == 3
-                register_py_component(info, 'est', lib_name, { '__cs_slx_est' });
+                PyComponentRegister.register_estimator_(info, lib_name);
             elseif t == 4
-                register_py_component(info, 'dist', lib_name, { '__cs_slx_dist' });
+                PyComponentRegister.register_disturbance_(info, lib_name);
             end
         end
 
@@ -84,18 +84,17 @@ classdef PyComponentRegister < ComponentRegister
             output_args = cellfun(@(x) string(x.Name), ...
                 PyComponentRegister.get_component_output_description_from_file(info.ComponentPath));
             
-            input_args_desc = create_argument_description([default_inputs, input_args, 'u_ic', 'params', 'data']);
+            input_args_desc = create_argument_description([default_inputs, input_args, 'u_ic', 'data']);
             output_args_desc = create_argument_description([default_outputs, output_args]);
         
-            % params
-            input_args_desc(end-2).DataType = 'double';
-            input_args_desc(end-2).Scope = 'Parameter';
-            input_args_desc(end-2).Tunable = 0;
-            input_args_desc(end-1).DataType = 'ParamsType';
+            % u_ic
+            input_args_desc(end-1).DataType = 'double';
             input_args_desc(end-1).Scope = 'Parameter';
+            input_args_desc(end-1).Tunable = 0;
+            % data
             input_args_desc(end).DataType = 'DataType';
             input_args_desc(end).Scope = 'Parameter';
-        
+            
             % set io types type names
             for j=length(default_inputs)+1:length(default_inputs)+length(input_args)
                 input_args_desc(j).DataType = ...
@@ -113,12 +112,12 @@ classdef PyComponentRegister < ComponentRegister
                 params_visible = 'off';
             end
         
-            mask_parameters = struct('Name', 'params', 'Prompt', 'Parameter struct:', ...
-                'Value', '{block_name}_params', 'Visible', params_visible, 'Evaluate', 'on');
-            mask_parameters(end+1) = struct('Name', 'data', ...
+            % mask_parameters = struct('Name', 'params', 'Prompt', 'Parameter struct:', ...
+            %     'Value', '{block_name}_params', 'Visible', params_visible, 'Evaluate', 'on');
+            mask_parameters = struct('Name', 'data', ...
                 'Value', '{block_name}_data', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
-            mask_parameters(end+1) = struct('Name', 'ParamsType', ...
-                'Value', '{block_name}_PT', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
+            % mask_parameters(end+1) = struct('Name', 'ParamsType', ...
+            %     'Value', '{block_name}_PT', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
             mask_parameters(end+1) = struct('Name', 'DataType', ...
                 'Value', '{block_name}_DT', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
             mask_parameters(end+1) = struct('Name', 'u_ic', ...
@@ -135,11 +134,11 @@ classdef PyComponentRegister < ComponentRegister
                 mask_parameters(end+1) = struct('Name', n, 'Value', v, 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
             end
             icon = 'controller_icon';
-            extrinsic_init = "u = u_ic;" + newline + "data_n = data;" + newline;
+            extrinsic_init = "u = u_ic;" + newline;
             create_component_simulink(info, lib_name, 'ctl', ...
-                {"__cs_py_ctl"}, 'py_component_simulink_template', input_args_desc, output_args_desc, ...
-                {"'Params'", "params", "'Data'", "data"}, ...
-                {'u_ic', 'size(y)', 'size(y_ref)'}, [{'y_ref', 'y', 'dt'}, input_args], ...
+                {'__cs_comptype:ctl', '__cs_compimpl:py'}, 'py_component_simulink_template', input_args_desc, output_args_desc, ...
+                {"'Params'", "params", "'Mux'", "mux"}, ...
+                {'size(y)', 'size(y_ref)'}, [{'y_ref', 'y', 'dt'}, input_args], ...
                 mask_parameters, extrinsic_init, icon, [120, 40]);
         
         end

@@ -13,7 +13,7 @@ function out_with_ref(out, plot_cfg, f_handle)
         grid on;
     end
 
-    if is_valid_field(plot_cfg, 'Name')
+    if is_valid_field(plot_cfg.Params, 'Name')
         set(f, 'Name',  plot_cfg.Name);
     end
 

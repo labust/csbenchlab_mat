@@ -7,7 +7,7 @@ classdef PyComponentManager < ComponentManager
 
         function data = create_component_data_model(class_name, lib_name, params, mux)
             m = get_python_module(class_name, lib_name);
-            py_data = m.(class_name).create_data_model(m.(class_name), params, mux);
+            py_data = m.(class_name).create_data_model(params, mux);
             data = py_parse_component_data(py_data);
         end
 
@@ -68,6 +68,39 @@ classdef PyComponentManager < ComponentManager
         function outputs = get_component_outputs(comp_name, lib_name)
            info = get_plugin_info_from_lib(comp_name, lib_name);
            outputs = PyComponentRegister.get_component_output_description_from_file(info.ComponentPath);
+        end
+
+        function type_dict = setup_component(block_path, type_dict, hws)
+            l_info = libinfo(block_path);
+            c_path = getfullname(block_path);
+            m = PyComponentManager;
+        
+            class_name = get_component_class_name(l_info(1).ReferenceBlock);    
+            lib_name = get_component_script_parameter_ref(l_info(1).ReferenceBlock, '__lib_name');
+            log_desc = m.get_component_log_description(class_name, lib_name);
+            io_args = m.get_component_inputs(class_name, lib_name);
+            is_controller = is_block_component_of_type(block_path, 'ctl');
+
+            params = get_component_params_from_block(c_path);
+            mux = struct;
+            if is_controller
+                try
+                    mux = get_controller_mux_struct(c_path);
+                catch
+                    mux = evalin('base', 'mux');
+                end
+            end
+            name =  make_class_name(c_path);
+            if length(name) > namelengthmax
+                error(strcat("Name '", name, "' is larger than max. Consider renaming components."));
+            end     
+
+            data = m.create_component_data_model(class_name, lib_name, params, mux);
+               
+            data_name = strcat(name, '_data');
+            hws.assignin(data_name, data);
+            type_dict = m.generate_busses(name, 0, data, log_desc, io_args, type_dict);
+
         end
         
       

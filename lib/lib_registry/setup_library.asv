@@ -1,0 +1,186 @@
+function s = setup_library(lib_path)
+
+    info = get_library_info(lib_path, 0);
+    s = 1;
+    s = s && install_dependencies(info);
+    s = s && install_pip_dependencies(lib_path);
+    s = s && install_matlab_dependencies(lib_path);
+    s = s && register_component_library(lib_path, 1);
+end
+
+
+function s = install_dependencies(info)
+    s = 1;
+end
+
+function s = install_matlab_dependencies(lib_path)
+    reqFile = fullfile(lib_path, 'm_requirements.txt');
+    
+    % Read all dependencies from the file
+    fid = fopen(reqFile, 'r');
+    if fid == -1
+        error('Cannot open requirements file: %s', reqFile);
+    end
+    deps = textscan(fid, '%s', 'Delimiter', '\n');
+    fclose(fid);
+    deps = deps{1};
+    
+    % Get list of installed toolboxes/apps
+    installed = ver;
+    installed_names = {installed.Name};
+    
+    for i = 1:numel(deps)
+        dep = strtrim(deps{i});
+        if isempty(dep)
+            continue; % skip empty lines
+        end
+        
+        % Check if dependency is installed
+        if check_matlab_dependency(dep, installed_names)
+            fprintf('Dependency "%s" is already installed.\n', dep);
+        else
+            fprintf('Dependency "%s" is NOT installed. Installing...\n', dep);
+            try
+                % Placeholder for actual installation method
+                % e.g. matlab.addons.install('path_to.mltbx_or_app')
+                % or web-based install via APIs if available
+                
+                % Example message for now:
+                fprintf('Installing %s (not implemented - please install manually).\n', dep);
+                
+                % After installation, optionally verify again
+            catch ME
+                fprintf('Failed to install %s: %s\n', dep, ME.message);
+            end
+        end
+    end
+end
+
+function s = install_pip_dependencies(lib_path)
+    requirements_path = fullfile(lib_path, 'requirements.txt');
+    s = 1;
+    if ~exist(requirements_path, 'file')
+        return
+    end
+    disp("Installing pip dependencies...")
+    try
+        % Get the Python executable path MATLAB is using
+        pyExe = char(py.sys.executable);
+        
+        % Construct the pip install command with requirements.txt in the current folder
+        cmd = sprintf(strcat('"%s" -m pip install -r', requirements_path), pyExe);
+        
+        % Run the command in the system shell
+        [status, cmdout] = system(cmd);
+        
+        % Display results
+        if status == 0
+            fprintf('Successfully installed pip requirements:\n%s\n', cmdout);
+        else
+            fprintf('Error installing requirements:\n%s\n', cmdout);
+            s = 0;
+        end
+    catch
+        s = 0;
+    end
+end
+
+
+
+function s = check_matlab_dependency(dep_str, installed_names)
+    % Example formats:
+    % 'Robust Control Toolbox==24.1;>=R2024a'
+    % 'Robust Control Toolbox>=24.1;>=R2024a'
+    % 'Robust Control Toolbox<=24.1'
+    
+    % Define possible operators
+    operators = {'==', '>=', '<=', '>', '<', '~='};
+    
+    % Find position of first operator in the string after toolbox name
+    matchIndex = [];
+    matchOp = '';
+    for op = operators
+        opStr = op{1};
+        idx = strfind(dep_str, opStr);
+        if ~isempty(idx)
+            % Pick earliest occurrence
+            firstIdx = idx(1);
+            if isempty(matchIndex) || firstIdx < matchIndex
+                matchIndex = firstIdx;
+                match_op = opStr;
+            end
+        end
+    end
+    
+    if isempty(match_idx)
+        error('No valid version operator found in dependency string.');
+    end
+    
+    % Extract toolbox name (before operator)
+    toolbox_name = strtrim(dep_str(1:matchIndex-1));
+    % Extract rest (starting from operator)
+    version_part = strtrim(dep_str(matchIndex:end));
+    
+    % Split versionPart by ';' for MATLAB release constraints
+    parts = strsplit(version_part, ';');
+    
+    % First part is version specifier like '==24.1'
+    version_specifier = parts{1};
+    % After operator removal, get version number
+    versionNumber = strtrim(strrep(version_specifier, match_op, ''));
+    
+    % Optional MATLAB release constraint
+    matlab_relese = '';
+    if numel(parts) > 1
+        matlab_relese = strtrim(parts{2});
+    end
+
+    % --- Actual installation checks would go here ---
+    % Example: check if toolbox installed
+
+    idx = find(strcmpi(installed_names, toolbox_name), 1);
+    
+    if isempty(idx)
+        fprintf('Toolbox "%s" is NOT installed.\n', toolbox_name);
+        return;
+    end
+    
+    installedVersion = installed(idx).Version;
+    
+    % Simple version equality check (expand logic for other operators)
+    switch matchOp
+        case '=='
+            if ~strcmp(installedVersion, versionNumber)
+                fprintf('Version mismatch: required %s %s but installed %s\n', ...
+                    matchOp, versionNumber, installedVersion);
+            else
+                fprintf('Version matches required: %s %s\n', matchOp, versionNumber);
+            end
+        case '>='
+            if verLessThan(toolbox_name, versionNumber)
+                fprintf('Installed version %s is less than required %s %s\n', ...
+                    installedVersion, matchOp, versionNumber);
+            else
+                fprintf('Installed version satisfies %s %s\n', matchOp, versionNumber);
+            end
+        % Add other cases as needed
+        otherwise
+            fprintf('Version check for operator %s not implemented.\n', matchOp);
+    end
+    
+    % MATLAB release check
+    if ~isempty(matlabReleaseConstraint)
+        % Expect format like '>=R2024a'
+        if startsWith(matlabReleaseConstraint, '>=')
+            reqRel = matlabReleaseConstraint(3:end);
+            curRel = version('-release');
+            if curRel < reqRel
+                fprintf('MATLAB release too old: required >= %s, current is %s\n', reqRel, curRel);
+            else
+                fprintf('MATLAB release satisfies requirement >= %s\n', reqRel);
+            end
+        else
+            fprintf('MATLAB release check for %s not implemented.\n', matlabReleaseConstraint);
+        end
+    end
+end

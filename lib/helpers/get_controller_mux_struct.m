@@ -36,5 +36,7 @@ function mux = get_controller_mux_struct(path)
         end
         mux.Outputs = [mux.Outputs, i];
     end
+    mux.Inputs = int32(mux.Inputs);
+    mux.Outputs = int32(mux.Outputs);
 end
 

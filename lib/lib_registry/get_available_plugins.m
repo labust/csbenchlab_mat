@@ -14,9 +14,13 @@ function plugins = get_available_plugins(varargin)
         n = lib_list(i).Name;
 
         lib_path = lib_list(i).Path;
+
+        if ~is_valid_component_library(lib_path)
+            remove_component_library(lib_path);
+        end
        
         try
-            manifest = load(fullfile(lib_path, 'autogen', 'manifest.mat'));
+            manifest = load_lib_manifest(lib_path);
             registry = manifest.registry;
             package_meta = readstruct(fullfile(lib_path, 'package.json'));
         catch
@@ -42,10 +46,10 @@ function plugins = get_available_plugins(varargin)
 end
     
 function structs = add_plugin(registry, package_meta)
-    structs = struct('Name', {}, 'Type', {}, 'Lib', {}, 'LibVersion', {});
+    structs = struct('Name', {}, 'Type', {}, 'Lib', {}, 'LibVersion', {}, 'Path', {});
     for i=1:length(registry)
         r = registry{i};
-        structs(end+1) = struct('Name', string(r.Name), 'Type', r.Type, 'Lib', package_meta.library, 'LibVersion', package_meta.version);
+        structs(end+1) = struct('Name', string(r.Name), 'Type', r.Type, 'Lib', package_meta.Name, 'LibVersion', package_meta.Version, 'Path', r.ComponentPath);
     end
 end
 

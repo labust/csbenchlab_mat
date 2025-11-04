@@ -1,0 +1,46 @@
+{
+    "version": "1.0",
+    "entries": [
+        {
+            "type": "Action",
+            "id": "newPopUpAction",
+            "text": "New",
+            "icon": "new"
+        },
+        {
+            "type": "Action",
+            "id": "exportPopUpAction",
+            "text": "Export model to..."
+        },
+        {
+            "type": "Action",
+            "id": "openMathWorksWebsiteAction",
+            "text": "MathWorks\nWebsite",
+            "description": "Open the MathWorks website",
+            "icon": "openMathWorksWebsiteIcon",
+            "command": "openMathWorksWebsite"
+        },
+        {
+            "type": "Icon",
+            "id": "openMathWorksWebsiteIcon",
+            "icon16": "openMathWorksWebsite_16.png",
+            "icon24": "openMathWorksWebsite_24.png"
+        },
+        {
+            "type": "Action",
+            "id": "runSimulationAction",
+            "text": "Run",
+            "description": "Run simulation",
+            "icon": "run",
+            "command": "run_simulation_action"
+        },
+        {
+            "type": "Action",
+            "id": "stopSimulationAction",
+            "text": "Stop",
+            "description": "Stop simulation",
+            "icon": "stop",
+            "command": "stop_simulation_action"
+        }
+    ]
+}

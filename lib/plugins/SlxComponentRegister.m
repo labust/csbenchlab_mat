@@ -46,6 +46,23 @@ classdef SlxComponentRegister < ComponentRegister
                 close_system(model_name, 0);
             end
         end
+
+        function params = get_component_params_from_file(file_path)
+            [folder, name, ~] = fileparts(file_path);
+            try
+                params = SlxComponentManager.get_component_params(name);
+                return
+            catch ME
+                addpath(folder);
+            end
+            try
+                params = SlxComponentManager.get_component_params(name);
+                rmpath(folder);
+            catch
+                warning('Error getting slx parameters.')
+                rethrow(ME);
+            end
+        end
         
         
         function t = is_sys(inputs, outputs)
@@ -90,13 +107,13 @@ classdef SlxComponentRegister < ComponentRegister
 
         function register(info, t, lib_name)
             if t == 1
-               SlxComponentRegister.register_slx_component_(info, 'sys', lib_name, { '__cs_slx_sys' });
+               SlxComponentRegister.register_slx_component_(info, 'sys', lib_name, { '__cs_comptype:sys', '__cs_compimpl:slx' });
            elseif t == 2
-               SlxComponentRegister.register_slx_component_(info, 'ctl', lib_name, { '__cs_slx_ctl' });
+               SlxComponentRegister.register_slx_component_(info, 'ctl', lib_name, { '__cs_comptype:ctl', '__cs_compimpl:slx' });
            elseif t == 3
-               SlxComponentRegister.register_slx_component_(info, 'est', lib_name, { '__cs_slx_est' });
+               SlxComponentRegister.register_slx_component_(info, 'est', lib_name, { '__cs_comptype:est', '__cs_compimpl:slx' });
            elseif t == 4
-               SlxComponentRegister.register_slx_component_(info, 'dist', lib_name, { '__cs_slx_dist' });
+               SlxComponentRegister.register_slx_component_(info, 'dist', lib_name, { '__cs_comptype:dist', '__cs_compimpl:slx' });
            end
         end
 
@@ -140,7 +157,7 @@ classdef SlxComponentRegister < ComponentRegister
                 set_param(block, 'LinkStatus', 'none'); 
                 mask_parameters  = struct('Name', 'params_struct_name', ...
                     'Value', '', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'off');
-
+                
                 % does not work on linked blocks - TODO
                 set_block_mask_parameters(block, block_name, [ ...
                     get_component_default_mask_params(info, lib_name, 0), mask_parameters]);

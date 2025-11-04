@@ -13,249 +13,7 @@ classdef GeneratorHelpers
    
     methods (Static)
 
-
-        
-        
-        function controllers = generate_controllers(model_name, info, system_dims)
-
-            pa = @BlockHelpers.path_append;
-            gn = @BlockHelpers.get_name_or_empty;
-            off = @BlockHelpers.offset_position;
-            move = @BlockHelpers.move_block;
-            
-            % position of controller subsystem in 'n1;
-            subs_position = [330, 125, 430, 180]; 
-            % position of controller component in 'n1/Subsystem'
-            comp_position = [330, 130, 430, 180];
-            
-            controllers = [];
-            for i=1:length(info)
-                io_handles = struct;
-
-                % controller subsystem
-                c_subsystem = pa(model_name, gn(info(i), 'Subsystem'));
-                
-                [cs_h, cs_name] = BlockHelpers.add_block_at( ...
-                    'simulink/Ports & Subsystems/Subsystem', c_subsystem, subs_position);
-
-                cs_path = pa(model_name, cs_name);
-                controllers(i).Name = cs_name;
-                controllers(i).Handle = cs_h;
-                controllers(i).Path = cs_path;
-                
-                % get and reconfigure subsystem io ports
-                % subsystem is initially constructed with 1 input, 1 output
-                % and a line between them
-                inport_yref_h = getSimulinkBlockHandle(...
-                    find_system(cs_path, 'SearchDepth', 1, 'BlockType', 'Inport'));
-                outport_u_h = getSimulinkBlockHandle(...
-                    find_system(cs_path, 'SearchDepth', 1, 'BlockType', 'Outport'));
-                set_param(inport_yref_h, 'Name', 'y_ref');
-                set_param(outport_u_h, 'Name', 'u');
-
-                inport_yref_p = get_param(inport_yref_h, 'PortHandles');
-                outport_u_p = get_param(outport_u_h, 'PortHandles');
-                move(inport_yref_h, comp_position, [-500, 0]);
-                move(outport_u_h, comp_position, [400, 0]);
-                delete_line(cs_path, inport_yref_p.Outport, outport_u_p.Inport);
-    
-                [inport_y_h, ~] = BlockHelpers.add_block_at( ...
-                    'simulink/Quick Insert/Ports & Subsystems/Inport', pa(cs_path, 'y'));
-                set_param(inport_y_h, 'Name', 'y');
-
-                [outport_log_h, ~] = BlockHelpers.add_block_at( ...
-                    'simulink/Quick Insert/Ports & Subsystems/Outport', pa(cs_path, 'log'));
-                
-                move(inport_y_h, comp_position, [-500, 30]);
-                move(outport_log_h, comp_position, [400, 40]);
-                inport_y_p = get_param(inport_y_h, 'PortHandles');
-                outport_log_p = get_param(outport_log_h, 'PortHandles');
-
-                set_param(inport_yref_h, 'PortDimensions', num2str(system_dims.Outputs));
-                set_param(outport_u_h, 'PortDimensions', num2str(system_dims.Inputs));
-                set_param(inport_y_h, 'PortDimensions', num2str(system_dims.Outputs));
-
-                io_handles.inport_y.h = inport_y_h;
-                io_handles.inport_y.p = inport_y_p;
-                io_handles.inport_yref.h = inport_yref_h;
-                io_handles.inport_yref.p = inport_yref_p;
-                io_handles.outport_u.h = outport_u_h;
-                io_handles.outport_u.p = outport_u_p;
-                io_handles.outport_log.h = outport_log_h;
-                io_handles.outport_log.p = outport_log_p;
-
-                % if controller is composable, that means that it has
-                % various controller types for different system DOF-s
-                c_info = info(i);
-                if c_info.IsComposable
-                    components = c_info.Components;
-                else
-                    components = c_info;
-                end
-
-
-                io_handles = GeneratorHelpers.generate_controller_io_muxes( ...
-                    cs_path, comp_position, system_dims, length(components), io_handles);
-             
-                for j=1:length(components)
-                     
-                    comp = components(j);
-                    
-                    path = get_component_simulink_path(comp, 'ctl');
-                    sp = split(path, '/');
-                    c_block = pa(model_name, cs_name, gn(comp, sp{end}));
-                    [c_h, name] = BlockHelpers.add_block_at(path, c_block, comp_position);
-                    gen_c(j).Name = name;
-                    gen_c(j).Handle = c_h;
-                    gen_c(j).Path = pa(cs_path, name);
-                    
-                    % if block is not m_controller, set its params
-                    if has_mask_parameter(c_h, 'params_struct_name')
-                        set_mask_values(c_h, 'params_struct_name', comp.ParamsStructName);
-                    end
-                    if has_mask_parameter(c_h, 'params')
-                        set_mask_values(c_h, 'params', comp.ParamsStructName);
-                    end
-
-                    extractor = GeneratorHelpers.generate_reference_extractor(cs_path, comp_position, ...
-                        length(components));
-
-                    io_handles.ref_extractors(j) = extractor;
-                    gen_c(j).RefExtractor.Path = pa(cs_path, extractor.name);
-                    
-
-                    BlockHelpers.add_from_tag_to_inport(cs_path, c_h, 'dt', 3);
-
-
-                    io_handles = GeneratorHelpers.generate_controller_adapter_muxes( ...
-                        pa(model_name, cs_name), comp_position, j, io_handles);
-                    
-                    c_p = get_param(c_h, "PortHandles");
-
-                    io_handles.adapters(j).scopes = ...
-                        GeneratorHelpers.generate_scopes_for_controller( ...
-                            pa(model_name, cs_name), comp_position, j);
-
-                    io_handles.adapters(j).cont.h = c_h;
-                    io_handles.adapters(j).cont.p = c_p;
-
-                    in_mux = io_handles.adapters(j).in_mux.h;
-                    in_mux_ref = io_handles.adapters(j).in_mux_ref.h;
-                    out_demux = io_handles.adapters(j).out_demux.h;
-                    if ~isempty(comp.Mux.Inputs)             
-                        set_param(in_mux, 'Inputs', num2str(length(comp.Mux.Inputs)));
-                        set_param(in_mux_ref, 'Inputs', num2str(length(comp.Mux.Inputs)));
-                        io_handles.adapters(j).Mux.Inputs = comp.Mux.Inputs;
-                    else
-                        set_param(in_mux, 'Inputs', num2str(system_dims.Outputs));
-                        set_param(in_mux_ref, 'Inputs', num2str(system_dims.Outputs));
-                        io_handles.adapters(j).Mux.Inputs = 1:system_dims.Outputs;
-                    end
-                    
-                    if ~isempty(comp.Mux.Outputs)    
-                        set_param(out_demux, 'Outputs', num2str(length(comp.Mux.Outputs)));
-                        io_handles.adapters(j).Mux.Outputs = comp.Mux.Outputs;
-                    else
-                        set_param(out_demux, 'Outputs', num2str(system_dims.Inputs));
-                        io_handles.adapters(j).Mux.Outputs = 1:system_dims.Inputs;
-                    end
-
-                    % refresh port handles after dimension setting
-                    io_handles.adapters(j).in_mux.p = ...
-                        get_param(io_handles.adapters(j).in_mux.h, 'PortHandles');
-                    io_handles.adapters(j).in_mux_ref.p = ...
-                        get_param(io_handles.adapters(j).in_mux_ref.h, 'PortHandles');
-                    io_handles.adapters(j).out_demux.p = ...
-                        get_param(io_handles.adapters(j).out_demux.h, 'PortHandles');
-
-                    comp_position = off(comp_position, [0, 200]);
-                end
-                controllers(i).Components = gen_c;
-                controllers(i).IoHandles = io_handles;
-                controllers(i).Estimator = [];
-                controllers(i).Disturbance = [];
-
-                
-                if is_valid_field(info(i), 'Estimator')
-                    controllers(i).Estimator = ...
-                        GeneratorHelpers.generate_estimator(model_name, info(i).Estimator, subs_position);
-                end
-                if is_valid_field(info(i), 'Disturbance')
-                    controllers(i).Disturbance = ...
-                        GeneratorHelpers.generate_disturbance(model_name, info(i).Disturbance, subs_position, 1);
-                end
-
-                clear('gen_c');
-
-                subs_position = off(subs_position, [0, GeneratorHelpers.master_offset_value]);
-            end
-        end
-
-        function gen_s = generate_disturbance(model_name, info, position, is_ctl)
-            pa = @BlockHelpers.path_append;
-            move = @BlockHelpers.move_block;
-
-            path = get_component_simulink_path(info, 'dist');
-            gen_s = struct;
-            sp = split(path, '/');
-            s_block = pa(model_name, BlockHelpers.get_name_or_empty(info, sp{end}));
-
-            if is_ctl > 0
-                off = [180, 0];
-            else
-                off = [140, -90];
-            end
-            
-            [s_h, name] = BlockHelpers.add_block_at(path, s_block);
-            move(s_h, position, off);
-            blockObj = get_param(s_h, 'Object');
-            blockObj.Orientation = 'right';
-            BlockHelpers.add_from_tag_to_inport(model_name, s_h, 'dt', 2);
-            gen_s.Handle = s_h;
-            gen_s.Name = name;
-            % BlockHelpers.add_from_tag_to_inport(model_name, s_h, 'ic', 3);
-        end
-
-
-        function gen_s = generate_estimator(model_name, info, position)
-            pa = @BlockHelpers.path_append;
-            move = @BlockHelpers.move_block;
-
-            path = get_component_simulink_path(info, 'est');
-            gen_s = struct;
-            sp = split(path, '/');
-            s_block = pa(model_name, BlockHelpers.get_name_or_empty(info, sp{end}));
-            
-            [s_h, name] = BlockHelpers.add_block_at(path, s_block);
-            move(s_h, position, [180, 55]);
-            blockObj = get_param(s_h, 'Object');
-            blockObj.Orientation = 'left';
-            BlockHelpers.add_from_tag_to_inport(model_name, s_h, 'dt', 2, 'left');
-            BlockHelpers.add_from_tag_to_inport(model_name, s_h, 'ic', 3, 'left');
-            gen_s.Handle = s_h;
-            gen_s.Name = name;
-        end
-
-
-        function handle = generate_scopes_for_controller(cs_path, comp_position, j)
-             pa = @BlockHelpers.path_append;
-             move = @BlockHelpers.move_block;
-             [handle.y.h, ~] = BlockHelpers.add_block_at( ...
-                    'simulink/Commonly Used Blocks/Scope', ...
-                    pa(cs_path, ['y_scope_', num2str(j)]));
-             [handle.u.h, ~] = BlockHelpers.add_block_at( ...
-                    'simulink/Commonly Used Blocks/Scope', ...
-                    pa(cs_path, ['u_scope_', num2str(j)]));
-
-             move(handle.y.h, comp_position, [-190, -100])
-             move(handle.u.h, comp_position, [170, -100])
-             set_param(handle.y.h, 'NumInputPorts', '2');
-             set_param(handle.u.h, 'NumInputPorts', '1');
-             handle.y.p = get_param(handle.y.h, 'PortHandles');
-             handle.u.p = get_param(handle.u.h, 'PortHandles');
-        end
-
-        function systems = generate_systems(model_name, info, replicate_num)
+        function systems = generate_systems(env_name, info, replicate_num)
             
             % This helper creates a system for each of the controllers to
             % be used in this environment. The same system is configured as
@@ -267,112 +25,438 @@ classdef GeneratorHelpers
             % system
 
 
-            pa = @BlockHelpers.path_append;
             gn = @BlockHelpers.get_name_or_empty;
 
             position = [730, 130, 830, 180];
 
             
-            path = get_component_simulink_path(info, 'sys');
             for i=1:replicate_num
-                gen_s = struct;
                 sp = split(path, '/');
-                s_block = pa(model_name, gn(info, sp{end}));
-                [s_h, name] = BlockHelpers.add_block_at(path, s_block, position);
-                
-                if has_mask_parameter(s_h, 'params_struct_name')
-                    set_mask_values(s_h, 'params_struct_name', info.ParamsStructName);
-                end
-                if has_mask_parameter(s_h, 'params')
-                    set_mask_values(s_h, 'params', info.ParamsStructName);
-                end
-                if has_mask_parameter(s_h, 'params_merged')
-                    set_mask_values(s_h, 'params', 'ActiveScenario.Params');
-                end
-
-                gen_s.Name = name;
-                gen_s.Handle = s_h;
-                gen_s.Path = pa(model_name, gen_s.Name);
-                gen_s.Disturbance = [];
-
+                s_block = fullfile(env_name, gn(info, sp{end}));
+                s_h = BlockHelpers.add_block_at(...
+                    fullfile(GeneratorHelpers.common_lib_name, 'CS System'), s_block, position);
+                set_param(s_h, 'LinkStatus', 'none');
+                systems.systems(i) = GeneratorHelpers.populate_system(env_name, info, s_h);
                 position = BlockHelpers.offset_position(position, ...
                     [0, GeneratorHelpers.master_offset_value]);
-                BlockHelpers.add_from_tag_to_inport(model_name, s_h, 't', 2);
-                BlockHelpers.add_from_tag_to_inport(model_name, s_h, 'dt', 3);
-                BlockHelpers.add_from_tag_to_inport(model_name, s_h, 'ic', 4);
-                systems.systems(i) = gen_s;
-
-                if is_valid_field(info, 'Disturbance')
-                    systems.systems(i).Disturbance = ...
-                        GeneratorHelpers.generate_disturbance(model_name, info.Disturbance, position, 0);
-                end
-             
+                systems.systems(i).SignalSubsystem = ...
+                GeneratorHelpers.generate_signal_subsystem(env_name, position, 0);
+                % if is_valid_field(info, 'Disturbance')
+                %     systems.systems(i).Disturbance = ...
+                %         GeneratorHelpers.generate_disturbance(env_name, controllers(i).SignalSubsystem, info.Disturbance, 0);
+                % end
             end
             systems = BlockHelpers.get_system_io_port_dims(systems, info);
         end
 
+        function controllers = generate_controllers(env_name, info, system_dims)
+
+            gn = @BlockHelpers.get_name_or_empty;
+            off = @BlockHelpers.offset_position;
+            
+            % position of controller subsystem in 'n1;
+            subs_position = [330, 125, 430, 180]; 
+            
+            for i=1:length(info)
+
+                % controller subsystem
+                c_subsystem = fullfile(env_name, gn(info(i), strcat('Ctl', num2str(i))));
+                
+                [cs_h, ~] = BlockHelpers.add_block_at( ...
+                    fullfile(GeneratorHelpers.common_lib_name, "CS Controller"), c_subsystem, subs_position);
+                
+                set_param(cs_h, 'LinkStatus', 'none');
+                controllers(i) = GeneratorHelpers.populate_controller(env_name, info(i), cs_h, system_dims);
+                
+                controllers(i).SignalSubsystem = ...
+                    GeneratorHelpers.generate_signal_subsystem(env_name, subs_position, 1);
+                
+                subs_position = off(subs_position, [0, GeneratorHelpers.master_offset_value]);
+            end
+        end
+
+        
+
+        function gen_s = generate_disturbance(model_name, subsystem_handle, info, is_ctl)
+            move = @BlockHelpers.move_block;
+
+            path = get_component_simulink_path(info, 'dist');
+            gen_s = struct;
+            sp = split(path, '/');
+            s_block = fullfile(model_name, BlockHelpers.get_name_or_empty(info, sp{end}));
+
+            if is_ctl > 0
+                off = [180, 0];
+            else
+                off = [140, -90];
+            end
+            
+            [s_h, name] = BlockHelpers.add_block_at(path, s_block);
+            move(s_h, position, off);
+            blockObj = get_param(s_h, 'Object');
+            blockObj.Orientation = 'right';
+            BlockHelpers.add_from_tag_to_inport(s_h, 'dt', 2);
+            gen_s.Handle = s_h;
+            gen_s.Name = name;
+        end
+
+
+        function gen_s = generate_estimator(model_name, info, position)
+            move = @BlockHelpers.move_block;
+
+            path = get_component_simulink_path(info, 'est');
+            gen_s = struct;
+            sp = split(path, '/');
+            s_block = fullfile(model_name, BlockHelpers.get_name_or_empty(info, sp{end}));
+            
+            [s_h, name] = BlockHelpers.add_block_at(path, s_block);
+            move(s_h, position, [180, 55]);
+            blockObj = get_param(s_h, 'Object');
+            blockObj.Orientation = 'left';
+            BlockHelpers.add_from_tag_to_inport(s_h, 'dt', 2, 'left');
+            BlockHelpers.add_from_tag_to_inport(s_h, 'est_ic', 3, 'left');
+            gen_s.Handle = s_h;
+            gen_s.Name = name;
+        end
+
+        function deleted = clear_component(handle)
+            name = getfullname(handle);
+            blocks = getfullname(find_system(handle, 'SearchDepth', 1, 'LookUnderMasks', 'all'));
+            deleted = {};
+            for i=1:length(blocks)
+                if strcmp(blocks{i}, name) ...
+                    || BlockHelpers.is_block_input_output(blocks{i})
+                    continue
+                end
+                BlockHelpers.delete_block_lines(blocks{i});
+                delete_block(blocks{i});
+                deleted{end+1} = blocks{i};
+            end
+        end
+
+
+        function component = populate_simple_component(model_name, info, handle, ...
+                component_type, connections, from_tags)
+            lib_path = get_component_simulink_path(info, component_type);
+            
+            component_name = BlockHelpers.get_name_or_empty(info.Name, info.PluginName);
+            full_file = getfullname(handle);
+            [ss_h, component_name] = BlockHelpers.add_block_at( ...
+                    lib_path, fullfile(full_file, component_name));
+            name = get_param(handle, "Name");
+            position = get_param(ss_h, 'Position');
+            BlockHelpers.move_block(ss_h, position, [550, 10]);
+            component = struct;
+            params_path = get_component_params_from_env(model_name, info);
+            if has_mask_parameter(ss_h, 'params_struct_name')
+                set_mask_values(ss_h, 'params_struct_name', params_path);
+            end
+            if has_mask_parameter(ss_h, 'params')
+                set_mask_values(ss_h, 'params', params_path);
+            end
+            if has_mask_parameter(ss_h, 'iid__')
+                set_mask_values(ss_h, 'iid__', mat2str(uint8(char(info.Id))));
+            end
+
+            component.Name = name;
+            component.Handle = handle;
+            component.Path = full_file;
+            component.Disturbance = [];
+            component.Id = info.Id;
+            component.Components(1).Name = component_name;
+            component.Components(1).Handle = ss_h;
+            component.Components(1).Path = fullfile(full_file, component_name);
+            component.Components(1).Id = info.Id;
+            
+            ports = get_param(ss_h, 'PortHandles');
+            for i=1:length(connections.input)
+                conn = connections.input{i};
+                in_port = get_param(fullfile(component.Path, conn{1}), 'Handle');
+                in_ports = get_param(in_port, 'PortHandles');
+                % delete_line(component.Path, in_ports.Outport(1));
+                add_line(component.Path, in_ports.Outport(1), ports.Inport(conn{2}), "autorouting", 'smart');
+            end
+            for i=1:length(connections.output)
+                conn = connections.output{i};
+                out_port = get_param(fullfile(component.Path, conn{1}), 'Handle');
+                out_ports = get_param(out_port, 'PortHandles');
+                add_line(component.Path, ports.Outport(1), out_ports.Inport(1), "autorouting", 'smart');
+            end
+            
+            for i=1:length(from_tags)
+                p = from_tags{i};
+                BlockHelpers.add_from_tag_to_inport(ss_h, p{1}, p{2});
+            end
+        end
+
+    
+        function system = populate_system(model_name, info, s_h)
+            from_tags = {
+                {'t', 2}, {'dt', 3}, {'system_ic', 4}
+            };
+            connections.input = {{'u', 1}};
+            connections.output = {{'y', 1}};
+            system = GeneratorHelpers. ...
+                populate_simple_component(model_name, info, s_h, 'sys', connections, from_tags);
+            if has_mask_parameter(system.Components.Handle, 'params')
+                set_mask_values(system.Components.Handle, 'params', 'ActiveScenario.SystemParams');
+            end
+            system.SignalSubsystem = [];
+        end
+
+        function dist = populate_disturbance(model_name, info, s_h)
+            from_tags = {
+                {'dt', 2}
+            };
+            connections.input = {{'y', 1}};
+            connections.output = {{'y_n', 1}};
+            dist = GeneratorHelpers. ...
+                populate_simple_component(model_name, info, s_h, 'dist', connections, from_tags);
+        end
+
+        function controller = populate_controller(model_name, info, cs_h, system_dims)
+            move = @BlockHelpers.move_block;
+            gn = @BlockHelpers.get_name_or_empty;
+            off = @BlockHelpers.offset_position;
+
+            cs_name = get_param(cs_h, "Name");
+            cs_path = fullfile(model_name, cs_name);
+            controller = struct;
+            controller.Name = cs_name;
+            controller.Handle = cs_h;
+            controller.Path = cs_path;
+            controller.Id = info.Id;
+
+            % position of controller component in 'n1/Subsystem'
+            comp_position = [330, 130, 430, 180];
+
+            io_handles = struct;
+
+            % get and reconfigure subsystem io ports
+            % subsystem is initially constructed with 1 input, 1 output
+            % and a line between them
+
+            inport_yref_h = getSimulinkBlockHandle(fullfile(cs_path, 'y_ref'));
+            inport_y_h = getSimulinkBlockHandle(fullfile(cs_path, 'y'));
+            outport_u_h = getSimulinkBlockHandle(fullfile(cs_path, 'u'));
+            outport_log_h = getSimulinkBlockHandle(fullfile(cs_path, 'log'));
+
+         
+            inport_yref_p = get_param(inport_yref_h, 'PortHandles');
+            outport_u_p = get_param(outport_u_h, 'PortHandles');
+            move(inport_yref_h, comp_position, [-500, 0]);
+            move(outport_u_h, comp_position, [400, 0]);
+
+           
+            move(inport_y_h, comp_position, [-500, 30]);
+            move(outport_log_h, comp_position, [400, 40]);
+            inport_y_p = get_param(inport_y_h, 'PortHandles');
+            outport_log_p = get_param(outport_log_h, 'PortHandles');
+
+            set_param(inport_yref_h, 'PortDimensions', num2str(system_dims.Outputs));
+            set_param(outport_u_h, 'PortDimensions', num2str(system_dims.Inputs));
+            set_param(inport_y_h, 'PortDimensions', num2str(system_dims.Outputs));
+
+            io_handles.inport_y.h = inport_y_h;
+            io_handles.inport_y.p = inport_y_p;
+            io_handles.inport_yref.h = inport_yref_h;
+            io_handles.inport_yref.p = inport_yref_p;
+            io_handles.outport_u.h = outport_u_h;
+            io_handles.outport_u.p = outport_u_p;
+            io_handles.outport_log.h = outport_log_h;
+            io_handles.outport_log.p = outport_log_p;
+
+            % if controller is composable, that means that it has
+            % various controller types for different system DOF-s
+            c_info = info;
+            if c_info.IsComposable
+                components = c_info.Components;
+            else
+                components = c_info;
+            end
+
+
+            io_handles = GeneratorHelpers.generate_controller_io_muxes( ...
+                cs_path, comp_position, system_dims, length(components), io_handles);
+         
+            for j=1:length(components)
+                 
+                comp = components(j);                
+                path = get_component_simulink_path(comp, 'ctl');
+                sp = split(path, '/');
+                c_block = fullfile(model_name, cs_name, gn(comp, sp{end}));
+                [c_h, name] = BlockHelpers.add_block_at(path, c_block, comp_position);
+                gen_c(j).Name = name;
+                gen_c(j).Handle = c_h;
+                gen_c(j).Path = fullfile(cs_path, name);
+                gen_c(j).Id = comp.Id;
+                
+                % if block is not m_controller, set its params
+                params_path = get_component_params_from_env(model_name, comp);
+                if has_mask_parameter(c_h, 'params_struct_name')
+                    set_mask_values(c_h, 'params_struct_name', params_path);
+                end
+                if has_mask_parameter(c_h, 'params')
+                    set_mask_values(c_h, 'params', params_path);
+                end
+                if has_mask_parameter(c_h, 'iid__')
+                    set_mask_values(c_h, 'iid__', mat2str(uint8(char(info.Id))));
+                end
+
+                extractor = GeneratorHelpers.generate_reference_extractor(cs_path, comp_position, ...
+                    length(components));
+
+                io_handles.ref_extractors(j) = extractor;
+                gen_c(j).RefExtractor.Path = fullfile(cs_path, extractor.name);
+                
+
+                BlockHelpers.add_from_tag_to_inport(c_h, 'dt', 3);
+
+
+                io_handles = GeneratorHelpers.generate_controller_adapter_muxes( ...
+                    fullfile(model_name, cs_name), comp_position, j, io_handles);
+                
+                c_p = get_param(c_h, "PortHandles");
+
+                io_handles.adapters(j).scopes = ...
+                    GeneratorHelpers.generate_scopes_for_controller( ...
+                        fullfile(model_name, cs_name), comp_position, j);
+
+                io_handles.adapters(j).cont.h = c_h;
+                io_handles.adapters(j).cont.p = c_p;
+
+                in_mux = io_handles.adapters(j).in_mux.h;
+                in_mux_ref = io_handles.adapters(j).in_mux_ref.h;
+                out_demux = io_handles.adapters(j).out_demux.h;
+                if is_valid_field(comp.Mux, 'Inputs') && ~isempty(comp.Mux.Inputs)             
+                    set_param(in_mux, 'Inputs', num2str(length(comp.Mux.Inputs)));
+                    set_param(in_mux_ref, 'Inputs', num2str(length(comp.Mux.Inputs)));
+                    io_handles.adapters(j).Mux.Inputs = comp.Mux.Inputs;
+                else
+                    set_param(in_mux, 'Inputs', num2str(system_dims.Outputs));
+                    set_param(in_mux_ref, 'Inputs', num2str(system_dims.Outputs));
+                    io_handles.adapters(j).Mux.Inputs = 1:system_dims.Outputs;
+                end
+                
+                if is_valid_field(comp.Mux, 'Outputs')  && ~isempty(comp.Mux.Outputs)    
+                    set_param(out_demux, 'Outputs', num2str(length(comp.Mux.Outputs)));
+                    io_handles.adapters(j).Mux.Outputs = comp.Mux.Outputs;
+                else
+                    set_param(out_demux, 'Outputs', num2str(system_dims.Inputs));
+                    io_handles.adapters(j).Mux.Outputs = 1:system_dims.Inputs;
+                end
+
+                % refresh port handles after dimension setting
+                io_handles.adapters(j).in_mux.p = ...
+                    get_param(io_handles.adapters(j).in_mux.h, 'PortHandles');
+                io_handles.adapters(j).in_mux_ref.p = ...
+                    get_param(io_handles.adapters(j).in_mux_ref.h, 'PortHandles');
+                io_handles.adapters(j).out_demux.p = ...
+                    get_param(io_handles.adapters(j).out_demux.h, 'PortHandles');
+
+                comp_position = off(comp_position, [0, 200]);
+            end
+            controller.Components = gen_c;
+            controller.IoHandles = io_handles;
+            controller.Estimator = [];
+            controller.Disturbance = [];
+
+            
+            if is_valid_field(info, 'Estimator')
+                controller.Estimator = ...
+                    GeneratorHelpers.generate_estimator(model_name, controller.SignalSubsystem, info.Estimator);
+            end
+            if is_valid_field(info, 'Disturbance')
+                controller.Disturbance = ...
+                    GeneratorHelpers.generate_disturbance(model_name, controller.SignalSubsystem, info.Disturbance, 1);
+            end
+            controller.SignalSubsystem = [];
+        end
+
+        function handle = generate_scopes_for_controller(cs_path, comp_position, j)
+             move = @BlockHelpers.move_block;
+             [handle.y.h, ~] = BlockHelpers.add_block_at( ...
+                    'simulink/Commonly Used Blocks/Scope', ...
+                    fullfile(cs_path, ['y_scope_', num2str(j)]));
+             [handle.u.h, ~] = BlockHelpers.add_block_at( ...
+                    'simulink/Commonly Used Blocks/Scope', ...
+                    fullfile(cs_path, ['u_scope_', num2str(j)]));
+
+             move(handle.y.h, comp_position, [-190, -100])
+             move(handle.u.h, comp_position, [170, -100])
+             set_param(handle.y.h, 'NumInputPorts', '2');
+             set_param(handle.u.h, 'NumInputPorts', '1');
+             handle.y.p = get_param(handle.y.h, 'PortHandles');
+             handle.u.p = get_param(handle.u.h, 'PortHandles');
+        end
+
+        
+
         function th = add_time_handler(model_name)
             % Add time handler block to the simulink model
-            pa = @BlockHelpers.path_append;    
             position = [430, 0, 630, 50];
-            c_block = pa(model_name, 'TH');
+            c_block = fullfile(model_name, 'TH');
             [th_h, name] = BlockHelpers.add_block_at( ...
-                pa(GeneratorHelpers.common_lib_name, 'TimeHandler'), c_block, position);
+                fullfile(GeneratorHelpers.common_lib_name, 'TimeHandler'), c_block, position);
             th.Handle = th_h;
             th.Name = name;
-            th.Path = pa(model_name, th.Name);
+            th.Path = fullfile(model_name, th.Name);
         end
 
-        function ich = add_ic_handler(model_name, system_info)
-            % Add time handler block to the simulink model
-            pa = @BlockHelpers.path_append; 
-            c_block = pa(model_name, 'IC');
-
-            position = [590, 70, 610, 90];
-            [ic_h, name] = BlockHelpers.add_block_at( ...
-                'simulink/Signal Routing/Goto', c_block, position);
-
-            position = [440, 70, 460, 90];
-            [icc_h, namec] = BlockHelpers.add_block_at( ...
-                'simulink/Commonly Used Blocks/Constant', c_block, position);
-
-            set_param(ic_h, 'GotoTag', 'ic');
-            set_param(icc_h, 'Value', system_info.Ic);
-            to_ports = get_param(ic_h, 'PortHandles');
-            const_ports = get_param(icc_h, 'PortHandles');
-            add_line(model_name, const_ports.Outport, to_ports.Inport);           
-            ich.Constant.Handle = icc_h;
-            ich.Constant.Name = namec;
-            ich.Constant.Path = pa(model_name, namec);
-            ich.To.Handle = ic_h;
-            ich.To.Name = name;
-            ich.To.Path = pa(model_name, name);
-        end
+ 
 
         function refgen = add_reference_generator(model_name)
             % Add and configure reference generator to the simulink model
 
-            pa = @BlockHelpers.path_append;    
             position = [30, 60, 130, 120];
-            c_block = pa(model_name, 'RefGenerator');
-            [refgen_h, name] = BlockHelpers.add_block_at(pa(GeneratorHelpers.common_lib_name, 'ReferenceGenerator'), c_block, position);
+            c_block = fullfile(model_name, 'RefGenerator');
+            [refgen_h, name] = BlockHelpers.add_block_at(...
+                fullfile(GeneratorHelpers.common_lib_name, 'ReferenceGenerator'), c_block, position);
             
             refgen.Handle = refgen_h;
             refgen.Name = name;
-            refgen.Path = pa(model_name, refgen.Name);
+            refgen.Path = fullfile(model_name, refgen.Name);
 
             set_param(refgen_h, 'LinkStatus', 'none');
         end
 
         function extractor = generate_reference_extractor(cs_path, comp_position, j)
-             pa = @BlockHelpers.path_append;
              move = @BlockHelpers.move_block;
              [extractor.h, extractor.name] = BlockHelpers.add_block_at( ...
-                    pa(GeneratorHelpers.common_lib_name, 'ReferenceExtractor'), ...
-                    pa(cs_path, ['ref_extractor_', num2str(j)]));
+                    fullfile(GeneratorHelpers.common_lib_name, 'ReferenceExtractor'), ...
+                    fullfile(cs_path, ['ref_extractor_', num2str(j)]));
              
              move(extractor.h, comp_position, [-150, -40])
              extractor.p = get_param(extractor.h, 'PortHandles');
+        end
+
+        function gen_s = generate_signal_subsystem(model_name, position, is_ctl)
+            move = @BlockHelpers.move_block;
+
+            if is_ctl > 0
+                block_name = 'IS';
+                off = [180, -10];
+            else
+                block_name = 'FS';
+                off = [-220, -50];
+            end
+            path = fullfile(GeneratorHelpers.common_lib_name, block_name);
+            gen_s = struct;
+            sp = split(path, '/');
+            s_block = fullfile(model_name, sp{end});
+
+
+            [s_h, name] = BlockHelpers.add_block_at(path, s_block);
+            move(s_h, position, off);
+            blockObj = get_param(s_h, 'Object');
+            if is_ctl
+                blockObj.Orientation = 'right';
+            else
+                blockObj.Orientation = 'left';
+            end
+            gen_s.Handle = s_h;
+            gen_s.Name = name;
+            gen_s.Path = fullfile(model_name, name);
         end
 
         function bus_connect(model_name, blocks)
@@ -409,6 +493,14 @@ classdef GeneratorHelpers
                 
                 % first, check if disturbance on controller and connect
 
+                d_h = c.SignalSubsystem.Handle;
+                d_ports = get_param(d_h, 'PortHandles');
+                add_line(model_name, c_ports.Outport(1), d_ports.Inport(1), "autorouting", 'smart');
+                add_line(model_name, d_ports.Outport(1), s_ports.Inport(1), "autorouting", 'smart');
+                set_param(d_ports.Outport(1), 'datalogging', 'on'); % log noise control input
+                set_param(d_ports.Outport(1), 'Name', strcat(c.Name, '_u_n'));
+
+
                 if is_valid_field(c, 'Disturbance')
                     d_h = c.Disturbance.Handle;
                     d_ports = get_param(d_h, 'PortHandles');
@@ -416,11 +508,18 @@ classdef GeneratorHelpers
                     add_line(model_name, d_ports.Outport(1), s_ports.Inport(1), "autorouting", 'smart');
                     set_param(d_ports.Outport(1), 'datalogging', 'on'); % log noise control input
                     set_param(d_ports.Outport(1), 'Name', strcat(c.Name, '_u_n'));
-                else
-                    add_line(model_name, c_ports.Outport(1), s_ports.Inport(1), "autorouting", 'smart');
                 end
 
-                
+                % connect system signal subsystem
+                d_h = s.SignalSubsystem.Handle;
+                d_ports = get_param(d_h, 'PortHandles');
+                add_line(model_name, s_ports.Outport(1), d_ports.Inport(1), "autorouting", 'smart');
+                set_param(d_ports.Outport(1), 'datalogging', 'on'); % log noise control input
+                set_param(d_ports.Outport(1), 'Name', strcat(c.Name, '_y_n'));
+            
+                add_line(model_name, d_ports.Outport(1), c_ports.Inport(2), "autorouting", 'smart');
+
+            
                 % then, if disturbance is on system
                 if is_valid_field(s, 'Disturbance')
                     d_h = s.Disturbance.Handle;
@@ -429,8 +528,6 @@ classdef GeneratorHelpers
                     set_param(d_ports.Outport(1), 'datalogging', 'on'); % log noise control input
                     set_param(d_ports.Outport(1), 'Name', strcat(c.Name, '_y_n'));
                     dist_out_ports = d_ports.Outport;
-                else
-                    dist_out_ports = s_ports.Outport;
                 end
 
                 % if controller has estimator, connect to it
@@ -441,19 +538,11 @@ classdef GeneratorHelpers
                     set_param(e_ports.Outport(1), 'datalogging', 'on'); % log estimated value
                     set_param(e_ports.Outport(1), 'Name', strcat(c.Name, '_y_hat'));
                     est_out_ports = e_ports.Outport;                
-                else
-                    est_out_ports = dist_out_ports;
                 end
-                
-                % finally, connect estimator out to controller 
-                add_line(model_name, est_out_ports, c_ports.Inport(2), "autorouting", 'smart');
-
                 
                 % connect refgen to controller
                 add_line(model_name, refgen_ports.Outport, c_ports.Inport(1), "autorouting", 'smart');
 
-                 
-                
                 % connect signals in the controller
                 io_h = c.IoHandles;
                 add_line(c.Path, io_h.inport_y.p.Outport, io_h.in_demux.p.Inport, "autorouting", 'smart');
@@ -507,13 +596,12 @@ classdef GeneratorHelpers
 
 
         function handles = generate_controller_io_muxes(cs_path, comp_position, system_dims, num_components, handles)
-            pa = @BlockHelpers.path_append;
             move = @BlockHelpers.move_block;
             % muxes
             [in_demux_ref, ~] = BlockHelpers.add_block_at( ...
-                'simulink/Commonly Used Blocks/Demux',  pa(cs_path, 'DemuxYrefIn'));
+                'simulink/Commonly Used Blocks/Demux',  fullfile(cs_path, 'DemuxYrefIn'));
             [in_demux, ~] = BlockHelpers.add_block_at( ...
-                'simulink/Commonly Used Blocks/Demux',  pa(cs_path, 'DemuxYIn'));
+                'simulink/Commonly Used Blocks/Demux',  fullfile(cs_path, 'DemuxYIn'));
             set_param(in_demux_ref, 'Outputs', num2str(system_dims.Outputs));
             set_param(in_demux, 'Outputs', num2str(system_dims.Outputs));
             
@@ -523,11 +611,11 @@ classdef GeneratorHelpers
             in_demux_ref_p = get_param(in_demux_ref, 'PortHandles');
 
             [out_mux, ~] = BlockHelpers.add_block_at( ...
-                'simulink/Commonly Used Blocks/Mux',  pa(cs_path, 'MuxOut'));
+                'simulink/Commonly Used Blocks/Mux',  fullfile(cs_path, 'MuxOut'));
             move(out_mux, comp_position, [300, 0]);
 
             [out_mux_log, ~] = BlockHelpers.add_block_at( ...
-                'simulink/Commonly Used Blocks/Bus Creator',  pa(cs_path, 'MuxOut'));
+                'simulink/Commonly Used Blocks/Bus Creator',  fullfile(cs_path, 'MuxOut'));
             move(out_mux_log, comp_position, [300, 100]);
 
             set_param(out_mux, 'Inputs', num2str(system_dims.Inputs));
@@ -548,19 +636,18 @@ classdef GeneratorHelpers
         end
 
         function handles = generate_controller_adapter_muxes(cs_path, comp_position, j, handles)
-            pa = @BlockHelpers.path_append;
             move = @BlockHelpers.move_block;
 
             [in_mux, ~] = BlockHelpers.add_block_at( ...
-                'simulink/Commonly Used Blocks/Mux', pa(cs_path, ['MuxIn', num2str(j)]));
+                'simulink/Commonly Used Blocks/Mux', fullfile(cs_path, ['MuxIn', num2str(j)]));
             in_mux_p = get_param(in_mux, "PortHandles");
             move(in_mux, comp_position, [-300, 40]);
             [in_mux_ref, ~] = BlockHelpers.add_block_at( ...
-                'simulink/Commonly Used Blocks/Mux', pa(cs_path, ['MuxInRef', num2str(j)]));
+                'simulink/Commonly Used Blocks/Mux', fullfile(cs_path, ['MuxInRef', num2str(j)]));
             in_mux_ref_p = get_param(in_mux_ref, "PortHandles");
             move(in_mux_ref, comp_position, [-300, -40]);
             [out_demux, ~] = BlockHelpers.add_block_at( ...
-                'simulink/Commonly Used Blocks/Demux', pa(cs_path, ['DemuxOut', num2str(j)]));
+                'simulink/Commonly Used Blocks/Demux', fullfile(cs_path, ['DemuxOut', num2str(j)]));
             out_demux_p = get_param(out_demux, "PortHandles");
             move(out_demux, comp_position, [200, -20]);
 

@@ -24,40 +24,46 @@ classdef BlockHelpers
             set_param(handle, 'Position', r);
         end
 
+        function t = is_block_input_output(handle)
+            typ = get_param(handle, 'BlockType');
+            t = strcmp(typ, 'Inport') || strcmp(typ, 'Outport');
+        end
+
+        function delete_block_lines(handle)
+            parent_path = getfullname(get_param(handle, 'Parent'));
+            lines_h = find_system(parent_path, 'FindAll', 'on', ...
+                'SearchDepth', 1, 'LookUnderMasks', 'all', 'type', 'line');
+            delete_line(lines_h);
+        end
+
         function systems = get_system_io_port_dims(systems, sys_info)
             % get port dimensions of systems if they are present in the
             % simulink in/out ports        
             try
-                inport_h = getfullname(Simulink.findBlocksOfType(systems.systems(1).Path, 'Inport'));
-                outport_h = getfullname(Simulink.findBlocksOfType(systems.systems(1).Path, 'Outport'));
+                in_h = getSimulinkBlockHandle( ...
+                    fullfile(systems.systems(1).Components(1).Path, 'u'));
+                out_h = getSimulinkBlockHandle( ...
+                    fullfile(systems.systems(1).Components(1).Path, 'y'));
             catch e
                 disp(e.message);
                 error("Cannot find system Inport. Make sure that the system's slx is on path...");
             end
-            if ~iscell(outport_h) % if only 1 output, h is not a cell
-                outport_h = {outport_h};
-            end
-
-
-            matches = strcmp(inport_h, strcat(systems.systems(1).Path, '/u'));
-            in_h = inport_h{matches};
-            matches = strcmp(outport_h, strcat(systems.systems(1).Path, '/y'));
-            out_h = outport_h{matches};
+           
         
             i_p = get_param(in_h, "PortDimensions");
             o_p = get_param(out_h, "PortDimensions");
 
-            i_p = str2num(i_p);
-            o_p = str2num(o_p);
+            i_p = str2double(i_p);
+            o_p = str2double(o_p);
 
             if i_p < 0 || o_p < 0
-                if model_has_tag(systems.systems(1).Path, '__cs_m_sys')
+                if is_block_component(systems.systems(1).Path, 'sys', 'm')
                     info = libinfo(systems.systems(1).Path);
                     class_name = get_component_class_name(info.ReferenceBlock);
                     dims = eval(strcat(class_name, '.get_dims_from_params(sys_info.Params)'));
                 end
 
-                if model_has_tag(systems.systems(1).Path, '__cs_py_sys')
+                if is_block_component(systems.systems(1).Path, 'sys', 'py')
                     error('TODOO');
                 end
                 
@@ -74,7 +80,7 @@ classdef BlockHelpers
             systems.dims.Outputs = o_p;
         end
 
-        function add_from_tag_to_inport(model_name, handle, tag, idx, orient)
+        function add_from_tag_to_inport(handle, tag, idx, orient)
             pa = @BlockHelpers.path_append;
             offset = @BlockHelpers.move_block;
 
@@ -82,9 +88,14 @@ classdef BlockHelpers
                 orient = 'right';
             end
 
+            handle_path = getfullname(handle);
+            sp = split(handle_path, '/');
+            from_destination = join(sp(1:end-1), '/');
+            from_destination = from_destination{1};
+
+
             pos = get_param(handle, 'Position');
-            ps = get_param(handle, 'PortHandles');
-            from_h = add_block('simulink/Signal Routing/From', pa(model_name, 'From'), 'MakeNameUnique','on');
+            from_h = add_block('simulink/Signal Routing/From', pa(from_destination, 'From'), 'MakeNameUnique','on');
             from_ports = get_param(from_h, 'PortHandles');
             ports = get_param(handle, 'PortHandles');
             ports_pos = get_param(ports.Inport, 'Position');
@@ -105,7 +116,7 @@ classdef BlockHelpers
             pos = [pos(1), 0, pos(3), 0]; % to set absolute value in height
             offset(from_h, pos, [sign*w, off], 0.5, 0.3)
             set_param(from_h, 'GotoTag', tag);
-            add_line(model_name, from_ports.Outport, ports.Inport(idx));
+            add_line(from_destination, from_ports.Outport, ports.Inport(idx));
         end
 
 
@@ -139,14 +150,18 @@ classdef BlockHelpers
             end
         end
 
-        function [h, name] = add_block_at(source, dest, varargin)
+        function varargout = add_block_at(source, dest, varargin)
             % add unique block and set position, if given
             h = add_block(source, dest, 'MakeNameUnique','on');
             if nargin > 2
                 set_param(h, 'Position', varargin{1});
             end
+            varargout{1} = h;
+            if nargout == 1
+                return
+            end
             name = get_param(h, 'Name');
-
+            varargout{2} = name;
         end
 
         function n = get_name_or_empty(str, default)

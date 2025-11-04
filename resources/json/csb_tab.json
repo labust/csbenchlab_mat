@@ -1,0 +1,85 @@
+{
+    "entries": [
+        {
+            "id": "csb_tab",
+            "title": "CSBENCHLAB",
+            "type": "Tab",
+            "children": [
+                {
+                    "type": "Section",
+                    "title": "Info",
+                    "children": [
+                        {
+                            "type": "Column",
+                            "children": [
+                                {
+                                    "type": "PushButton",
+                                    "action": "openMathWorksWebsiteAction"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "Section",
+                    "title": "File",
+                    "children": [
+                        {
+                            "type": "Column",
+                            "children": [
+                                {
+                                    "type": "DropDownButton",
+                                    "action": "newPopUpAction",
+                                    "popupName": "newPopUpList"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Column",
+                            "children": [
+                                {
+                                    "type": "PushButton",
+                                    "action": "openModelAction"
+                                },
+                                {
+                                    "type": "SplitButton",
+                                    "action": "saveModelAction",
+                                    "popupName": "savePopUpList"
+                                },
+                                {
+                                    "type": "EmptyControl"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "Section",
+                    "title": "Simulation",
+                    "children": 
+                    [
+                        {
+                            "type": "Column",
+                            "children": [
+                                {
+                                    "type": "PushButton",
+                                    "action": "runSimulationAction"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Column",
+                            "children": [
+                                {
+                                    "type": "PushButton",
+                                    "action": "stopSimulationAction"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ],
+    "version": "1.0"
+}

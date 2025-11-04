@@ -19,11 +19,16 @@ function libs = list_component_libraries(ignore_csbenchlab)
 
         if isfolder(fullfile(reg, n))
             meta = readstruct(fullfile(reg, n, 'package.json'));
-            libs(end+1) = struct('Name', n, "Type", 'install', 'Path', fullfile(reg, n), 'Version', meta.version);
+            libs(end+1) = struct('Name', n, "Type", 'install', 'Path', fullfile(reg, n), 'Version', meta.Version);
         elseif endsWith(n, '.json')
             [~, name, ~] = fileparts(n);
             s = readstruct(fullfile(fs(i).folder, fs(i).name));
-            libs(end+1) = struct('Name', name, "Type", 'link', 'Path', s.path, 'Version', s.version);
+            if ~is_valid_component_library(s.Path)
+                warning(strcat("Library ", name, " is not valid. Its path does not exist. Skipping"));
+                continue
+            end
+
+            libs(end+1) = struct('Name', name, "Type", 'link', 'Path', s.Path, 'Version', s.Version);
         end
     end
 

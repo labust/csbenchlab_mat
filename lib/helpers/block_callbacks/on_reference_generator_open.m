@@ -6,12 +6,13 @@ function on_reference_generator_open()
     env_name = splits{1};
 
     env_path = fileparts(which(env_name));
-
+    
+    
     % if no config, this is not an environment
-    if exist(fullfile(env_path, 'parts', 'scenarios.json'), 'file')
+    if exist(fullfile(env_path, 'config.json'), 'file')
         mo = get_param(handle, 'MaskObject');
-        scenarios = load_env_scenarios(env_path);
-
+        hws = get_param(env_name, 'modelworkspace');
+        scenarios = hws.getVariable('Scenarios');
         names = {};
         for i=1:length(scenarios)
             names{end+1} = scenarios(i).Name;  

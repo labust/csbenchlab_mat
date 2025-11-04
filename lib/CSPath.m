@@ -1,12 +1,12 @@
 classdef CSPath
-   
-    
+
+
     methods (Static)
 
         function path = get_app_root_path()
             try
                 files = matlab.apputil.getInstalledAppInfo;
-            
+
                 location = files(arrayfun(@(x) strcmp(x.name, 'csbenchlab'), files));
                 path = fullfile(location(1).location);
             catch
@@ -19,7 +19,8 @@ classdef CSPath
         end
 
         function path = get_app_python_src_path()
-            path = fullfile(CSPath.get_app_root_path(), 'csbenchlab_py');
+            %path = fullfile(CSPath.get_app_root_path(), 'csbenchlab_py');
+            path = "/home/luka/fer/csbenchlab_py";
         end
 
         function path = get_app_registry_path()

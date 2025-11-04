@@ -2,10 +2,10 @@ function p = get_plugin_info_from_lib(name, lib_name)
     lib_path = get_component_library(lib_name).Path;
    
     try
-        manifest = load(fullfile(lib_path, 'autogen', 'manifest.mat'));
+        manifest = load_lib_manifest(lib_path);
         registry = manifest.registry;
     catch
-        error(strcat("Manifest file not found for library '",  n.name));
+        error(strcat("Manifest file not found for library '",  lib_name, "'."));
     end
     
     fns = fieldnames(registry);

@@ -1,0 +1,3 @@
+function stop_simulation_action(callbackInfo)
+
+end

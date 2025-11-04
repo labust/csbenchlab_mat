@@ -11,8 +11,11 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "args": [
-                "--plugin_path", "/home/luka/matlab/csbenchlab/registry/demo_lib/src/Controller2.py",
-                "--attr_name", "input_description"
+                // "--plugin_path", "/home/luka/matlab/csbenchlab/registry/demo_lib/src/Controller2.py",
+                // "--attr_name", "input_description"
+                "--param-file", "/home/luka/fer/csbenchlab_py/demo_env/parts/controllers/d2a3487e-6d8d-4f9a-a2f2-c280c2b37fe2/params/d2a3487e-6d8d-4f9a-a2f2-c280c2b37fe2.py",
+                "--plugin-desc-path", "/tmp/tpbc0516e0_a990_41e2_91f1_5f45619d03d4.json"
+,
             ]
         }
     ]

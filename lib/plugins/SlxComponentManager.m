@@ -4,7 +4,7 @@ classdef SlxComponentManager < ComponentManager
     
    
     methods (Static)
-        function resolved = make_component_params(comp_name, lib_name, param_values)
+        function resolved = get_component_params(comp_name, lib_name, param_values)
 
             if ~exist('param_values', 'var')
                 param_values = struct;
@@ -23,6 +23,10 @@ classdef SlxComponentManager < ComponentManager
             
             model_name = strcat(lib_name, '_', e);
             slx_path = which(model_name);
+            if strempty(slx_path)
+                error(strcat("Cannot load parameters for component '", comp_name, ...
+                    "' in library '", lib_name, "'. Check that it is on matlab path"));
+            end
             load_system(slx_path);
         
             h = getSimulinkBlockHandle(fullfile(model_name, comp_name));
@@ -30,24 +34,27 @@ classdef SlxComponentManager < ComponentManager
             mo = get_param(h, 'MaskObject');
             
                 
-            resolved = struct;
+            resolved = {};
             if ~isempty(mo)    
                 for i=1:length(mo.Parameters)
                     p = mo.Parameters(i);
                     if strcmp(p.Visible, 'on') && ~strcmp(p.Name, 'params')
-                        resolved.(p.Name) = str2double(p.Value);
+                        resolved{end+1} = ParamDescriptor(p.Name, str2double(p.Value));
                     end
                 end
             end
             close_system(slx_path);
-        
         end
 
 
-        function setup_component(c_path)
+        function type_dict = setup_component(c_path, type_dict, ~)
 
-            params = eval_component_params(c_path);
-            params_struct_name = get_mask_value(c_path, 'params_struct_name');
+            params = get_component_params_from_block(c_path);
+            try
+                params_struct_name = get_mask_value(c_path, 'params_struct_name');
+            catch
+                return
+            end
 
             mo = get_param(c_path, 'MaskObject');
             for i=1:length(mo.Parameters)

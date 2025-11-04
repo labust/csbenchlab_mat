@@ -1,6 +1,10 @@
-function handle = get_or_create_component_library(path, close_after_creation)
+function handle = get_or_create_component_library(lib_name, close_after_creation)
     
-    [~, name, ~] = fileparts(path); 
+    try
+        path = get_library_path(lib_name);
+    catch
+        path = fullfile(CSPath.get_app_registry_path, lib_name);
+    end
 
     if ~exist(fullfile(path), 'dir')
         mkdir(fullfile(path));
@@ -17,17 +21,17 @@ function handle = get_or_create_component_library(path, close_after_creation)
         close_after_creation = 0;
     end
 
-    syspath = strcat(name, '_sys');
-    contpath = strcat(name, '_ctl');
-    estpath = strcat(name, '_est');
-    distpath = strcat(name, '_dist');
+    syspath = strcat(lib_name, '_sys');
+    contpath = strcat(lib_name, '_ctl');
+    estpath = strcat(lib_name, '_est');
+    distpath = strcat(lib_name, '_dist');
     handle = struct;
     handle.path = path;
-    handle.name = name;
+    handle.name = lib_name;
 
     % check if package is already created
     if autogen_created
-        close_library(name);
+        close_library(lib_name);
         handle = create_component_library(path, 0);
     else
         handle.sh = load_and_unlock_system(fullfile(autogen_folder, syspath));

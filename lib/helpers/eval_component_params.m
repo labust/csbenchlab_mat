@@ -1,47 +1,101 @@
-function params = eval_component_params(block_path)
+function params = eval_component_params(env_path, component)
+    rel_path = component_relative_path(component);
 
-    params = struct;
+    full_params_path = fullfile(env_path, rel_path, component.Id, 'params', strcat(component.Id, '.py'));
+
+    script_path = fullfile(CSPath.get_app_python_src_path(), 'm_scripts', 'eval_plugin_parameters.py');
+    param_desc = ComponentManager.get(component.PluginImplementation)...
+        .get_component_params(component.PluginName, component.Lib);
+    
+    plugin_info = ComponentManager.get(component.PluginImplementation)...
+        .get_plugin_info(component.PluginName, component.Lib);
+    % save param_desc to temp file
+    temp_file = strcat(tempname, '.json');
+    f = fopen(temp_file, 'w');
+    fwrite(f, jsonencode(jsonify_component_param_description(param_desc)));
+    fclose(f);
     try
-        params_struct = get_struct_name(block_path);
-    catch
-        return
+        params = run_py_file(script_path, 'params', ...
+            '--param-file', full_params_path, ...
+            '--plugin-desc-path', temp_file, ...
+            '--plugin-path', plugin_info.ComponentPath);
+        delete_temp_file(temp_file);
+    catch e
+        delete_temp_file(temp_file)
+        rethrow(e);
     end
 
-    if ~model_has_tag(block_path, '__cs_ctl')
-        try
-            params = evalin('base', params_struct);
-        catch
-            params = 0;
+    if isa(params, 'py.types.SimpleNamespace')
+        return
+    end
+    params = jsondecode(char(params));
+    
+
+    fns = fieldnames(params);
+
+    load_from_file = isfield(params, 'csb_params_file__');
+    if load_from_file
+        path = params.csb_params_file__;
+        splits = split(path, ':');
+        assert(length(splits) == 2 || length(splits) == 3, "Wrong csb_params_file__ format");
+        if length(splits) == 2
+            params = load_params_from_file(fullfile(env_path, rel_path, component.Id, splits{2}));
+        else
+            params = load_params_from_file(fullfile(env_path, rel_path, component.Id, splits{2}), splits{3});
         end
         return
     end
+    
+    csb_eval_exp = 'csb_m_eval_exp:';
+    csb_default_eval = 'csb_m_eval_default';
+    csb_load_from_file_exp = 'csb_load_from_file:';
+    for i=1:length(fns)
+        n = fns{i};
+        v = params.(n);
+        if ischar(v) || isstring(v) && isscalar(v)
+            if startsWith(v, csb_eval_exp)
+                try
+                    v = eval(v(length(csb_eval_exp)+1:end));
+                catch
+                    warning('Error evaluating expression for parameter %s: %s', n, v);
+                end
+            elseif strcmp(v, csb_default_eval)
+                param_d = param_desc(cellfun(@(x) strcmp(x.Name, n), param_desc));
+                if ~isempty(param_d)
+                    v = param_d{1}.DefaultValue(params);
+                end
+            elseif startsWith(v, csb_load_from_file_exp)
+                splits = split(v, ':');
+                assert(length(splits) == 3, "Wrong csb_params_file__ format");
+                v = load_params_from_file(fullfile(env_path, rel_path, component.Id, splits{2}), splits{3});
+            end
+        end
+        if ischar(v) || isstring(v)
+            v = uint8(char(v));
+        end
+        params.(n) = v;
+    end
+end
 
-    parent_path = get_parent_controller(block_path);
+function delete_temp_file(temp_file)
+    if exist(temp_file, 'file')
+        delete(temp_file);
+    end
+end
 
-    % if parent block is already a m-controller
-    if strcmp(parent_path, block_path) 
-        params = evalin('base', params_struct);
+function params = load_params_from_file(path, var_name)
+    if ~endsWith(path, '.mat')
+        error("Matlab backend can only load mat files");
+    end
+    if exist("var_name", 'var')
+        params = load(path, var_name);
+        params = params.(var_name);
     else
-        parent_params_struct = get_struct_name(parent_path);
-        indices = strfind(params_struct, '.');
-        if isempty(indices)
-            error(strcat('No parameters set for controller', getfullname(block_path)));
+        params = load(path);
+        fns = fieldnames(params);
+        if length(fns) > 1
+            error(strcat("Provided parameter file '", path, "' has more than one variable"));
         end
-        try
-            eval_str = strcat(parent_params_struct, '.', params_struct(indices+1:end));
-            params = evalin('base', eval_str);
-        catch ME
-            error(strcat('Cannot evaluate parameters for controller "', ...
-                getfullname(block_path), '". Cannot evaluate string: "', eval_str, '".'));
-        end
+        params = params.(fns{1});
     end
 end
-
-function t = get_struct_name(block_path)
-    if has_mask_parameter(block_path, 'params_struct_name')
-        t = get_mask_value(block_path, 'params_struct_name');
-        return
-    end
-    t = get_mask_value(block_path, 'params');
-end
-

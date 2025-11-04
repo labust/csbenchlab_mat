@@ -1,11 +1,14 @@
-function register_component_library(path, link_register)
+function s = register_component_library(path, link_register, ask_dialog)
     
     if ~exist('link_register', 'var')
         link_register = 0;
     end
-
     
-   
+    if ~exist('ask_dialog', 'var')
+        ask_dialog = 1;
+    end
+
+    s = 0;
     if isfolder(path)
 
         if endsWith(path, '/')
@@ -13,12 +16,32 @@ function register_component_library(path, link_register)
         end
         meta = readstruct(fullfile(path, 'package.json'));
         reg = CSPath.get_app_registry_path();
-        name = meta.library;
-
-        if exist(fullfile(reg, name), 'dir')
+        name = meta.Name;
+    
+        msg = "Library already exists. Do you want to override existing library?";
+        title = "Library exists";
+        if exist(fullfile(reg, name), 'dir') ...
+            
+            if ask_dialog
+                answer = questdlg(msg, title, {"Yes", "No"});
+            else
+                answer = "Yes";
+            end
+            if ~strcmp(answer, "Yes")
+                return
+            end
             rmdir(fullfile(reg, name), 's');
+        elseif exist(fullfile(reg, strcat(name, '.json')), 'file')
+            if ask_dialog
+                answer = questdlg(msg, title, {"Yes", "No"});
+            else
+                answer = "Yes";
+            end
+            if ~strcmp(answer, "Yes")
+                return
+            end
+            delete(fullfile(reg, strcat(name, '.json')));
         end
-
 
         if ~link_register
             dest_path = fullfile(reg, name);
@@ -26,8 +49,8 @@ function register_component_library(path, link_register)
             addpath(paths{:});
             copyfile(path, dest_path);
         else
-            link_lib.path = path;
-            link_lib.version = meta.version;
+            link_lib.Path = path;
+            link_lib.Version = meta.Version;
             writestruct(link_lib, fullfile(reg, strcat(name, '.json')));
             dest_path = path;
         end
@@ -50,44 +73,25 @@ function register_component_library(path, link_register)
                 warning(strcat("Found unknown component type '", fname, "'."));
                 continue
             end
-    
+
             plugin_list = registry.(fname);
             for j = 1:length(plugin_list)
                 register_component(plugin_list{j}, parse_comp_type(fname), handle.name, handle.path, 0);
             end
         end
-        
+
         % remove old library from path
         if ~link_register
             rmpath(paths{:});
         end
-        
-        new_paths = library_paths(dest_path, name);
+
+        new_paths = get_library_folder_paths(dest_path, name);
         addpath(new_paths{:});
         close_library(name);
+        s = 1;
+    else
+        error("Provided path is not a folder");
     end
 end
 
 
-
-function paths = library_paths(lib_path, name)
-    
-    function rf = recurse_folders(path)
-        rf = dir(fullfile(path, '**'));
-        rf = rf([rf.isdir] & ~strcmp({rf.name}, '.')  & ~strcmp({rf.name}, '..'));
-        if isempty(rf)
-            rf = string(path);
-            return
-        end
-        rf = [string(path),
-            arrayfun(@(x) string(fullfile(x.folder, x.name)), rf)]; 
-    end
-    lib_paths = recurse_folders(fullfile(lib_path, name));
-    src_paths = recurse_folders(fullfile(lib_path, 'src'));
-    paths = [
-        {lib_path}, ...
-        {fullfile(lib_path, 'autogen')}, ...
-        lib_paths(:)', ...
-        src_paths(:)' ...
-        ];
-end

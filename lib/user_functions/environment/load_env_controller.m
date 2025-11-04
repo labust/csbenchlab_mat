@@ -1,31 +1,16 @@
 function c = load_env_controller(env_path, id, check_path)
-    if ~exist('check_path', 'var')
-        check_path = 1;
-    end
-    if check_path && ~is_env_path(env_path)
-        [env_path, ~, ~] = fileparts(which(env_path));
-    end
-    controllers_folder = fullfile(env_path, 'parts', 'controllers');
-    f = fullfile(controllers_folder, strcat(id, '.json'));
-    if exist(f, 'file')
-        c = readstruct(f, 'FileType', 'json');
-    else
-        c = struct;
-        return
-    end
 
-    
-    c = load_component_params(c, env_path);
-    if c.IsComposable
-        for i=1:length(c.Components)
-            c.Components(i) = ...
-                load_component_params(c.Components(i), env_path);
-        end
-    end
-    if is_valid_field(c.Params, 'eval__')
-        c.Params.eval__ = load_eval_vars(c.Params.eval__);
-    end
-    
+    c = load_component_data(env_path, fullfile('parts', 'controllers', id, 'controller.json'), check_path);
+    %c = load_component_params(c, env_path);
+    %if c.IsComposable
+    %    for i=1:length(c.Components)
+    %        c.Components(i) = ...
+    %            load_component_params(c.Components(i), env_path);
+    %    end
+    %end
+    %if is_valid_field(c.Params, 'eval__')
+    %    c.Params.eval__ = load_eval_vars(c.Params.eval__);
+    %end
 end
 
 

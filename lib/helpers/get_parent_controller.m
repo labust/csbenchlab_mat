@@ -5,7 +5,7 @@ function p_path = get_parent_controller(path)
     curr_path = splits{1};
     p_path = path;
     for i=2:length(splits)
-        if model_has_tag(curr_path, '__cs_ctl')
+        if is_block_component_of_type(curr_path, 'ctl')
             p_path = curr_path;
             return
         end

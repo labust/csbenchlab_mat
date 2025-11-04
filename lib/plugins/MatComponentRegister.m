@@ -8,7 +8,9 @@ classdef MatComponentRegister < ComponentRegister
             info = struct;
             info.T = 0;
             info.Name = class_name;
+            info.ComponentPath = '';
             if exist(class_name, 'class')
+                info.ComponentPath = which(class_name);
                 mcls = meta.class.fromName(class_name);
                 if mcls.Abstract
                     return
@@ -37,8 +39,6 @@ classdef MatComponentRegister < ComponentRegister
                 value = mcls.PropertyList(props);
                 info.HasParameters = ~isempty(value); 
                 info.T = t;
-                
-                info.Mcls = mcls;
             end
         end
         
@@ -131,7 +131,7 @@ classdef MatComponentRegister < ComponentRegister
             input_args = cellfun(@(x) string(x.Name), cm.get_component_inputs(info.Name));
             output_args = cellfun(@(x) string(x.Name), cm.get_component_outputs(info.Name));
             
-            input_args_desc = create_argument_description([default_inputs, input_args, 'params_merged', 'data']);
+            input_args_desc = create_argument_description([default_inputs, input_args, 'params', 'data']);
             output_args_desc = create_argument_description([default_outputs, output_args]);
         
             % params
@@ -150,17 +150,7 @@ classdef MatComponentRegister < ComponentRegister
                     strcat(output_args_desc(j), "_T");
             end
            
-            % set mask parameters
-            if info.HasParameters
-                params_visible = 'on';
-            else
-                params_visible = 'off';
-            end
-            mask_parameters = struct('Name', 'params', 'Prompt', 'Parameter struct:', ...
-                'Value', '{block_name}_params', 'Visible', params_visible, 'Evaluate', 'on');
-            mask_parameters(end+1) = struct('Name', 'params_merged', 'Value', ...
-                '{block_name}_params_merged', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
-            mask_parameters(end+1) = struct('Name', 'data', ...
+            mask_parameters = struct('Name', 'data', ...
                 'Value', '{block_name}_data', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
             mask_parameters(end+1) = struct('Name', 'ParamsType', ...
                 'Value', '{block_name}_PT', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
@@ -182,8 +172,8 @@ classdef MatComponentRegister < ComponentRegister
             icon = 'system_icon';
             extrinsic_init = "y = zeros(size(ic))";
             create_component_simulink(info, lib_name, 'sys', ...
-                {"__cs_m_sys"}, 'm_component_simulink_template', input_args_desc, output_args_desc, ...
-                {"'Params'", 'params_merged', "'Data'", 'data'}, ...
+                {"__cs_comptype:sys", "__cs_compimpl:mat"}, 'm_component_simulink_template', input_args_desc, output_args_desc, ...
+                {"'Params'", 'params', "'Data'", 'data'}, ...
                 { 'ic' }, [{'u', 't', 'dt'}, input_args], ...
                 mask_parameters, extrinsic_init, icon, [100, 40]);
         end
@@ -218,16 +208,7 @@ classdef MatComponentRegister < ComponentRegister
                     strcat(output_args_desc(j), "_T");
             end
            
-            % set mask parameters
-            if info.HasParameters
-                params_visible = 'on';
-            else
-                params_visible = 'off';
-            end
-        
-            mask_parameters = struct('Name', 'params', 'Prompt', 'Parameter struct:', ...
-                'Value', '{block_name}_params', 'Visible', params_visible, 'Evaluate', 'on');
-            mask_parameters(end+1) = struct('Name', 'data', ...
+            mask_parameters = struct('Name', 'data', ...
                 'Value', '{block_name}_data', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
             mask_parameters(end+1) = struct('Name', 'ParamsType', ...
                 'Value', '{block_name}_PT', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
@@ -250,7 +231,7 @@ classdef MatComponentRegister < ComponentRegister
             icon = 'controller_icon';
             extrinsic_init = "u = u_ic;";
             create_component_simulink(info, lib_name, 'ctl', ...
-                {"__cs_m_ctl"}, 'm_component_simulink_template', input_args_desc, output_args_desc, ...
+                {"__cs_comptype:ctl", "__cs_compimpl:mat"}, 'm_component_simulink_template', input_args_desc, output_args_desc, ...
                 {"'Params'", "params", "'Data'", "data"}, ...
                 {'u_ic', 'size(y)', 'size(y_ref)'}, [{'y_ref', 'y', 'dt'}, input_args], ...
                 mask_parameters, extrinsic_init, icon, [120, 40]);
@@ -284,15 +265,8 @@ classdef MatComponentRegister < ComponentRegister
                     strcat(output_args_desc(j), "_T");
             end
            
-            % set mask parameters
-            if info.HasParameters
-                params_visible = 'on';
-            else
-                params_visible = 'off';
-            end
-            mask_parameters = struct('Name', 'params', 'Prompt', 'Parameter struct:', ...
-                'Value', '{block_name}_params', 'Visible', params_visible, 'Evaluate', 'on');
-            mask_parameters(end+1) = struct('Name', 'data', ...
+
+            mask_parameters = struct('Name', 'data', ...
                 'Value', '{block_name}_data', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
             mask_parameters(end+1) = struct('Name', 'ParamsType', ...
                 'Value', '{block_name}_PT', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
@@ -316,7 +290,7 @@ classdef MatComponentRegister < ComponentRegister
             icon = 'estimator_icon_mirror';
             extrinsic_init = "y_hat = zeros(size(ic))";
             create_component_simulink(info, lib_name, 'est', ...
-                {"__cs_m_est"}, 'm_component_simulink_template', input_args_desc, output_args_desc, ...
+                {"__cs_comptype:est", "__cs_compimpl:mat"}, 'm_component_simulink_template', input_args_desc, output_args_desc, ...
                 {"'Params'", 'params', "'Data'", 'data'}, ...
                 { 'ic' }, [{'y', 'dt'}, input_args], ...
                 mask_parameters, extrinsic_init, icon, [60, 40]);
@@ -349,16 +323,8 @@ classdef MatComponentRegister < ComponentRegister
                 output_args_desc(j).DataType = ...
                     strcat(output_args_desc(j), "_T");
             end
-           
-            % set mask parameters
-            if info.HasParameters
-                params_visible = 'on';
-            else
-                params_visible = 'off';
-            end
-            mask_parameters = struct('Name', 'params', 'Prompt', 'Parameter struct:', ...
-                'Value', '{block_name}_params', 'Visible', params_visible, 'Evaluate', 'on');
-            mask_parameters(end+1) = struct('Name', 'data', ...
+
+            mask_parameters = struct('Name', 'data', ...
                 'Value', '{block_name}_data', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
             mask_parameters(end+1) = struct('Name', 'ParamsType', ...
                 'Value', '{block_name}_PT', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
@@ -379,7 +345,7 @@ classdef MatComponentRegister < ComponentRegister
             icon = 'disturbance_icon';
             extrinsic_init = "y_n = zeros(size(y))";
             create_component_simulink(info, lib_name, 'dist', ...
-                {"__cs_m_dist"}, 'm_component_simulink_template', input_args_desc, output_args_desc, ...
+                {"__cs_comptype:dist", "__cs_compimpl:mat"}, 'm_component_simulink_template', input_args_desc, output_args_desc, ...
                 {"'Params'", 'params', "'Data'", 'data'}, ...
                 { }, [{'y', 'dt'}, input_args'], ...
                 mask_parameters, extrinsic_init, icon, [60, 40]);

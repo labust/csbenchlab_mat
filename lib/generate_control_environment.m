@@ -1,4 +1,4 @@
-function handle = generate_control_environment(env_info, folder_path, indices)
+function handle = generate_control_environment(folder_path, system_instance, ids)
     % Generates a new simulink environment for testing the controller
     % behavior
 
@@ -40,21 +40,61 @@ function handle = generate_control_environment(env_info, folder_path, indices)
 %                   class
 %        refgen_info: struct
 %            reference: timeseries, or matrix
-   
-    % create path if given as optional argument
 
-    if ~exist('indices', 'var')
-        indices = linspace(1, length(env_info.Controllers), length(env_info.Controllers));
+    if ~exist('ids', 'var')
+        ids = [];
     end
 
-    env_info.Controllers = env_info.Controllers(indices);
-
-    [t, msg] = validate_env_cfg(env_info);
-    if t > 0
-        error(msg);
+    if ~exist('system_instance', 'var')
+        system_instance = -1;
     end
     
+    % create path if given as optional argument
+    env_info = load_env_data(folder_path, 1);
+    if ischar(ids)
+        ids = string(ids);
+    end
+    if ~isempty(ids)
+        k = 1;
+        for i=1:length(ids)
+            idx = arrayfun(@(y) strcmp(ids(i), y.Id), env_info.Controllers);
+            if ~any(idx)
+                continue
+            end
+            idx = find(idx);
+            ctls(k) = env_info.Controllers(idx);
+            k = k + 1;
+        end
+        env_info.Controllers = ctls;
+    end
+
+    if isnumeric(system_instance) && system_instance <= 0 ...
+        || strempty(system_instance)
+        if length(env_info.System) > 1
+            error("Cannot determine system instance.");
+        else
+            system_instance = env_info.System.Id;
+        end
+    end
+    if isnumeric(system_instance)
+        indices = system_instance;
+    else
+        indices = arrayfun(@(x) strcmp(x.Id, system_instance), env_info.System);
+    end
+    env_info.System = env_info.System(indices);
+
+    if env_info.Metadata.Ts <= 0
+        error('Environment step size should be positive');
+    end
     name = env_info.Metadata.Name;
+    env_params = load_env_param_struct(folder_path, env_info);
+    assignin('base', matlab.lang.makeValidName(strcat(name, '_params')), env_params);
+    
+    % [t, msg] = validate_env_cfg(env_info);
+    % if t > 0
+    %     error(msg);
+    % end
+
     try
         model_path = strcat(folder_path, '/', name, '.slx');
         exists = exist(model_path, 'file');
@@ -64,9 +104,7 @@ function handle = generate_control_environment(env_info, folder_path, indices)
         end
     catch
     end
-    if env_info.Metadata.Ts <= 0
-        error('Environment step size should be positive');
-    end
+    
 
     handle = new_system(name);
     try
@@ -85,6 +123,10 @@ function handle = generate_control_environment(env_info, folder_path, indices)
 
             
             % configure model
+            if ~exist(fullfile(folder_path, 'autogen'), 'dir')
+                mkdir(fullfile(folder_path, 'autogen'));
+            end
+
             save(fullfile(folder_path, 'autogen', strcat(name, '.mat')), 'env_info', 'blocks');
             set_param(handle, 'PostLoadFcn', 'on_model_load');
             set_param(handle, 'StartFcn', 'on_model_start');
@@ -97,6 +139,7 @@ function handle = generate_control_environment(env_info, folder_path, indices)
     
         save_system(name, strcat(folder_path, '/', name)); 
         close_system(name);
+        addpath(strcat(folder_path));
         open_system(name);
     catch e
         save_system(name, strcat(folder_path, '/', name));

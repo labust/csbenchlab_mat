@@ -5,7 +5,7 @@ function lib = get_library_path(lib_name)
     for i=1:length(fs)
         n = fs(i).name;
         if strcmp(n, '.') || strcmp(n, '..') || strcmp(n, 'slprj') ...
-            || ~strcmp(n, lib_name)
+            || ~(strcmp(n, lib_name) || strcmp(n, strcat(lib_name, '.json')))
             continue
         end
 
@@ -14,7 +14,7 @@ function lib = get_library_path(lib_name)
             return
         elseif endsWith(n, '.json')
             s = readstruct(fullfile(fs(i).folder, fs(i).name));
-            lib = s.path;
+            lib = s.Path;
             return
         end
     end
