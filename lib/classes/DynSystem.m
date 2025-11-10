@@ -34,6 +34,10 @@ classdef (Abstract) DynSystem
         function this = DynSystem(args)
             begin_idx = 1;
             pid = 0; iid = 0;
+            params = struct;
+            data = 0;
+            noise_params = struct;
+            has_noise = 0;
             for i = begin_idx:2:length(args)
 
                 if isstring(args{i})
@@ -48,6 +52,9 @@ classdef (Abstract) DynSystem
                         params = value;
                     case 'Data'
                         data = value;
+                    case 'Noise'
+                        noise_params = value;
+                        has_noise = 1;
                     case 'pid'
                         pid = value;
                     case 'iid'
@@ -56,31 +63,21 @@ classdef (Abstract) DynSystem
                         warning(['Unexpected parameter name "', as_char, '"']);
                 end
             end
-
-            if isempty(params)
-                error("Params not set");
-            end
-            if isempty(data)
-                error("Data not set");
-            end
-
+            
+            this.has_noise = has_noise;
+            this.noise_params = noise_params;
             this.params = params;
             this.data = data;
             this.pid = pid;
             this.iid = iid;
-
-            % if length(args) > 1
-            %     this.noise_params = args{2};
-            %     this.noise_stream = RandStream("mlfg6331_64", "Seed", this.noise_params.seed);
-            %     this.has_noise = 1;
-            % else
-            %     this.has_noise = 0;
-            % end
         end
         
         function this = configure(this, ic)
             this.ic = ic;
             this = on_configure(this);
+            if this.has_noise > 0
+                this.noise_stream = RandStream("mlfg6331_64", "Seed", this.noise_params.seed);
+            end
         end
 
         function [this, y] = step(this, u, t, dt)
@@ -97,9 +94,7 @@ classdef (Abstract) DynSystem
 
         function this = reset(this)
             this = on_reset(this);
-            if this.has_noise > 0
-                this.noise_stream = RandStream("mlfg6331_64", "Seed", this.noise_params.seed);
-            end
+            
         end
 
         function varargout = sim(this, varargin)

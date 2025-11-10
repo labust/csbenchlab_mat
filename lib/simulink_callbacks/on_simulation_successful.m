@@ -35,7 +35,7 @@ function on_simulation_successful(env_name, run_id, plot_data)
     end
     out.Ts = str2double(Ts);
     
-    out.metrics = calculate_result_metrics(out);
+    out.metrics = calculate_result_metrics_simulink(out);
     
     save(fullfile(folder, 'results.mat'), 'out');
     assignin('base', 'sim_result', out);

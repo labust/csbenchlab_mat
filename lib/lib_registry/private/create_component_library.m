@@ -45,14 +45,14 @@ function handle = create_component_library(path, close_after_creation)
     make_folder(fullfile(dest_path, 'src'));
     make_folder(fullfile(dest_path, name))
 
-    comp_types = get_component_types();
+    comp_types = get_supported_component_types();
 
     for i=1:length(comp_types)
         registry.(comp_types(i)) = {};
     end
 
     library = name;
-    lib_meta.Name= library;
+    lib_meta.Library = library;
     lib_meta.Id = new_uuid;
     lib_meta.Version = "0.0.1";
     lib_meta.Dependencies = [];
@@ -60,12 +60,13 @@ function handle = create_component_library(path, close_after_creation)
     addpath(dest_path);
     addpath(fullfile(dest_path, 'autogen'));
     addpath(fullfile(dest_path, name));
-    manifest.registry = registry;
+    manifest.Registry = registry;
+    manifest.Library = library;
+    manifest.Version = '0.0.1';
     writestruct(manifest, fullfile(handle.path, 'autogen', 'manifest.json'));
     writestruct(lib_meta, fullfile(handle.path, 'package.json'));
 
     if ~isfile(fullfile(handle.path, 'plugins.json'))
-        
         content = fileread(fullfile(CSPath.get_app_template_path(), 'plugins_template.json'));
         replaced = replace(content, '{{library_name}}', name);
         try

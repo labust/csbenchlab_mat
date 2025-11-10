@@ -1,18 +1,19 @@
-function result = simulate_controller(deepc, otter_model, y_ref, Ts)
+function result = simulate_controller(ctl, model, y_ref, Ts)
+
     n_step = length(y_ref);
-    res_vec = zeros(n_step, length(deepc.data.x_op));
-    L = deepc.params.L;
-    input_sz = deepc.data.m;
-    output_sz = deepc.data.p;
+    res_vec = zeros(n_step, length(ctl.data.x_op));
+    L = ctl.params.L;
+    input_sz = ctl.data.m;
+    output_sz = ctl.data.p;
     true_vec = zeros(n_step, L);
     noise_vec = zeros(n_step, L);
     
-    otter_model = otter_model.reset();
+    model = model.reset();
 
     ref = zeros(L, 1);
     u_vec = zeros(n_step, input_sz);
     y_vec = zeros(n_step, output_sz);
-    y = deepc.data.yini(end, :);
+    y = ctl.data.yini(end, :);
     for i=1:round(n_step)
 
         if i + L <= length(y_ref)
@@ -22,14 +23,14 @@ function result = simulate_controller(deepc, otter_model, y_ref, Ts)
             ref(end, :) = y_ref(end, :);
         end
         
-        [deepc, ~] = deepc.step(ref, y, Ts);
+        [ctl, ~] = ctl.step(ref, y, Ts);
 
-        uv = deepc.data.x_op_u;
+        uv = ctl.data.x_op_u;
 
-        res_vec(i, :) = deepc.data.x_op; 
-        [y_noise, y_act] = otter_model.sim(uv, 0, Ts);
+        res_vec(i, :) = ctl.data.x_op; 
+        [y_noise, y_act] = model.sim(uv, 0, Ts);
         u_vec(i, :) = uv(1, :);
-        [otter_model, y] = otter_model.step(uv(1, :), 0, Ts);
+        [model, y] = model.step(uv(1, :), 0, Ts);
         y_vec(i, :) = y;        
 
         true_vec(i, :) = y_act;
@@ -45,9 +46,10 @@ function result = simulate_controller(deepc, otter_model, y_ref, Ts)
         % a = 5;
     end
     result.optim = res_vec;
-    result.hotizon_pred = true_vec;
-    result.hotizon_pred_noise = noise_vec;
+    result.horizon_pred = true_vec;
+    result.horizon_pred_noise = noise_vec;
     result.u = u_vec;
     result.y = y_vec;
+    result.y_ref = y_ref;
     result.t = (1:1:n_step)*Ts;
 end

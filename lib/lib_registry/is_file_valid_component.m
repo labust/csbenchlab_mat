@@ -13,13 +13,13 @@ end
 
 function r = is_valid_component_(path, typ)
     p = get_plugin_info_from_file(path);
-    if p.T == 0 
+    if strcmp(p.T, '')
         r = 0;
         return
     end
     if strcmp(typ, '')
-        r = p.T > 0;
+        r = 1;
         return
     end
-    r = p.T == parse_comp_type(typ);
+    r = strcmp(p.T, typ);
 end

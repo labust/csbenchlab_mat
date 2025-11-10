@@ -9,6 +9,10 @@ end
 
 function callbacks = parse_callbacks(result)
     callbacks = dictionary(result);
+    if ~callbacks.isConfigured
+        callbacks = [];
+        return
+    end
     keys = callbacks.keys;
     values = {};
     for i=1:length(keys)

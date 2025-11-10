@@ -27,9 +27,9 @@ classdef ComponentManager
            
             try
                 manifest = load_lib_manifest(lib_path);
-                registry = manifest.registry;
+                registry = manifest.Registry;
             catch
-                error(strcat("Manifest file not found for library '",  n.name));
+                error(strcat("Manifest file not found for library '",  lib_name));
             end
             
             fns = fieldnames(registry);

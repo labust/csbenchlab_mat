@@ -13,6 +13,11 @@ function registry = detect_component(path, registry)
     % simple if not slx
     if ~is_component_type(typ, 'slx')
         p = get_plugin_info_from_file(prefix_path);
+        if isempty(p.T)
+            warning(strcat("Component on path '", path, "' is not valid and is " + ...
+                "not registered. Skipping..."));
+            return
+        end
         registry = add_component_to_registry(registry, p);
     else
         [~, sim_lib_name, ~] = fileparts(prefix_path);

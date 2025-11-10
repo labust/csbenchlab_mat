@@ -3,7 +3,7 @@ function p = get_plugin_info_from_lib(name, lib_name)
    
     try
         manifest = load_lib_manifest(lib_path);
-        registry = manifest.registry;
+        registry = manifest.Registry;
     catch
         error(strcat("Manifest file not found for library '",  lib_name, "'."));
     end

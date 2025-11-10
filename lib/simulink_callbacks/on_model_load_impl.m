@@ -35,7 +35,10 @@ function set_component_params_path_for_ids(env_name, info, hws)
     c = environment_components_it(info);
     map = dictionary;
     for i=1:length(c)
-        map = set_component_params_map(env_name, c{i}, map);
+        if ~is_valid_field(c{i}.n, 'PluginType')
+            continue
+        end
+        map = set_component_params_map(env_name, c{i}.n, map);
     end
     hws.assignin('id_to_params_path_map', map);
 end

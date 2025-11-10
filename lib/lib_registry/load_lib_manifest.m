@@ -11,10 +11,10 @@ function manifest = load_lib_manifest(lib)
         end
     end
     manifest = readstruct(fullfile(lib_path, 'autogen', 'manifest.json'));
-    fns = fieldnames(manifest.registry);
+    fns = fieldnames(manifest.Registry);
     for i=1:length(fns)
-        if ~iscell(manifest.registry.(fns{i}))
-            manifest.registry.(fns{i}) = num2cell(manifest.registry.(fns{i}));
+        if ~iscell(manifest.Registry.(fns{i}))
+            manifest.Registry.(fns{i}) = num2cell(manifest.Registry.(fns{i}));
         end
     end
 end

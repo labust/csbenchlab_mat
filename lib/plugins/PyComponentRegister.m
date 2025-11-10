@@ -10,7 +10,7 @@ classdef PyComponentRegister < ComponentRegister
             f = fullfile(CSPath.get_app_python_src_path(), 'm_scripts', 'get_plugin_info.py');
             plugin_info = run_py_file(f, "plugin_info", '--plugin_path', plugin_path);
         
-            info.T = int32(plugin_info{"T"});
+            info.T = string(plugin_info{"T"});
             info.Name = string(plugin_info{"Name"});
             % info.Info = plugin_info;
             info.HasParameters = int32(plugin_info{"HasParameters"});   
@@ -23,13 +23,13 @@ classdef PyComponentRegister < ComponentRegister
 
 
         function register(info, t, lib_name)
-            if t == 1
+            if strcmp(t, 'sys')
                 PyComponentRegister.register_system_(info, lib_name);
-            elseif t == 2
+            elseif strcmp(t, 'ctl')
                 PyComponentRegister.register_controller_(info, lib_name);
-            elseif t == 3
+            elseif strcmp(t, 'est')
                 PyComponentRegister.register_estimator_(info, lib_name);
-            elseif t == 4
+            elseif strcmp(t, 'dist')
                 PyComponentRegister.register_disturbance_(info, lib_name);
             end
         end

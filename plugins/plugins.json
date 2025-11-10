@@ -1,24 +1,20 @@
 {
-    "library": "csbenchlab",
-    "version": "0.0.1",
-    "description": "An official CsBenchLab base component library",
-    "authors": ["Luka Mandic"],
-    "plugins": [
+    "Plugins": [
         {
-            "type": "folder_scan",
-            "path": "Controllers"
+            "Type": "folder_scan",
+            "Path": "Controllers"
         },
         {
-            "type": "folder_scan",
-            "path": "DisturbanceGenerators"
+            "Type": "folder_scan",
+            "Path": "DisturbanceGenerators"
         },
         {
-            "type": "folder_scan",
-            "path": "Estimators"
+            "Type": "folder_scan",
+            "Path": "Estimators"
         },
         {
-            "type": "folder_scan",
-            "path": "Systems"
+            "Type": "folder_scan",
+            "Path": "Systems"
         }
     ]
 }

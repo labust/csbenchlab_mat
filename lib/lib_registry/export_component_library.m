@@ -1,10 +1,9 @@
-function export_component_library(lib_name)
+function export_component_library(lib_name, dest_path)
     
     path = get_library_path(lib_name);
     
    
-    copyfile(path, fullfile('export', lib_name));
-    rmdir(fullfile('export', lib_name, 'autogen'), "s");
-    mkdir(fullfile('export', lib_name, 'autogen'));
+    copyfile(path, fullfile(dest_path, lib_name));
+    rmdir(fullfile(dest_path, lib_name, 'autogen'), "s");
 end
 

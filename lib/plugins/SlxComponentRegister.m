@@ -6,12 +6,16 @@ classdef SlxComponentRegister < ComponentRegister
     methods (Static)
         function info = get_plugin_info(model_name, component_path)
             info = struct;
-            info.T = 0;
+            info.T = '';
 
             splits = split(component_path, ':');
             if length(splits) > 1
                 rel_path = splits{2};
+            else
+                error("Error registering slx component." + ...
+                    " Model relative path shold be specified as '<file_path>:<model_relative_path>'.");
             end
+
             
             n_split = split(rel_path, '/');
         
@@ -31,13 +35,13 @@ classdef SlxComponentRegister < ComponentRegister
             inputs = get(find_system(h, 'FindAll', 'On', 'LookUnderMasks', 'on', 'SearchDepth', 1, 'BlockType', 'Inport' ), 'Name');
             outputs = get(find_system(h, 'FindAll', 'On', 'LookUnderMasks', 'on', 'SearchDepth', 1, 'BlockType', 'Outport' ), 'Name');
             if SlxComponentRegister.is_sys(inputs, outputs)
-                info.T = 1;
+                info.T = 'sys';
             elseif SlxComponentRegister.is_ctl(inputs, outputs)
-                info.T = 2;
+                info.T = 'ctl';
             elseif SlxComponentRegister.is_est(inputs, outputs)
-                info.T = 3;
+                info.T = 'est';
             elseif SlxComponentRegister.is_dist(inputs, outputs)
-                info.T = 4;
+                info.T = 'dist';
             end
             info.model_name = model_name;
             info.rel_path = rel_path;
@@ -106,15 +110,8 @@ classdef SlxComponentRegister < ComponentRegister
 
 
         function register(info, t, lib_name)
-            if t == 1
-               SlxComponentRegister.register_slx_component_(info, 'sys', lib_name, { '__cs_comptype:sys', '__cs_compimpl:slx' });
-           elseif t == 2
-               SlxComponentRegister.register_slx_component_(info, 'ctl', lib_name, { '__cs_comptype:ctl', '__cs_compimpl:slx' });
-           elseif t == 3
-               SlxComponentRegister.register_slx_component_(info, 'est', lib_name, { '__cs_comptype:est', '__cs_compimpl:slx' });
-           elseif t == 4
-               SlxComponentRegister.register_slx_component_(info, 'dist', lib_name, { '__cs_comptype:dist', '__cs_compimpl:slx' });
-           end
+           tags = { strcat('__cs_comptype:', t), '__cs_compimpl:slx' };
+           SlxComponentRegister.register_slx_component_(info, t, lib_name, tags);
         end
 
         function register_slx_component_(info, typ, lib_name, tags, size)

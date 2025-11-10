@@ -33,7 +33,7 @@ function path_ret = create_environment(path, name)
     cfgName = fullfile(path, 'config.json');
     writestruct(cfg, cfgName, 'FileType','json');
 
-    source_environment(path, name);
+    source_environment(path);
 end
 
 

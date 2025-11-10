@@ -6,7 +6,7 @@ classdef MatComponentRegister < ComponentRegister
     methods (Static)
         function info = get_plugin_info(class_name, ~)
             info = struct;
-            info.T = 0;
+            info.T = '';
             info.Name = class_name;
             info.ComponentPath = '';
             if exist(class_name, 'class')
@@ -18,19 +18,19 @@ classdef MatComponentRegister < ComponentRegister
                 
                 for k=1:length(mcls.SuperclassList)
                     if strcmp(mcls.SuperclassList(k).Name, 'DynSystem')
-                        t = 1; 
+                        t = 'sys'; 
                         break;
                     end
                     if strcmp(mcls.SuperclassList(k).Name, 'Controller')
-                        t = 2;
+                        t = 'ctl';
                         break;
                     end
                     if strcmp(mcls.SuperclassList(k).Name, 'Estimator')
-                        t = 3;
+                        t = 'est';
                         break;
                     end
                     if strcmp(mcls.SuperclassList(k).Name, 'DisturbanceGenerator')
-                        t = 4;
+                        t = 'dist';
                         break;
                     end
                 end
@@ -43,13 +43,13 @@ classdef MatComponentRegister < ComponentRegister
         end
         
         function register(info, t, lib_name)
-           if t == 1
+           if strcmp(t, 'sys')
                MatComponentRegister.register_system_(info, lib_name);
-           elseif t == 2
+           elseif strcmp(t, 'ctl')
                MatComponentRegister.register_controller_(info, lib_name);
-           elseif t == 3
+           elseif strcmp(t, 'est')
                MatComponentRegister.register_estimator_(info, lib_name);
-           elseif t == 4
+           elseif strcmp(t, 'dist')
                MatComponentRegister.register_disturbance_generator_(info, lib_name);
             end
         end

@@ -1,92 +1,68 @@
-function metrics = calculate_result_metrics(out)
-
-    ns = fieldnames(out.y);
-    metrics = struct;
-    for i=1:length(ns)
-        y = squeeze(out.y.(ns{i}).Data);
-        u = out.u.(ns{i}).Data;
+function ret = calculate_result_metrics(y_ref, y, u, Ts)
+   
+    if ~isequal(size(y_ref), size(y))
         
-
-        % diffs(i) = sum(abs(y_act - yv))/length(y_act);
-        % diffs = max(abs(y_pred - result.hotizon_pred), [], 2);
-        % horizon_mse = sum((y_pred - result.hotizon_pred).^2, 2) / length(y_pred);
-        
-        % ret.result = result;
-        % ret.horizon_max_diffs = diffs;
-        % ret.horizon_max_avg = sum(diffs) / length(diffs);
-        % ret.horizon_mse = horizon_mse;
-        % ret.horizon_mse_avg = sum(horizon_mse) / length(horizon_mse);
-        
-  
-
-        y_ref = out.ref.Data;
-       
-        if ~isequal(size(y_ref), size(y))
-            
-            if isequal(size(y_ref), flip(size(y)))
-                y = y';
-            else
-                error(strcat('Cannot calculate metrics. size(y_ref) = ', ...
-                    mat2str(size(y_ref))), ...
-                    ', size(y) = ', mat2str(size(y)));
-            end
+        if isequal(size(y_ref), flip(size(y)))
+            y = y';
+        else
+            error(strcat('Cannot calculate metrics. size(y_ref) = ', ...
+                mat2str(size(y_ref))), ...
+                ', size(y) = ', mat2str(size(y)));
         end
-
-        abs_diff = abs(y_ref - y);
-    
-        ret.mse = sum((y_ref - y).^2) / length(y);
-        ret.mae = sum(abs_diff) / length(y);
-        ret.power = sum(u.^2) / length(u);
-
-        refs = any(y_ref);
-        ref_dims = find(refs);
-
-        ret.qi = containers.Map('KeyType', 'int32', 'ValueType', 'any');
-        for j=1:length(ref_dims)
-            idx = ref_dims(j);
-
-
-            [is_steps, intervals] = identify_signal_steps(y_ref(:, idx), 5);
-
-            if ~is_steps
-                continue
-            end
-            
-            step_metrics = struct;
-            for k=1:length(intervals)
-                interval = intervals(k, :);
-                y_s = y(interval(1):interval(2), idx);
-                yref_s = y_ref(interval(1):interval(2), idx);
-    
-                if max(yref_s, [], "all") > 0
-                    step_metrics(k).overshoot = max(max(y_s) - max(yref_s), 0);
-                else
-                    step_metrics(k).overshoot = max(min(y_s) - min(yref_s), 0);
-                end
-    
-                
-                u_s  = u(interval(1):interval(2), :);
-                step_metrics(k).overshoot_n = step_metrics(k).overshoot ./ max(abs(yref_s));
-                
-                abs_diff_s = abs(yref_s - y_s);
-                step_metrics(k).mse = sum((yref_s - y_s).^2) / length(y_s);
-                step_metrics(k).mae = sum(abs_diff_s) / length(y_s);
-                step_metrics(k).power = sum(u_s.^2) / length(u_s);
-                
-                t_1p_v = 1 - (abs_diff_s <= 0.01 * yref_s);
-                t_5p_v = 1 - (abs_diff_s <= 0.05 * yref_s);
-                rt_v = abs(y_s) <= 0.63 * abs(yref_s) ;
-            
-                step_metrics(k).t_1p = sum(t_1p_v) .* out.Ts;
-                step_metrics(k).t_5p = sum(t_5p_v) .* out.Ts;
-                step_metrics(k).rise_t = sum(rt_v) .* out.Ts;
-            end
-            ret.qi(idx) = step_metrics;
-        end
-        metrics.(ns{i}) = ret;
-
     end
 
+    abs_diff = abs(y_ref - y);
+
+    ret.mse = sum((y_ref - y).^2) / length(y);
+    ret.mae = sum(abs_diff) / length(y);
+    ret.power_avg = sum(u.^2) / length(u);
+    ret.power = sum(u.^2);
+
+    refs = any(y_ref);
+    ref_dims = find(refs);
+
+    ret.qi = containers.Map('KeyType', 'int32', 'ValueType', 'any');
+    for j=1:length(ref_dims)
+        idx = ref_dims(j);
+
+
+        [is_steps, intervals] = identify_signal_steps(y_ref(:, idx), 5);
+
+        if ~is_steps
+            continue
+        end
+        
+        step_metrics = struct;
+        for k=1:height(intervals)
+            interval = intervals(k, :);
+            y_s = y(interval(1):interval(2), idx);
+            yref_s = y_ref(interval(1):interval(2), idx);
+
+            if max(yref_s, [], "all") > 0
+                step_metrics(k).overshoot = max(max(y_s) - max(yref_s), 0);
+            else
+                step_metrics(k).overshoot = max(min(y_s) - min(yref_s), 0);
+            end
+
+            
+            u_s  = u(interval(1):interval(2), :);
+            step_metrics(k).overshoot_n = step_metrics(k).overshoot ./ max(abs(yref_s));
+            
+            abs_diff_s = abs(yref_s - y_s);
+            step_metrics(k).mse = sum((yref_s - y_s).^2) / length(y_s);
+            step_metrics(k).mae = sum(abs_diff_s) / length(y_s);
+            step_metrics(k).power = sum(u_s.^2) / length(u_s);
+            
+            t_1p_v = 1 - (abs_diff_s <= 0.01 * yref_s);
+            t_5p_v = 1 - (abs_diff_s <= 0.05 * yref_s);
+            rt_v = abs(y_s) <= 0.63 * abs(yref_s) ;
+        
+            step_metrics(k).t_1p = sum(t_1p_v) .* Ts;
+            step_metrics(k).t_5p = sum(t_5p_v) .* Ts;
+            step_metrics(k).rise_t = sum(rt_v) .* Ts;
+        end
+        ret.qi(idx) = step_metrics;
+    end
 end
 
 
@@ -94,6 +70,11 @@ end
 function [is_steps, intervals] = identify_signal_steps(signal, duration)
     is_steps = 1;
     d = diff(signal);
+
+    if ~any(d)
+        intervals = [1, length(signal)];
+        return
+    end
 
     f = [1; find(d)];
     intervals = zeros(0, 2);

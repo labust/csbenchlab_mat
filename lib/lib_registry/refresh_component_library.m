@@ -12,18 +12,16 @@ function refresh_component_library(lib)
 
         addpath(dest_path);
         addpath(fullfile(dest_path, lib));
-        addpath(fullfile(dest_path, 'autogen'));
         if isfolder(fullfile(dest_path, 'src'))
             addpath(fullfile(dest_path, 'src'));
         end
     
         handle = get_or_create_component_library(lib);
-        plugin_desc_path = fullfile(dest_path, 'plugins.json');
-        registry = make_component_registry_from_plugin_description(plugin_desc_path, ...
+        registry = make_component_registry_from_plugin_description(dest_path, ...
             lib, fullfile(dest_path, 'autogen'));
     
         fnames = fieldnames(registry);
-        types = get_component_types();
+        types = get_supported_component_types();
         for i=1:length(fnames)
             fname = fnames{i};
             if ~any(arrayfun(@(x) strcmp(fname, x), types))
@@ -33,9 +31,10 @@ function refresh_component_library(lib)
     
             plugin_list = registry.(fname);
             for j = 1:length(plugin_list)
-                register_component(plugin_list{j}, parse_comp_type(fname), handle.name, handle.path, 0);
+                register_component(plugin_list{j}, handle.name, 0, 0);
             end
         end
+        addpath(fullfile(dest_path, 'autogen'));
         close_library(lib);
     catch ME
         close_library(lib);

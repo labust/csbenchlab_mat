@@ -39,35 +39,13 @@ classdef ComponentRegister
             end
         end
 
-        function unregister(name, lib_name)
+        function info = unregister(name, lib_name)
             info = get_plugin_info_from_lib(name, lib_name);
-            if info.T == 1
-                 ComponentRegister.unregister_system_(name, lib_name);
-            elseif info.T == 2
-                ComponentRegister.unregister_controller_(name, lib_name);
-            elseif info.T == 3
-                ComponentRegister.unregister_estimator_(name, lib_name);
-            elseif info.T == 4
-                ComponentRegister.unregister_disturbance_generator_(name, lib_name);
+            if isempty(info)
+                error(strcat("Component '", name, "' does not exist in library" + ...
+                    " '", lib_name, "'."))
             end
-        end
-
-        function unregister_system_(name, lib_name)
-            ComponentRegister.unregister_component_(name, lib_name, 'sys');
-        end
-
-        function unregister_controller_(name, lib_name)
-            ComponentRegister.unregister_component_(name, lib_name, 'ctl');
-        end
-
-
-        function unregister_estimator_(name, lib_name)
-            ComponentRegister.unregister_component_(name, lib_name, 'est');
-        end
-
-
-        function unregister_disturbance_generator_(name, lib_name)
-            ComponentRegister.unregister_component_(name, lib_name, 'dist');
+            ComponentRegister.unregister_component_(name, lib_name, info.T);
         end
 
         function unregister_component_(name, lib_name, typ)

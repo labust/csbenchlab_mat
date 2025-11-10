@@ -1,9 +1,6 @@
 {
-    "library": "{{library_name}}",
-    "version": "0.0.1",
-    "description": "Put your descrition here",
-    "authors": ["Who are you"],
-    "plugins": [
+    "Library": "{{library_name}}",
+    "Plugins": [
         // list your plugins here as json objects
 	    // specify the type of each to eather 'folder_scan' or 'file'
     ]

@@ -32,6 +32,7 @@ classdef (Abstract) Controller
             this.is_configured_v = 0;
             begin_idx = 1;
             pid = double(0); iid = double(0); is_simulink = double(0);
+            params = struct;
             for i = begin_idx:2:length(args)
 
                 if isstring(args{i})
@@ -42,9 +43,9 @@ classdef (Abstract) Controller
 
                 value = args{i+1};
                 switch as_char
-                    case 'Dims'
+                    case 'Mux'
                         validate_dims_struct(value);
-                        data = this.create_data_model(this.params, value);
+                        data = this.create_data_model(params, value);
                     case 'Data'
                         data = value;
                     case 'Params'

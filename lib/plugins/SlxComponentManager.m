@@ -4,22 +4,14 @@ classdef SlxComponentManager < ComponentManager
     
    
     methods (Static)
-        function resolved = get_component_params(comp_name, lib_name, param_values)
+        function resolved = get_component_params(comp_name, lib_name, ~)
 
-            if ~exist('param_values', 'var')
-                param_values = struct;
-            end
+            % if ~exist('param_values', 'var')
+            %     param_values = struct;
+            % end
             
             info = get_plugin_info_from_lib(comp_name, lib_name);
-            if info.T == 1
-                e = 'sys';
-            elseif info.T == 2
-                e = 'ctl';
-            elseif info.T == 3
-                e = 'est';
-            elseif info.T == 4
-                e = 'dist';
-            end
+            e = info.T;
             
             model_name = strcat(lib_name, '_', e);
             slx_path = which(model_name);

@@ -1,4 +1,5 @@
 function params = eval_component_params(env_path, component)
+    throw("Not used any more");
     rel_path = component_relative_path(component);
 
     full_params_path = fullfile(env_path, rel_path, component.Id, 'params', strcat(component.Id, '.py'));
