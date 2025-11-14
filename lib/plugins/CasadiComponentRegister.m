@@ -1,4 +1,4 @@
-classdef MatComponentRegister < ComponentRegister
+classdef CasadiComponentRegister < ComponentRegister
     %SLXCOMPONENTREGISTER Summary of this class goes here
     %   Detailed explanation goes here
 
@@ -34,30 +34,23 @@ classdef MatComponentRegister < ComponentRegister
                         break;
                     end
                 end
-
-                is_casadi = 0;
-                if is_valid_field(mcls, 'is_casadi__') ...
-                    && mcls.is_casadi__
-                    is_casadi = 1;
-                end
                 
                 props = arrayfun(@(x) strcmp(x.Name, 'param_description'), mcls.PropertyList);
                 value = mcls.PropertyList(props);
                 info.HasParameters = ~isempty(value); 
                 info.T = t;
-                info.IsCasadi = is_casadi;
             end
         end
         
         function register(info, t, lib_name)
            if strcmp(t, 'sys')
-               MatComponentRegister.register_system_(info, lib_name);
+               CasadiComponentRegister.register_system_(info, lib_name);
            elseif strcmp(t, 'ctl')
-               MatComponentRegister.register_controller_(info, lib_name);
+               CasadiComponentRegister.register_controller_(info, lib_name);
            elseif strcmp(t, 'est')
-               MatComponentRegister.register_estimator_(info, lib_name);
+               CasadiComponentRegister.register_estimator_(info, lib_name);
            elseif strcmp(t, 'dist')
-               MatComponentRegister.register_disturbance_generator_(info, lib_name);
+               CasadiComponentRegister.register_disturbance_generator_(info, lib_name);
             end
         end
 
@@ -189,22 +182,23 @@ classdef MatComponentRegister < ComponentRegister
     
             default_inputs = { 'y_ref', 'y', 'dt' };
             default_outputs = {'u'};
-            cm = MatComponentManager;
-            input_args = cellfun(@(x) string(x.Name), cm.get_component_inputs(info.Name));
-            output_args = cellfun(@(x) string(x.Name), cm.get_component_outputs(info.Name));
+            cm = ComponentManager.get(info.Type);
+            input_args = cellfun(@(x) string(x.Name), cm.get_component_inputs(info.Name, lib_name));
+            output_args = cellfun(@(x) string(x.Name), cm.get_component_outputs(info.Name, lib_name));
             
-            input_args_desc = create_argument_description([default_inputs, input_args, 'u_ic', 'params', 'data']);
+            input_args_desc = create_argument_description([default_inputs, input_args, 'u_ic', 'cfg_path', 'data']);
             output_args_desc = create_argument_description([default_outputs, output_args]);
         
             % params
+            
             input_args_desc(end-2).DataType = 'double';
             input_args_desc(end-2).Scope = 'Parameter';
             input_args_desc(end-2).Tunable = 0;
-            input_args_desc(end-1).DataType = 'ParamsType';
+            input_args_desc(end-1).DataType = 'uint8';
             input_args_desc(end-1).Scope = 'Parameter';
             input_args_desc(end).DataType = 'DataType';
             input_args_desc(end).Scope = 'Parameter';
-        
+            % 
             % set io types type names
             for j=length(default_inputs)+1:length(default_inputs)+length(input_args)
                 input_args_desc(j).DataType = ...
@@ -215,16 +209,15 @@ classdef MatComponentRegister < ComponentRegister
                     strcat(output_args_desc(j), "_T");
             end
            
-            mask_parameters = struct('Name', 'data', ...
+            mask_parameters = struct('Name', 'cfg_path', ...
+                'Value', 'cfg_path', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
+            mask_parameters(end+1) = struct('Name', 'data', ...
                 'Value', '{block_name}_data', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
-            mask_parameters(end+1) = struct('Name', 'ParamsType', ...
-                'Value', '{block_name}_PT', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
             mask_parameters(end+1) = struct('Name', 'DataType', ...
                 'Value', '{block_name}_DT', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
             mask_parameters(end+1) = struct('Name', 'u_ic', ...
                 'Value', '0', 'Visible', 'off', 'Prompt', '', 'Evaluate', 'on');
             
-        
             for j=1:length(input_args)
                 n = strcat(input_args{j}, '_T');
                 v = strcat(info.Name, "_", input_args{j}, "_T");
@@ -238,9 +231,9 @@ classdef MatComponentRegister < ComponentRegister
             icon = 'controller_icon';
             extrinsic_init = "u = u_ic;";
             create_component_simulink(info, lib_name, 'ctl', ...
-                {"__cs_comptype:ctl", "__cs_compimpl:mat"}, 'm_component_simulink_template', input_args_desc, output_args_desc, ...
-                {"'Params'", "params", "'Data'", "data"}, ...
-                {'u_ic', 'size(y)', 'size(y_ref)'}, [{'y_ref', 'y', 'dt'}, input_args], ...
+                {"__cs_comptype:ctl", "__cs_compimpl:mat", "__cs_casadi"}, 'casadi_component_simulink_template', input_args_desc, output_args_desc, ...
+                {"cfg_path", "'Data'", 'data'}, ...
+                {'u_ic', 'size(y)', 'size(y_ref)'}, [{'y_ref', 'y', 'dt', 'data'}, input_args], ...
                 mask_parameters, extrinsic_init, icon, [120, 40]);
         
         end

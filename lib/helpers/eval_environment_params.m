@@ -56,7 +56,7 @@ function result_params = eval_environment_params(env_path, env_info)
             py_cnt = py_cnt + 1;
         else
             params = handle_component_params(c.Comp, env_path, ...
-                nonpy_params(nonpy_cnt), nonpython_param_descs{i});
+                nonpy_params(nonpy_cnt), nonpython_param_descs{nonpy_cnt});
             result_params(c.Comp.Id) = {params};
             nonpy_cnt = nonpy_cnt + 1;
         end

@@ -1,18 +1,29 @@
+
 function on_model_start_impl()
     
     curr_model = gcs;
-    mws = get_param(curr_model, 'modelworkspace');
-    info = mws.getVariable('env_info');
+    hws = get_param(curr_model, 'modelworkspace');
+    info = hws.getVariable('env_info');
     ext_value = 0;
+    blocks = hws.getVariable('gen_blocks');
+    old_params = hws.getVariable('old_params');
+
     try
-        ext_value = mws.getVariable('extrinsic');
+        ext_value = hws.getVariable('extrinsic');
     catch
         return
     end
     if ext_value 
         clear_extrinsic_functions(curr_model);
     end
+    
     env_params = load_env_param_struct(curr_model, info, 1);
+    if ~isequal(env_params, old_params)
+        setup_simulink_components(curr_model, blocks);
+        setup_simulink_autogen_types(curr_model, blocks);
+        old_params = env_params;
+        hws.assignin('old_params', old_params);
+    end
     assignin('base', matlab.lang.makeValidName(strcat(curr_model, '_params')), env_params);
     trigger_model_callback(curr_model, info, 'on_start');
 end

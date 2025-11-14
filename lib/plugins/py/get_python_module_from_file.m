@@ -1,4 +1,4 @@
-function m = get_python_module_from_file(module_name, file_path)
+function m = get_python_module_from_file(module_name, file_path, ignore_cache)
     
     persistent module_dict
 
@@ -6,7 +6,7 @@ function m = get_python_module_from_file(module_name, file_path)
         module_dict = dictionary;
     end
 
-    if module_dict.numEntries == 0 || ...
+    if ignore_cache == 1 || module_dict.numEntries == 0 || ...
         ~module_dict.isKey(pid)
 
         [folder, name, ~] = fileparts(file_path);

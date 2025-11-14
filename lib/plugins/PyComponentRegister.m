@@ -14,6 +14,7 @@ classdef PyComponentRegister < ComponentRegister
             info.Name = string(plugin_info{"Name"});
             % info.Info = plugin_info;
             info.HasParameters = int32(plugin_info{"HasParameters"});   
+            info.IsCasadi = int32(plugin_info{"IsCasadi"});   
         end
 
         function instance = instantiate_plugin(plugin_path)        
@@ -23,6 +24,10 @@ classdef PyComponentRegister < ComponentRegister
 
 
         function register(info, t, lib_name)
+            if info.IsCasadi
+                CasadiComponentRegister.register(info, t, lib_name);
+                return
+            end
             if strcmp(t, 'sys')
                 PyComponentRegister.register_system_(info, lib_name);
             elseif strcmp(t, 'ctl')
@@ -105,13 +110,6 @@ classdef PyComponentRegister < ComponentRegister
                     strcat(output_args_desc(j), "_T");
             end
            
-            % set mask parameters
-            if info.HasParameters
-                params_visible = 'on';
-            else
-                params_visible = 'off';
-            end
-        
             % mask_parameters = struct('Name', 'params', 'Prompt', 'Parameter struct:', ...
             %     'Value', '{block_name}_params', 'Visible', params_visible, 'Evaluate', 'on');
             mask_parameters = struct('Name', 'data', ...

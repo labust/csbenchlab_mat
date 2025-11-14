@@ -42,26 +42,30 @@ function result = evaluate_grid_search(ctl, model, y_ref, Ts, optim_params, use_
    
 
     if use_parallel
-        clear('iIncrementWaitbar');
+        clear iIncrementWaitbar;
         dq = parallel.pool.DataQueue;
+        iIncrementWaitbar(0); % clear persistent
         afterEach(dq, @(varargin) iIncrementWaitbar(prod_dim));
         parfor i=1:prod_dim
             result(i, :) = eval_one(ctl, model, y_ref, Ts, fields, i, grid, prod_dim, result(i, :));
             send(dq, i);
         end
+        return
     end
 
     for i=1:prod_dim
         result(i, :) = eval_one(ctl, model, y_ref, Ts, fields, i, grid, prod_dim, result(i, :));
         disp(strcat("Progress: ", num2str(i), "/", num2str(prod_dim)));
-
     end
 end
 
 function iIncrementWaitbar(end_num)
     persistent cnt
-    if isempty(cnt)
+    if isempty(cnt) || end_num == 0
         cnt = 0;
+    end
+    if end_num == 0
+        return
     end
     cnt = cnt + 1;
     disp(strcat("Progress: ", num2str(cnt), "/", num2str(end_num)));

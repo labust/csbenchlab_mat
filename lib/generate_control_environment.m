@@ -129,7 +129,7 @@ function handle = generate_control_environment(folder_path, system_instance, ids
 
             save(fullfile(folder_path, 'autogen', strcat(name, '.mat')), 'env_info', 'blocks');
             set_param(handle, 'PostLoadFcn', 'on_model_load');
-            set_param(handle, 'StartFcn', 'on_model_start');
+            set_param(handle, 'InitFcn', 'on_model_start');
             set_param(handle, 'PostSaveFcn', 'on_model_save');
             set_param(handle, 'StopFcn', 'on_simulation_done');
         end

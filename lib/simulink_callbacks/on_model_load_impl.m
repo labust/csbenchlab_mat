@@ -9,11 +9,13 @@ function on_model_load_impl()
     blocks = loaded.blocks;
     hws = get_param(curr_model, 'modelworkspace');
     hws.assignin('gen_blocks', blocks);
+    hws.assignin('env_name', curr_model);
+    hws.assignin('old_params', struct);
     hws.assignin('env_info', info);
 
     set_component_params_path_for_ids(curr_model, info, hws);
-
-    setup_simulink_components(curr_model, blocks);
+    % setup_simulink_components(curr_model, blocks);
+    setup_simulink_type_dict(curr_model);
     setup_simulink_extrinsic_functions(curr_model, info, blocks);
     setup_simulink_with_scenarios(curr_model, blocks, info);
 

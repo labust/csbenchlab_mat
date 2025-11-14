@@ -8,16 +8,14 @@ function {{output_args_fn}} = {{function_name}}({{input_args}})
     iid = char(iid__);
     if comp_dict.numEntries == 0 || ...
         ~comp_dict.isKey(iid)
-        params = get_component_params_from_iid('{{env_name}}', iid__);
-        mux = get_controller_mux_struct('{{block_path}}');
-        o = PyComponentManager.instantiate_component('{{class_name}}', '{{lib_name}}', {{ctor_args}});
-        o.configure({{cfg_args}});
-        comp_dict(iid) = o;
+        o = load_casadi_component(char(cfg_path));
+        o.data = data;
+        o.configure();
     else
         o = comp_dict(iid);
     end
     
-    result = o.step({{step_args}});
+    [o, u] = o.step(o, y_ref, y, dt);
     {{parse_outputs}}
     comp_dict(iid) = o;
     log = eval_log(o.data);

@@ -17,6 +17,7 @@ function ret = register_component(info, lib_name, append_to_json, append_to_mani
    
    r = ComponentRegister.get(info.Type);
    r.register(info, t, lib_name);
+   
    info.Lib = lib_name;
     
    if append_to_manifest
