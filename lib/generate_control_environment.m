@@ -89,7 +89,7 @@ function handle = generate_control_environment(folder_path, system_instance, ids
     name = env_info.Metadata.Name;
     env_params = load_env_param_struct(folder_path, env_info);
     assignin('base', matlab.lang.makeValidName(strcat(name, '_params')), env_params);
-    
+
     % [t, msg] = validate_env_cfg(env_info);
     % if t > 0
     %     error(msg);

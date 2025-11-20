@@ -17,6 +17,5 @@ function type_dict = setup_simulink_component(c, model_name, type_dict)
     if save_dict
         saveChanges(dictObj);
     end
-    
 end
 

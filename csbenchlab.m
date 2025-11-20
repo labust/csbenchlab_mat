@@ -1,25 +1,20 @@
 function csbenchlab()
-    
-    path = CSPath.get_app_root_path();
+    path = CSPath.get_appdata_path();
     init_app(path);
 end
 
 function init_app(path)
     init_f_name = fullfile(path, 'registry', 'init_f');
     % if ~exist(init_f_name, 'file')
-        if ~exist(fullfile(path, 'registry'), 'dir')
-            mkdir(fullfile(path, 'registry'));
-        end
-        if ~exist(fullfile(path, 'appdata'), 'dir')
-            mkdir(fullfile(path, 'appdata'))
-        end
+        mkdir(fullfile(path, 'registry'));
         fclose(fopen(init_f_name, 'w'));
         register_common_components(path);
     % end
 end
 
 function register_common_components(path)
-    plugins_path = fullfile(path, "plugins");
+    root = CSPath.get_app_root_path();
+    plugin_desc_path = fullfile(root, "plugins", "plugins.json");
 
     handle = get_or_create_component_library('csbenchlab');
     registry = make_component_registry_from_plugin_description(plugins_path, ...

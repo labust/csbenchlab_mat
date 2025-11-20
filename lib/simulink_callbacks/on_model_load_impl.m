@@ -14,24 +14,23 @@ function on_model_load_impl()
     hws.assignin('env_info', info);
 
     set_component_params_path_for_ids(curr_model, info, hws);
-    % setup_simulink_components(curr_model, blocks);
     setup_simulink_type_dict(curr_model);
     setup_simulink_extrinsic_functions(curr_model, info, blocks);
     setup_simulink_with_scenarios(curr_model, blocks, info);
 
     open_system(strcat(curr_model, '/RefGenerator'));
 
-    % MUST BE AFTER THE SYSTEM IS OPENED BECAUSE 
+    % MUST BE AFTER THE SYSTEM IS OPENED BECAUSE
     % LIBRARY LINK WOULD OVERRIDE AUTOGEN TYPES
     setup_simulink_autogen_types(curr_model, blocks);
 
     setup_environment_callbacks(curr_model, folder_path);
-    
+
     trigger_model_callback(curr_model, info, 'on_load');
     disp('Environment loaded successfully');
 end
 
-    
+
 
 function set_component_params_path_for_ids(env_name, info, hws)
     c = environment_components_it(info);

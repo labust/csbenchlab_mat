@@ -1,6 +1,6 @@
 
 function on_model_start_impl()
-    
+
     curr_model = gcs;
     hws = get_param(curr_model, 'modelworkspace');
     info = hws.getVariable('env_info');
@@ -13,10 +13,11 @@ function on_model_start_impl()
     catch
         return
     end
-    if ext_value 
+
+    if ext_value
         clear_extrinsic_functions(curr_model);
     end
-    
+
     env_params = load_env_param_struct(curr_model, info, 1);
     if ~isequal(env_params, old_params)
         setup_simulink_components(curr_model, blocks);

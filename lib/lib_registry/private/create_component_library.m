@@ -1,5 +1,5 @@
 function handle = create_component_library(path, close_after_creation)
-    
+
     if nargin == 0
         dest_path = '.';
         [~, name, ~]= fileparts(pwd);
@@ -15,7 +15,7 @@ function handle = create_component_library(path, close_after_creation)
     if ~exist(dest_path, 'dir')
         mkdir(dest_path);
     end
-    
+
     autogen_folder = fullfile(dest_path, 'autogen');
     if ~exist(autogen_folder, 'dir')
         mkdir(autogen_folder);
@@ -62,7 +62,7 @@ function handle = create_component_library(path, close_after_creation)
     addpath(fullfile(dest_path, name));
     manifest.Registry = registry;
     manifest.Library = library;
-    manifest.Version = '0.0.1';
+    manifest.Version = lib_meta.Version;
     writestruct(manifest, fullfile(handle.path, 'autogen', 'manifest.json'));
     writestruct(lib_meta, fullfile(handle.path, 'package.json'));
 

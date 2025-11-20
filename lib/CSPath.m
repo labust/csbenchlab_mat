@@ -14,17 +14,12 @@ classdef CSPath
             end
         end
 
-        function path = get_app_code_autogen_path()
-            path = fullfile(CSPath.get_app_root_path(), 'code_autogen');
-        end
-
         function path = get_app_python_src_path()
-            %path = fullfile(CSPath.get_app_root_path(), 'csbenchlab_py');
-            path = "/home/luka/fer/csbenchlab_py";
+            path = fileparts(CSPath.get_app_root_path());
         end
 
         function path = get_app_registry_path()
-            path = fullfile(CSPath.get_app_root_path(), 'registry');
+            path = fullfile(CSPath.get_appdata_path(), 'registry');
         end
 
         function path = get_app_template_path()
@@ -33,7 +28,14 @@ classdef CSPath
         end
 
         function path = get_appdata_path()
-            path = fullfile(CSPath.get_app_root_path(), 'appdata');
+            home = getenv('HOME');
+            if isempty(home)
+                home = getenv('USERPROFILE'); % Windows
+            end
+            path = fullfile(home, '.csbenchlab');
+            if ~isfolder(path)
+                mkdir(path);
+            end
         end
 
 
