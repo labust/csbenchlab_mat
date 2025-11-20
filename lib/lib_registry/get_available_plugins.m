@@ -26,8 +26,11 @@ function plugins = get_available_plugins(varargin)
         catch
             error(strcat("Manifest file not found for library '",  n));
         end
+        if isempty(fieldnames(registry))
+            continue
+        end
         if plugin_type == 0
-            plugins{n} = empty_plugin_container();
+            plugins{n} = struct;
             plugins{n}.sys = add_plugin(registry.sys, package_meta);
             plugins{n}.ctl = add_plugin(registry.ctl, package_meta);
             plugins{n}.est = add_plugin(registry.est, package_meta);

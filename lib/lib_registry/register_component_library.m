@@ -16,7 +16,7 @@ function s = register_component_library(path, link_register, ask_dialog)
         end
         meta = readstruct(fullfile(path, 'package.json'));
         reg = CSPath.get_app_registry_path();
-        name = meta.Name;
+        name = meta.Library;
     
         msg = "Library already exists. Do you want to override existing library?";
         title = "Library exists";
@@ -45,9 +45,8 @@ function s = register_component_library(path, link_register, ask_dialog)
 
         if ~link_register
             dest_path = fullfile(reg, name);
-            paths = library_paths(path, name);
-            addpath(paths{:});
             copyfile(path, dest_path);
+            paths = get_library_folder_paths(path, name);
         else
             link_lib.Path = path;
             link_lib.Version = meta.Version;
@@ -60,7 +59,7 @@ function s = register_component_library(path, link_register, ask_dialog)
             rmdir(fullfile(dest_path, 'autogen'), "s");
         end
 
-        handle = get_or_create_component_library(dest_path);
+        handle = get_or_create_component_library(name);
         registry = make_component_registry_from_plugin_description(dest_path, ...
             name, fullfile(dest_path, 'autogen'));
 

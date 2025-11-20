@@ -31,7 +31,7 @@ function refresh_component_library(lib)
     
             plugin_list = registry.(fname);
             for j = 1:length(plugin_list)
-                register_component(plugin_list{j}, handle.name, 0, 0);
+                register_component(plugin_list{j}, handle.name, 0, 1);
             end
         end
         addpath(fullfile(dest_path, 'autogen'));
