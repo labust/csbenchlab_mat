@@ -14,10 +14,10 @@ end
 
 function register_common_components(path)
     root = CSPath.get_app_root_path();
-    plugin_desc_path = fullfile(root, "plugins", "plugins.json");
+    plugin_path = fullfile(root, "plugins");
 
     handle = get_or_create_component_library('csbenchlab');
-    registry = make_component_registry_from_plugin_description(plugins_path, ...
+    registry = make_component_registry_from_plugin_description(plugin_path, ...
         'csbenchlab', fullfile(path, 'registry', 'csbenchlab', 'autogen'));
 
 
