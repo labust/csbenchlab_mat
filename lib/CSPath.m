@@ -19,7 +19,7 @@ classdef CSPath
         end
 
         function path = get_app_registry_path()
-            path = fullfile(CSPath.get_appdata_path(), 'registry');
+            path = fullfile(CSPath.get_appdata_path(), 'registry', 'matlab');
         end
 
         function path = get_app_template_path()

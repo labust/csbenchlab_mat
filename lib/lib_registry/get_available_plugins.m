@@ -3,7 +3,7 @@ function plugins = get_available_plugins(varargin)
     lib_list = list_component_libraries();
 
     if isempty(varargin)
-        plugin_type = 0;
+        plugin_type = 'all';
     else
         plugin_type = varargin{1};
     end
@@ -29,29 +29,29 @@ function plugins = get_available_plugins(varargin)
         if isempty(fieldnames(registry))
             continue
         end
-        if plugin_type == 0
+        if plugin_type == "all"
             plugins{n} = struct;
-            plugins{n}.sys = add_plugin(registry.sys, package_meta);
-            plugins{n}.ctl = add_plugin(registry.ctl, package_meta);
-            plugins{n}.est = add_plugin(registry.est, package_meta);
-            plugins{n}.dist = add_plugin(registry.dist, package_meta);
-        elseif plugin_type == 1
-            plugins{n} = add_plugin(registry.sys, package_meta);
-        elseif plugin_type == 2
-            plugins{n} = add_plugin(registry.ctl, package_meta);
-        elseif plugin_type == 3
-            plugins{n} = add_plugin(registry.est, package_meta);
-        elseif plugin_type == 4
-            plugins{n} = add_plugin(registry.dist, package_meta);
+            fns = fieldnames(registry);
+            for j=1:length(fns)
+                fn = fns{j};
+                plugins{n}.(fn) = add_plugin(registry.(fn), package_meta);
+            end
+        else
+            if isfield(registry, plugin_type)
+                plugins{n} = add_plugin(registry.(plugin_type), package_meta);
+            else
+                plugins{n} = [];
+            end
         end
     end
 end
 
 function structs = add_plugin(registry, package_meta)
-    structs = struct('Name', {}, 'Type', {}, 'Lib', {}, 'LibVersion', {}, 'Path', {});
+    structs = struct('Name', {}, 'Type', {}, 'Lib', {}, 'LibVersion', {}, 'ComponentPath', {}, 'T', {});
     for i=1:length(registry)
         r = registry{i};
-        structs(end+1) = struct('Name', string(r.Name), 'Type', r.Type, 'Lib', package_meta.Library, 'LibVersion', package_meta.Version, 'Path', r.ComponentPath);
+        structs(end+1) = struct('Name', string(r.Name), 'Type', r.Type, 'Lib', ...
+            package_meta.Library, 'LibVersion', package_meta.Version, 'ComponentPath', r.ComponentPath, 'T', r.T);
     end
 end
 

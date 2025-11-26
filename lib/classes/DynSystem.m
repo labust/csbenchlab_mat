@@ -8,6 +8,7 @@ classdef (Abstract) DynSystem
     properties
         params
         data
+        name
         noise_stream
         noise_params
         has_noise
@@ -88,6 +89,17 @@ classdef (Abstract) DynSystem
             % end
         end
 
+        function step_response(this, t, dt, scale)
+            if ~exist('scale', 'var')
+                scale = 1;
+            end
+            n = round(t/dt);
+            u = scale * ones(n, 1);
+            this = this.reset();
+            y = this.sim(u, 0, dt);
+            plot(y);
+        end
+
         function [this, y] = step_no_noise(this, u, t, dt)
             [this, y] = on_step(this, u, t, dt);
         end
@@ -109,11 +121,11 @@ classdef (Abstract) DynSystem
             if exist('ic', 'var')
                 this = this.configure(ic);
             end
-            [this, y1] = step_no_noise(this, u(1, :), t, dt);
+            [this, y1] = step_no_noise(this, u(1, :)', t, dt);
             y = zeros(size(u, 1), size(y1, 1));
             y(1, :) = y1;
             for i=2:size(u, 1)
-                [this, y(i, :)] = step_no_noise(this, u(i, :), t, dt);
+                [this, y(i, :)] = step_no_noise(this, u(i, :)', t, dt);
             end
 
             if this.has_noise > 0

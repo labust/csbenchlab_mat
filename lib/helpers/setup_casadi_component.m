@@ -1,6 +1,6 @@
 function type_dict = setup_casadi_component(c_path, type_dict, hws)
     l = libinfo(c_path);
-    
+
     script_params = get_component_script_parameter_ref(l.ReferenceBlock, {'__plugin_type', '__classname', '__lib_name'});
     plugin_type = script_params{1};
     mux = struct;
@@ -19,7 +19,7 @@ function type_dict = setup_casadi_component(c_path, type_dict, hws)
         error(strcat("Name '", name, "' is larger than max. Consider renaming components."));
     end
     params = get_component_params_from_block(c_path);
-            
+
     if strcmp(plugin_type, 'py')
         [path, type_dict] = setup_casadi_py(c_path, script_params{2}, script_params{3}, ...
             params, mux, hws, type_dict);
@@ -37,8 +37,8 @@ function [tmp_folder, type_dict] = setup_casadi_py(c_path, class_name, lib_name,
         error(strcat("Casadi plugin '", class_name, "' does not " + ...
             "implement 'casadi_step_fn' function."));
     end
-   
-    
+
+
     tmp_folder = fullfile(tempdir, strcat('csb_casadi_', class_name, ...
         '_', lib_name));
 
@@ -46,7 +46,7 @@ function [tmp_folder, type_dict] = setup_casadi_py(c_path, class_name, lib_name,
         mkdir(tmp_folder);
     end
 
-    save_casadi_component(tmp_folder, instance); 
+    save_casadi_component(tmp_folder, instance);
     m = PyComponentManager;
     data = m.create_component_data_model(class_name, lib_name, params, mux);
     log_desc = m.get_component_log_description(class_name, lib_name);

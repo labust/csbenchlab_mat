@@ -1,5 +1,5 @@
 function registry = make_component_registry_from_plugin_description(plugins_path, lib_name, save_manifest_library_path)
-    
+
     plugin_desc_path = fullfile(plugins_path, "plugins.json");
     if ~endsWith(plugin_desc_path, ".json")
         error(strcat("Error parsing json. ", plugin_desc_path, "is not a json file."));
@@ -21,11 +21,11 @@ function registry = make_component_registry_from_plugin_description(plugins_path
         disp("Error parsing library package.json");
         rethrow(ME)
     end
-    
+
     if ~exist('save_manifest_library_path', 'var')
         save_manifest_library_path = '';
     end
-    
+
     lib_path = fileparts(plugin_desc_path);
 
     registry.ctl = {};

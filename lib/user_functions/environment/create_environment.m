@@ -1,9 +1,9 @@
 function path_ret = create_environment(path, name)
-   
+
 
     path = fullfile(path, name);
     close_system(name, 0);
-    
+
     if exist(path, 'dir')
         error('Cannot create environemnt. Already exists...');
     end
@@ -13,7 +13,7 @@ function path_ret = create_environment(path, name)
             name, '" already exists on path...']);
     end
 
-    
+
     path_ret = path;
     mkdir(path);
     % setup_metrics(name, path);
@@ -24,7 +24,7 @@ function path_ret = create_environment(path, name)
     new_system(name);
     save_system(name, fullfile(path, name));
     close_system(name, 0);
-      
+
     cfg.Id = new_uuid;
     cfg.Name = name;
     cfg.Version = '0.1';

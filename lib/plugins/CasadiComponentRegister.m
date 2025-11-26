@@ -2,7 +2,6 @@ classdef CasadiComponentRegister < ComponentRegister
     %SLXCOMPONENTREGISTER Summary of this class goes here
     %   Detailed explanation goes here
 
-    
     methods (Static)
         function info = get_plugin_info(class_name, ~)
             info = struct;
@@ -15,10 +14,10 @@ classdef CasadiComponentRegister < ComponentRegister
                 if mcls.Abstract
                     return
                 end
-                
+
                 for k=1:length(mcls.SuperclassList)
                     if strcmp(mcls.SuperclassList(k).Name, 'DynSystem')
-                        t = 'sys'; 
+                        t = 'sys';
                         break;
                     end
                     if strcmp(mcls.SuperclassList(k).Name, 'Controller')
@@ -34,14 +33,14 @@ classdef CasadiComponentRegister < ComponentRegister
                         break;
                     end
                 end
-                
+
                 props = arrayfun(@(x) strcmp(x.Name, 'param_description'), mcls.PropertyList);
                 value = mcls.PropertyList(props);
-                info.HasParameters = ~isempty(value); 
+                info.HasParameters = ~isempty(value);
                 info.T = t;
             end
-        end
-        
+       end
+
         function register(info, t, lib_name)
            if strcmp(t, 'sys')
                CasadiComponentRegister.register_system_(info, lib_name);

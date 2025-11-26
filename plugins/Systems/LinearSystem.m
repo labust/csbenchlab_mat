@@ -24,7 +24,7 @@ classdef LinearSystem < DynSystem
         end
 
         function this = on_configure(this)
-            this.xk_1 = this.ic;
+            this.xk_1 = zeros(size(this.params.A, 1), 1);
         end
 
         function [this, yk] = on_step(this, u, t, dt)
