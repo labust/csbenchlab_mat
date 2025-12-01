@@ -16,7 +16,7 @@ function eval_env_metrics(env_path, results, results_path)
                 plot_cfg.Params = el.kwargs;
                 eval(strcat(el.function, '(results, plot_cfg);'));
             catch
-                warning(strcat("Cannot evaluate metric '", splits{2}, "'."));
+                warning(strcat("Cannot evaluate metric '", el.function, "'."));
                 rethrow;
             end
         end

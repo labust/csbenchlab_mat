@@ -1,10 +1,10 @@
 function metrics = calculate_result_metrics_simulink(out)
 
-    ns = fieldnames(out.y);
+    ns = fieldnames(out.signals);
     metrics = struct;
     for i=1:length(ns)
-        y = squeeze(out.y.(ns{i}).Data);
-        u = out.u.(ns{i}).Data;
+        y = squeeze(out.signals.(ns{i}).y.Data);
+        u = out.signals.(ns{i}).u.Data;
 
         y_ref = out.ref.Data;
        

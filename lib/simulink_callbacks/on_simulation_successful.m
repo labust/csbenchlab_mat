@@ -1,4 +1,4 @@
-function on_simulation_successful(env_name, run_id, plot_data)
+function result = on_simulation_successful(env_name, run_id, plot_data)
 
     handle = get_param(env_name, 'Handle');
     
@@ -11,8 +11,8 @@ function on_simulation_successful(env_name, run_id, plot_data)
     loaded = load(fullfile(folder, 'autogen', strcat(env_name, '.mat')));
 
     ref = getSignalsByName(run_id, 'Reference').Values;
-    out.ref = ref;
-
+    
+    out = struct;
     for i=1:length(loaded.blocks.controllers)
         c = loaded.blocks.controllers(i);
         try
@@ -26,22 +26,25 @@ function on_simulation_successful(env_name, run_id, plot_data)
             eval(strcat(log_sig_name, ' = getSignalsByName(run_id, "', ...
                 log_sig_name, '").Values;'));
     
-            eval(strcat('out.u.', c.Name, ' = ', u_sig_name, ';'));
-            eval(strcat('out.y.', c.Name, ' = ', y_sig_name, ';'));
-            eval(strcat('out.log.', c.Name, ' = ', log_sig_name, ';'));
+            eval(strcat('out.', c.Name, '.u = ', u_sig_name, ';'));
+            eval(strcat('out.', c.Name, '.y = ', y_sig_name, ';'));
+            eval(strcat('out.', c.Name, '.log = ', log_sig_name, ';'));
         catch
             warning(strcat("Simulation data not obtained for controller ", c.Name, "."));
         end
     end
-    out.Ts = str2double(Ts);
+    result.Ts = str2double(Ts);
+    result.ref = ref;
+    result.signals = out;
+
+    result.metrics = calculate_result_metrics_simulink(result);
     
-    out.metrics = calculate_result_metrics_simulink(out);
-    
-    save(fullfile(folder, 'results.mat'), 'out');
-    assignin('base', 'sim_result', out);
+    save(fullfile(folder, 'results.mat'), 'result');
+    assignin('base', 'sim_result', result);
     
     if plot_data
-        eval_env_metrics(folder, out, fullfile(folder, 'results.mat'));
+        eval_env_metrics(folder, result, fullfile(folder, 'results.mat'));
     end
+    
 end
 

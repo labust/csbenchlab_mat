@@ -34,7 +34,7 @@ function out_with_ref(out, plot_cfg, f_handle)
         out_dims = plot_cfg.Params.OutDimensions;
     else
         fns = fieldnames(out.y);
-        out_dim = size(out.y.(fns{1}).Data, 2);
+        out_dim = size(out.(fns{1}).y.Data, 2);
         out_dims = linspace(1, out_dim, out_dim);
     end
 
@@ -45,11 +45,11 @@ function out_with_ref(out, plot_cfg, f_handle)
     if isfield(plot_cfg.Params, 'Controllers')
         names = plot_cfg.Params.Controllers;
     else
-        names = fieldnames(out.y);
+        names = fieldnames(out.signals);
     end
     for i=1:length(names)
         n = names{i};
-        data = out.y.(n);
+        data = out.signals.(n).y;
         sz = size(data.Data);
         if sz(end) == length(data.Data)
             plot(data.Time, squeeze(data.Data(out_dims, :, :)), 'LineWidth', lw);
@@ -78,13 +78,23 @@ function out_with_ref(out, plot_cfg, f_handle)
         legend(plot_cfg.Params.Legend{:});
     else
         leg_names = {};
-        for i=1:length(ref_dims)
-            leg_names{end+1} = strcat('Reference_', num2str(i));
+        if isscalar(ref_dims)
+            add_num = '';
+        else
+            add_num = strcat('[', num2str(i), ']');
         end
-        fns = fieldnames(out.y);
+        for i=1:length(ref_dims)
+            leg_names{end+1} = strcat('Reference', add_num);
+        end
+        fns = fieldnames(out.signals);
         for i=1:length(fns)
+            if isscalar(out_dims)
+                add_num = '';
+            else
+                add_num = strcat('[', num2str(j), ']');
+            end
             for j=1:length(out_dims)
-                leg_names{end+1} = strcat(fns{i}, '_', num2str(j));
+                leg_names{end+1} = strcat(fns{i}, add_num);
             end
         end
         legend(leg_names{:});

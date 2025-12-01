@@ -71,14 +71,14 @@ classdef (Abstract) DynSystem
             this.data = data;
             this.pid = pid;
             this.iid = iid;
+            if this.has_noise > 0
+                this.noise_stream = RandStream("mlfg6331_64", "Seed", this.noise_params.seed);
+            end
         end
         
         function this = configure(this, ic)
             this.ic = ic;
             this = on_configure(this);
-            if this.has_noise > 0
-                this.noise_stream = RandStream("mlfg6331_64", "Seed", this.noise_params.seed);
-            end
         end
 
         function [this, y] = step(this, u, t, dt)
@@ -129,6 +129,7 @@ classdef (Abstract) DynSystem
             end
 
             if this.has_noise > 0
+                a = 5;
                 varargout{1} = y + this.noise_params.bias ...
                     + randn(this.noise_stream, size(y)) * this.noise_params.std;
             else
