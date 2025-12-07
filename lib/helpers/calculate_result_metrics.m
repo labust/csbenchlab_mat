@@ -53,16 +53,43 @@ function ret = calculate_result_metrics(y_ref, y, u, Ts)
             step_metrics(k).mae = sum(abs_diff_s) / length(y_s);
             step_metrics(k).power = sum(u_s.^2) / length(u_s);
             
-            t_1p_v = 1 - (abs_diff_s <= 0.01 * yref_s);
-            t_5p_v = 1 - (abs_diff_s <= 0.05 * yref_s);
+            t_1p_v = (abs_diff_s <= 0.01 * yref_s);
+            t_5p_v = (abs_diff_s <= 0.05 * yref_s);
             rt_v = abs(y_s) <= 0.63 * abs(yref_s) ;
+
+            tol = ceil(length(yref_s) * 0.1); % max 5% samples are outside
         
-            step_metrics(k).t_1p = sum(t_1p_v) .* Ts;
-            step_metrics(k).t_5p = sum(t_5p_v) .* Ts;
+            step_metrics(k).t_1p = calculate_time_with_sample_tollerance(t_1p_v, Ts, tol);
+            step_metrics(k).t_5p = calculate_time_with_sample_tollerance(t_5p_v, Ts, tol);
             step_metrics(k).rise_t = sum(rt_v) .* Ts;
         end
         ret.qi(idx) = step_metrics;
     end
+end
+
+function t = calculate_time_with_sample_tollerance(time_v, Ts, tollerance)
+    indices = find(time_v, tollerance);
+    if isempty(indices)
+        t = length(time_v) * Ts;
+        return
+    end
+    errors = 0;
+    first = indices(1);
+    for i=length(time_v):-1:first
+        if time_v(i) == 0
+            errors = errors + 1;
+        end
+        if errors > tollerance
+            subvec = time_v(i:end);
+            if sum(subvec) > length(subvec) / 2
+                t = i * Ts;
+            else
+                t = length(time_v) * Ts;
+            end
+            return
+        end
+    end
+    t = first * Ts;
 end
 
 

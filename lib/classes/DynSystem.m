@@ -75,6 +75,12 @@ classdef (Abstract) DynSystem
                 this.noise_stream = RandStream("mlfg6331_64", "Seed", this.noise_params.seed);
             end
         end
+
+        function this = set_seed(this, seed)
+            this.noise_params.seed = seed;
+            this.noise_stream = RandStream("mlfg6331_64", "Seed", this.noise_params.seed);
+            this.has_noise = 1;
+        end
         
         function this = configure(this, ic)
             this.ic = ic;
@@ -83,10 +89,10 @@ classdef (Abstract) DynSystem
 
         function [this, y] = step(this, u, t, dt)
             [this, y] = on_step(this, u, t, dt);
-            % if this.has_noise > 0
-            %     y = y + this.noise_params.bias ...
-            %         + randn(this.noise_stream, size(y)) * this.noise_params.std;
-            % end
+            if this.has_noise > 0
+                y = y + this.noise_params.bias ...
+                    + randn(this.noise_stream, size(y)) * this.noise_params.std;
+            end
         end
 
         function step_response(this, t, dt, scale)
@@ -112,9 +118,12 @@ classdef (Abstract) DynSystem
         function varargout = sim(this, varargin)
             varargout = cell(2, 1);
             if this.has_noise > 0
-                this.noise_stream.Substream = 2;
+                state = this.noise_stream.State;
             end
             [~, varargout{:}] = sim_update(this, varargin{:});
+            if this.has_noise > 0
+                this.noise_stream.State = state;
+            end
         end
 
         function [this, varargout] = sim_update(this, u, t, dt, ic)

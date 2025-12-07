@@ -33,7 +33,7 @@ classdef LinearSystem < DynSystem
             xk = this.params.A * this.xk_1 + this.params.B * u;
             yk = this.params.C * xk + this.params.D * u;
             
-            yk = saturate(yk, this.params.sat_min, this.params.sat_max);
+            % yk = saturate(yk, this.params.sat_min, this.params.sat_max);
 
             this.xk_1 = xk;
         end

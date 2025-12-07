@@ -36,6 +36,8 @@ function metrics = evaluate_predictive_controller(controller, model, y_ref, Ts, 
         hold on;
         plot(result.t, result.y);
         legend('y\_ref', 'y')
+        figure(2);
+        plot(result.t, result.u);
     end
 
 end
